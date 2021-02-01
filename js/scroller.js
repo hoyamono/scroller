@@ -315,9 +315,83 @@ var ANIUTIL = (function(){
 		return returnValue;
 	}
 
+	var videoObjectFit = function(opts){
+		var init = function(opts){
+			this.opts = opts;
+			this.setElement();
+			this.setVideoStyle();
+			this.bindEvent();
+		};
+
+		var fn = init.prototype;
+
+		fn.setElement = function(){
+			if (this.opts.wrapElement !== undefined) {
+				this.wrapElement = this.opts.wrapElement.jquery ? this.opts.wrapElement[0] : this.opts.wrapElement;
+			}
+	
+			if (this.opts.targetVideo !== undefined) {
+				this.targetVideo = this.opts.targetVideo.jquery ? this.opts.targetVideo[0] : this.opts.targetVideo;
+			}
+		};
+
+		fn.setVideoStyle = function(){
+			this.wrapElement.style.overflow = 'hidden';
+			this.targetVideo.style.position = 'absolute';
+			this.targetVideo.style.top = '50%';
+			this.targetVideo.style.left = '50%';
+			this.targetVideo.style.transform = 'translate(-50%, -50%)';
+		}
+
+		fn.bindEvent = function(){
+			var self = this;
+
+			window.addEventListener('load', function(){
+				self.setVideoSize();
+
+			});
+
+			window.addEventListener('resize', function(){
+				self.setVideoSize();
+			});
+		};
+
+		fn.getVideoInfo = function(){
+			this.wrapWidth = this.wrapElement.clientWidth;
+			this.wrapHeight = this.wrapElement.clientHeight;
+			this.videoWidth = this.targetVideo.clientWidth;
+			this.videoHeight = this.targetVideo.clientHeight;
+			this.wrapRatio = this.wrapHeight / this.wrapWidth;
+			this.videoRatio = this.videoHeight / this.videoWidth;
+		};
+
+		fn.setVideoSize = function(){
+			var self = this,
+				timer = null;			
+
+			clearTimeout(timer);
+
+			timer = setTimeout(function(){
+				self.getVideoInfo();
+
+				if (self.wrapRatio < self.videoRatio) {
+					self.targetVideo.style.width = '100%';
+					self.targetVideo.style.height = 'auto';
+				} else {
+					self.targetVideo.style.width = 'auto';
+					self.targetVideo.style.height = '100%';
+				}
+			}, 100);
+		};
+		return new init(opts);
+	}
+
 	return {
 		calRange: function(values){
 			return calRange(values);
+		},
+		videoObjectFit: function(opts){
+			videoObjectFit(opts);
 		}
 	}
 })();
