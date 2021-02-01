@@ -431,26 +431,29 @@
 					startPoint: 40,
 					endPoint: 60
 				}),
-				value3curr = 100 - motionValue3;
+				value3curr = 100 - motionValue3,
+				timer1 = null,
+				timer2 = null
+				tumer3 = null;
 
 			if (value1curr > 0) {
 				countBox[0].style.transform = 'translate3d(-' + value1curr + '%, 0, 0)';
 			}
-			if (value1curr == 0) {
+			if (value1curr == 0 || value1curr == 100) {
 				countBox[0].style.transform = 'translateX(-' + value1curr + '%)';
 			}
 
 			if (value2curr > 0) {
 				countBox[1].style.transform = 'translate3d(' + value2curr + '%, -50%, 0)';
 			}
-			if (value2curr == 0) {
+			if (value2curr == 0 || value2curr == 100) {
 				countBox[1].style.transform = 'translate(' + value2curr + '%, -50%)';
 			}
 
 			if (value3curr > 0) {
 				countBox[2].style.transform = 'translate3d(-' + value3curr + '%, 0, 0)';
 			}
-			if (value3curr == 0) {
+			if (value3curr == 0 || value3curr == 100) {
 				countBox[2].style.transform = 'translateX(-' + value3curr + '%)';
 			}
 		});
