@@ -12,9 +12,14 @@
 var SCROLLER = (function(){
 	var init = function(opts){
 		this.opts = opts;
-		this.correction = !!!opts.correction ? 0 : opts.correction;
-		this.trackHeight = opts.trackHeight;
+		this.correction = (!!!opts.correction ? 0 : opts.correction);
+		this.trackHeight = !!!opts.trackHeight ? 0 : opts.trackHeight;
 		this.activeCallbackClass = !!!opts.activeCallbackClass ? 'callback-active' : opts.activeCallbackClass;
+		this.useFixed = !!!opts.useFixed ? false : opts.useFixed;
+		this.activeVisibility = !!!opts.activeVisibility ? 'before' : opts.activeVisibility;
+		this.activePlay = !!!opts.activePlay ? 'revers' : this.opts.activePlay;
+		console.log(this.activePlay)
+		this.resize = !!!opts.resize ? false : opts.resize;
 		this.windowHeight = window.innerHeight;
 		this.setElement();
 		this.bindEvent();
@@ -25,7 +30,7 @@ var SCROLLER = (function(){
 	fn.bindEvent = function(){
 		var self = this;
 
-		if (!this.opts.resize) {
+		if (!this.resize) {
 			this.elementHandler();
 		} else {
 			window.addEventListener('load', function(){
@@ -45,10 +50,10 @@ var SCROLLER = (function(){
 	};
 
 	fn.elementHandler = function(){
-		if (this.opts.trackHeight > 1) {
+		if (this.trackHeight > 1) {
 			this.setTrackHeigh();
 		}
-		if (this.opts.useFixed) {
+		if (this.useFixed) {
 			this.setFixedHeight();
 		}
 
@@ -187,10 +192,10 @@ var SCROLLER = (function(){
 	}
 
 	fn.activeAnimation = function(){
-
 		this.winScrollTop = this.getScroll().top;
 		this.winScrollBottom = this.getScroll().bottom;
-		this.correctionValue = (this.windowHeight * this.correction);
+		this.activeElementHeight = this.activeElement.clientHeight;
+		this.correctionValue = this.activeElementHeight * this.correction;
 		this.corScrollTop = this.winScrollTop + this.correctionValue;
 		this.corScrollBottom = this.winScrollBottom - this.correctionValue;
 		this.elementOffsetTop = this.getOffset(this.activeElement).top;
@@ -198,8 +203,8 @@ var SCROLLER = (function(){
 
 		var self = this,
 			activeType = this.opts.activeClass ? 'addClass' : 'callback',
-			visibleTyle = this.opts.activeVisibility,
-			removeType = this.opts.activePlay,
+			visibleTyle = this.activeVisibility,
+			removeType = this.activePlay,
 			corrHeight = this.windowHeight / 2;
 
 		var addActiveClass = function(){
