@@ -62,6 +62,7 @@ var scene2 = SCROLLER({
 |endCallback|function|-|activeVisibility 타입에 맞춰 초기화시 실행될 함수|
 |activeCallbackClass|string|activeCallbackClass|activeCallback 실행 후 activeElement에 add될 class|
 |correction|number|0|add class 또는 callback 실행 시점을 보정하는 값으로 대상 구조(activeElement 또는 window)의 height 값을 전달받은 값으로 계산하여 off값을 - +한다.|
+|IEScroll|boolean|false|css transition 사용시 IE에서 발생하는 떨림현상을 제어하기위한 옵션으로 사용시 스크롤이 상당히 부자연스러워진다.(한페이지 한번만 실행)|
 ---
 ### 3. Methods
 - trackAnimation : fixed animation 구현시 사용하는 Method로 설정된 trackElement구간에서 scroll시 progress 정보를 제공하고 callback 함수를 실행한다.
