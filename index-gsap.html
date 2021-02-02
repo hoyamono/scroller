@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Scroller</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
+	<script src="./js/scroller.js"></script>
+	<link rel="stylesheet" href="https://meyerweb.com/eric/tools/css/reset/reset200802.css">
+	<style>
+		@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap');
+
+		html,
+		body {
+			padding: 0;
+			margin: 0;
+			font-family: 'Roboto', sans-serif;
+		}
+
+		p {
+			font-size: 70px;
+			color: #fff;
+		}
+
+		.text1,
+		.text2 {
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			opacity: 0;
+			transition: all 0.1s linear;
+			z-index: 2;
+		}
+
+		.kv {
+			position: relative;
+			height: 100vh;
+			background: #000;
+			text-align: center;
+			vertical-align: middle;
+		}
+
+		.kv .text1 {
+			opacity: 1;
+			transition: none;
+		}
+
+		.kv .text1 {
+			transition: none;
+		}
+
+		.content-wrap {
+			width: 100%;
+			position: relative;
+		}
+
+		.scene2,
+		.scene3,
+		.scene4 {
+			position: relative;
+			height: 100vh;
+			background: #000;
+		}
+
+		.scene2 {
+			height: 103vh;
+			background: #999;
+		}
+
+		.scene2 .text1 {
+			transform: translate(-50%, 0);
+		}
+
+		.scene2 .text1.active {
+			opacity: 1;
+			transform: translate(-50%, -50%);
+			transition: all 0.6s;
+		}
+
+		.scene2 .content-wrap {
+			position: static;
+		}
+
+		/* .scene3 video {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+		} */
+
+		.scene3 .text1 {
+			transform: translate(-50%, 0);
+			white-space: nowrap;
+		}
+
+		.scene3 .callback-active .text1 {
+			opacity: 1;
+			transform: translate(-50%, -50%);
+			transition: all 0.6s;
+		}
+
+		.scene4 .content-wrap {
+			overflow: hidden;
+		}
+
+		.scene4 .text1 {
+			top: 15%;
+			transform: translate(-50%, 0);
+			opacity: 1;
+			white-space: nowrap;
+		}
+
+		.slide-track {
+			position: absolute;
+			bottom: 10%;
+			width: 100%;
+			height: 50%;
+			padding: 0 50px;
+			background: #ddd;
+			box-sizing: border-box;
+		}
+
+		.slide-wrap {
+			position: absolute;
+			top: 10%;
+			height: 80%;
+			white-space: nowrap;
+			font-size: 0;
+			transition: transform 0.1s linear;
+		}
+
+		.slide-wrap .box {
+			display: inline-block;
+			width: 350px;
+			height: 100%;
+			margin-right: 20px;
+			background: #f1f1f1;
+		}
+
+		.slide-wrap .box:last-child {
+			margin-right: 0;
+		}
+
+		.scene5 {
+			position: relative;
+			height: 100vh;
+			background: #000;
+			text-align: center;
+			overflow: hidden;
+		}
+
+		.scene5 .content-wrap {
+			overflow: hidden;
+		}
+
+		.count-box {
+			position: absolute;
+			width: 400px;
+			height: 15vw;
+			background: #f1f1f1;
+		}
+
+		.count-box:nth-child(1) {
+			top: 50px;
+			left: 0;
+			transform: translateX(-100%);
+		}
+
+		.count-box:nth-child(2) {
+			top: 50%;
+			right: 0;
+			transform: translateX(100%, -50%);
+		}
+
+		.count-box:nth-child(3) {
+			bottom: 50px;
+			left: 0;
+			transform: translateX(-100%);
+		}
+
+		.count-box p {
+			line-height: 15vw;
+			color: #000;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="wrap">
+		<section class="kv">
+			<div class="content-wrap">
+				<p class="text1">SCROLLER</p>
+				<p class="text2">SAMPLE MOTION</p>
+			</div>
+		</section>
+		<section class="scene2">
+			<div class="content-wrap">
+				<p class="text1">01 - Add Class Animation</p>
+			</div>
+		</section>
+		<section class="scene3">
+			<div class="content-wrap">
+				<p class="text1">02 - Video Play + trackAnimation</p>
+				<video loop>
+					<source src="https://cdn.videvo.net/videvo_files/video/free/2014-08/small_watermarked/Earth_Zoom_In_preview.webm" type="video/webm">
+						<source src="https://cdn.videvo.net/videvo_files/video/free/2014-08/small_watermarked/Earth_Zoom_In_preview.mp4" type="video/mp4">
+				</video>
+			</div>
+		</section>
+		<section class="scene4">
+			<div class="content-wrap">
+				<p class="text1">03 - trackAnimation</p>
+				<div class="slide-track">
+					<ul class="slide-wrap">
+						<li class="box"></li>
+						<li class="box"></li>
+						<li class="box"></li>
+						<li class="box"></li>
+						<li class="box"></li>
+						<li class="box"></li>
+						<li class="box"></li>
+						<li class="box"></li>
+						<li class="box"></li>
+						<li class="box"></li>
+					</ul>
+				</div>
+			</div>
+		</section>
+		<section class="scene5">
+			<div class="content-wrap">
+				<div class="count-box">
+					<p>1</p>
+				</div>
+				<div class="count-box">
+					<p>2</p>
+				</div>
+				<div class="count-box">
+					<p>3</p>
+				</div>
+			</div>
+		</section>
+	</div>
+</body>
+
+<script>
+
+	// =============================================================================================================== SCENE 생성
+	// ============================================================== Key Visual (scene1)
+
+    var duration = navigator.userAgent.match(/Trident\/7\./) ? 0 : 0.1;
+
+	SCROLLER({
+		IEScroll: true, //css transition을 사용할 경우 IE에서 발생하는 떨림을 최소화 하는 옵션, * 한페이지에 한번만 실행 *
+	});
+
+	var trackElement1 = document.querySelector('.kv'),
+		fixedElement1 = document.querySelector('.kv .content-wrap'),
+		aniTarget1_1 = document.querySelector('.kv .text1'),
+		aniTarget1_2 = document.querySelector('.kv .text2');
+
+	var scene1 = SCROLLER({
+		trackElement: trackElement1,
+		fixedElement: fixedElement1,
+		useFixed: true,
+		trackHeight: 2.2, //fixed scroll시 track element height값 보정(배율값)
+		resize: true //resize 이벤트 실행
+	});
+
+	// ============================================================== scene2
+
+	var trackElement2 = document.querySelector('.scene2 .text1');
+
+	var scene2 = SCROLLER({
+		activeElement: trackElement2,
+		// correction: 0.4, //노출위치 보정 (배율값)
+		activeVisibility: 'visible', //visible: element가 화면 중앙에 위치할 경우 노출, before: window scroll bottom이 element의 offset top과 맞닿을경우 노출
+		activePlay: 'revers', //revers: 역방향 재생, oneWay: 재생 완료 후 scrollTop이 0이될 경우 인터랙션 초기화
+		activeClass: 'active', //activeClass와 activeCallback 둘중 하나만 사용 가능
+		resize: true
+	});
+
+	// ============================================================== scene3
+
+	var trackElement3 = document.querySelector('.scene3'),
+		fixedElement3 = document.querySelector('.scene3 .content-wrap'),
+		video1 = document.querySelector('.scene3 video');
+
+	video1.muted = true;
+
+	var videoSet = ANIUTIL.videoObjectFit({ //비디오 사이즈 제어 라이브러리
+		wrapElement: fixedElement3,
+		targetVideo: video1
+	});
+
+	var scene3 = SCROLLER({
+		activeElement: fixedElement3,
+		// correction: 0.4,
+		activeVisibility: 'before',
+		activePlay: 'revers',
+		// activeCallbackClass: 'activeCallbackClass', //콜백함수 실행 완료 후 노출하는 class로 기본값은 callback-active로 설정되어있음
+		activeCallback: function () { //activeClass와 activeCallback 둘중 하나만 사용 가능
+			if (video1.paused && video1.readyState >= 4) {
+				video1.play();
+			} else {
+				video1.addEventListener('loadeddata', function(){
+					video1.play();
+				});
+			}
+		},
+		endCallback: function () {
+			if (!video1.paused) {
+				video1.pause();
+				video1.currentTime = 0;
+			}
+		},
+		resize: true
+	});
+
+	var scene3_1 = SCROLLER({
+		trackElement: trackElement3,
+		fixedElement: fixedElement3,
+		useFixed: true,
+		trackHeight: 2,
+		resize: true
+	});
+
+	// ============================================================== scene4
+
+	var trackElement4 = document.querySelector('.scene4'),
+		fixedElement4 = document.querySelector('.scene4 .content-wrap'),
+		aniTarget4 = document.querySelector('.scene4 .slide-wrap'),
+		aniTrack4 = document.querySelector('.scene4 .slide-track');
+
+	var scene4 = SCROLLER({
+		trackElement: trackElement4,
+		fixedElement: fixedElement4,
+		useFixed: true,
+		trackHeight: 3,
+		resize: true
+	});
+
+	// ============================================================== scene5
+
+	var trackElement5 = document.querySelector('.scene5'),
+		fixedElement5 = document.querySelector('.scene5 .content-wrap'),
+		countBox = document.querySelectorAll('.count-box');
+
+	var scene5 = SCROLLER({
+		trackElement: trackElement5,
+		fixedElement: fixedElement5,
+		useFixed: true,
+		trackHeight: 1.5,
+		resize: true
+	});
+
+	// =============================================================================================================== SCENE 생성
+
+	// =============================================================================================================== animation 구현
+
+	var animationHandler = function () {
+		scene1.trackAnimation(function () {
+			var progress = this.progress;
+
+			var motionValue1 = ANIUTIL.calRange({
+					targetValue: 1, //progress 100%까지의 타겟값
+					progress: progress,
+					startPoint: 20, //시작점(%)
+					endPoint: 50 //종료지점(%)
+				}),
+				value1Curr = 1 - motionValue1;
+			motionValue2 = ANIUTIL.calRange({
+				targetValue: 1,
+				progress: progress,
+				startPoint: 50,
+				endPoint: 60
+			});
+
+			if (value1Curr >= 0) {
+				gsap.to(aniTarget1_1, duration, {opacity: value1Curr, ease: 'linear'});
+			}
+
+			if (motionValue2 >= 0) {
+				gsap.to(aniTarget1_2, duration, {opacity: motionValue2, ease: 'linear'});
+			}
+		});
+
+		scene2.activeAnimation();
+
+		scene3.activeAnimation();
+
+		scene3_1.trackAnimation(function () {
+			var motionValue1 = ANIUTIL.calRange({
+					targetValue: 1,
+					progress: this.progress,
+					startdPoint: 70
+				}),
+				motionValue2 = 1 - motionValue1;
+
+            gsap.to(video1, duration, {opacity: motionValue2, ease: 'linear'});
+		});
+
+		scene4.trackAnimation(function () {
+			var slideWidth = aniTarget4.clientWidth,
+				getTrackPadding = window.getComputedStyle(aniTrack4).paddingLeft,
+				padding = Number(getTrackPadding.replace(/[^0-9]/g, "")),
+				wrapWidth = trackElement4.clientWidth - (padding * 2),
+				maxMoveSize = slideWidth - wrapWidth,
+				timmer = null;
+
+			var motionValue1 = ANIUTIL.calRange({
+				targetValue: maxMoveSize,
+				progress: this.progress,
+			});
+
+			if (motionValue1 >= 0 && motionValue1 <= maxMoveSize) {
+				gsap.to(aniTarget4, 0.1, {onUpdate: function(){
+					if(navigator.userAgent.match(/Trident\/7\./)) {
+						gsap.to(aniTarget4, 0, {translateX: -motionValue1, ease: 'linear'});
+					} else {
+						gsap.to(aniTarget4, 0.1, {translateX: -motionValue1, ease: 'linear'});
+					}
+				}});
+			}
+		});
+
+		scene5.trackAnimation(function () {
+			var motionValue1 = ANIUTIL.calRange({
+					targetValue: 100,
+					progress: this.progress,
+					endPoint: 20
+				}),
+				value1curr = 100 - motionValue1,
+				motionValue2 = ANIUTIL.calRange({
+					targetValue: 100,
+					progress: this.progress,
+					startPoint: 20,
+					endPoint: 40
+				}),
+				value2curr = 100 - motionValue2,
+				motionValue3 = ANIUTIL.calRange({
+					targetValue: 100,
+					progress: this.progress,
+					startPoint: 40,
+					endPoint: 60
+				}),
+				value3curr = 100 - motionValue3,
+				timer1 = null,
+				timer2 = null
+				tumer3 = null;
+
+                gsap.to(countBox[0], duration, {translateX: -value1curr + '%', ease: 'linear'});
+                gsap.to(countBox[1], duration, {translateX: value2curr + '%', ease: 'linear'});
+                gsap.to(countBox[2], duration, {translateX: -value3curr + '%', ease: 'linear'});
+			// if (value1curr == 0 || value1curr == 100) {
+			// 	countBox[0].style.transform = 'translateX(-' + value1curr + '%)';
+			// }
+		});
+	};
+	// =============================================================================================================== animation 구현
+
+	// =============================================================================================================== addEvent
+
+	window.addEventListener('scroll', function () {
+		animationHandler();
+	});
+</script>
+
+</html>
