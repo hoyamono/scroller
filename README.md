@@ -7,25 +7,6 @@
 ### 1. SCROLLER 객체 생성
 스크롤러 객체는 되도록 변수에 담아 사용하고 resize 또는 scroll 이벤트와 같은 이벤트에 포함하여 사용하는것을 지양해야함.
 ``` javascript
-<<<<<<< HEAD
-    var scene1 = SCROLLER({
-		trackElement: document.querySelector('.track'), //DOM node or jQuery object
-		fixedElement: document.querySelector('.fixed'), //DOM node or jQuery object
-		useFixed: 'true',
-		trackHeight: 2.2, // trackElement height 값 * 2.2
-		correction: 2, // window height을 기준으로 offsetTop 값이 더해진다.
-		resize: 'true'
-	});
-
-	var scene2 = SCROLLER({
-		activeElement: trackElement2,
-		correction: 2, //노출위치 보정 (배율값) - ex) activeElement의 높이가 400이라면 offsetTop의 값이 400이 더해진다.
-		activeVisibility: 'visible', //visible: element가 화면 중앙에 위치할 경우 노출, before: window scroll bottom이 element의 offset top과 맞닿을경우 노출
-		activePlay: 'revers', //revers: 역방향 재생, oneWay: 재생 완료 후 scrollTop이 0이될 경우 인터랙션 초기화
-		activeClass: 'active', //activeClass와 activeCallback 둘중 하나만 사용 가능
-		resize: true
-	});
-=======
 var scene1 = SCROLLER({
 	trackElement: document.querySelector('.track'), //DOM node or jQuery object
 	fixedElement: document.querySelector('.fixed'), //DOM node or jQuery object
@@ -43,7 +24,6 @@ var scene2 = SCROLLER({
 	activeClass: 'active', //activeClass와 activeCallback 둘중 하나만 사용 가능
 	resize: true
 });
->>>>>>> master
 ```
 ---
 ### 2. Option List
