@@ -18,7 +18,6 @@ var SCROLLER = (function(){
 		this.useFixed = !!!opts.useFixed ? false : opts.useFixed;
 		this.activeVisibility = !!!opts.activeVisibility ? 'before' : opts.activeVisibility;
 		this.activePlay = !!!opts.activePlay ? 'revers' : this.opts.activePlay;
-		console.log(this.activePlay)
 		this.resize = !!!opts.resize ? false : opts.resize;
 		this.windowHeight = window.innerHeight;
 		this.setElement();
@@ -81,7 +80,7 @@ var SCROLLER = (function(){
 			this.body.addEventListener('mousewheel', function (e) {
 				e.preventDefault();
 		
-				var wheelDelta = e.wheelDelta / 3;
+				var wheelDelta = e.wheelDelta;
 
 				var currentScrollPosition = window.pageYOffset;
 				window.scrollTo(0, currentScrollPosition - wheelDelta);
