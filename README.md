@@ -92,9 +92,22 @@ var scene2 = SCROLLER({
 	});
 	//progress 20%에서 0으로 시작해서 60%에 1이된다.
 	```
-|Option|Type|Description|
-|------|---|-----|
-|targetValue|number|progress가 100이됐을때 도달할 value값|
-|progress|number|현재 progress값|
-|startPoint|number|0~100까지의 progress중 target value값 계산을 시작할 위치 지정|
-|endPoint|number|0~100까지의 progress중 target value값 계산을 중단할 위치 지정|
+	|Option|Type|Description|
+	|------|---|-----|
+	|targetValue|number|progress가 100이됐을때 도달할 value값|
+	|progress|number|현재 progress값|
+	|startPoint|number|0~100까지의 progress중 target value값 계산을 시작할 위치 지정|
+	|endPoint|number|0~100까지의 progress중 target value값 계산을 중단할 위치 지정|
+
+
+- ANIUTIL.videoObjectFit : wrap 요소에 맞춰 video를 full size로 유지하도록 제어하는 함수
+	``` javascript
+	ANIUTIL.videoObjectFit({
+	wrapElement: fixedElement3,
+	targetVideo: video1
+	});
+	```
+	|Option|Type|Description|
+	|------|---|-----|
+	|wrapElement|DOM|video가 노출될 video의 상위구조|
+	|targetVideo|DOM|video Element|
