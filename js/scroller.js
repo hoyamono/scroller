@@ -21,6 +21,7 @@ var SCROLLER = (function(){
 		this.activePlay = !!!opts.activePlay ? 'revers' : this.opts.activePlay;
 		this.offsetY = !!!opts.offsetY ? 0 : opts.offsetY;
 		this.resize = !!!opts.resize ? false : opts.resize;
+		this.resizeTiming = !!!opts.resizeTiming ? false : opts.resizeTiming;
 		this.windowHeight = window.innerHeight;
 		this.setElement();
 		this.bindEvent();
@@ -29,13 +30,23 @@ var SCROLLER = (function(){
 	var fn = init.prototype;
 
 	fn.bindEvent = function(){
-		var self = this;
+		var self = this,
+			setTimeing = null;
 
 		this.elementHandler();
 		if (this.resize) {
 			this.addEventList = function(){
-				self.windowHeight = window.innerHeight;
-				self.elementHandler();
+				if (!self.resizeTiming) {
+					self.windowHeight = window.innerHeight;
+					self.elementHandler();
+				} else {
+					clearTimeout(setTimeing);
+
+					setTimeing = setTimeout(function(){
+						self.windowHeight = window.innerHeight;
+						self.elementHandler();
+					}, self.resizeTiming);
+				}
 			};
 			window.addEventListener('load', this.addEventList);
 			window.addEventListener('resize', this.addEventList);

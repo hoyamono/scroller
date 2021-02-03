@@ -35,6 +35,7 @@ var scene2 = SCROLLER({
 |trackHeight|number|0|trackHeight의 height값을 보정하는 옵션으로 배율로 입력한다 ex) 2 = 높이값의 2배|
 |offsetY|string, number|0|화면 내 fixedElement의 top offset 보정값(보정값에 맞춰 height 값도 보정됨)|
 |resize|boolean|false|리사이즈시 trackHeight 등 관련 설정들을 업데이트한다|
+|resizeTiming|number|-|리사이즈 이벤트 발생시점 제어(리사이즈시마다 이벤트가 발생하지 않고 설정한 시간에 따라 한번 발생)|
 |activeElement|DOM|-|activeClass 또는 activeCallback을 실행할 분기점이되는 DOM요소|
 |activeVisibility|string|before|activeClass 및 activeCallback의 동작방식 **visivle**(화면 중간에 구조 위치시 동작**window height값보다 작은 Element만 지원**) / **before**(scrollBottom과 대상 DOM의 offsetTop이 맞닿으면 동작)|
 |activePlay|string|revers|activeClass / activeCallback 실행방식 **revers**(순방향/역방향 스크롤시 모두 재실행) / **oneWay**(1회 실행 후 스크롤이 화면 최상단에 다시 원위치해야 초기화 및 재실행)|
