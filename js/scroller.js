@@ -496,7 +496,7 @@ var ANIUTIL = (function(){
 		fn.getLazyElement = function(){
 			var elementList = document.querySelectorAll(this.targetClass);
 
-			this.lazyLength = elementList.length
+			this.lazyLength = elementList.length;
 			this.lazyElement = elementList;
 		};
 
