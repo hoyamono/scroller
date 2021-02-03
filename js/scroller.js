@@ -240,6 +240,7 @@ var SCROLLER = (function(){
 
 		var activeCallback = function(){
 			if (!self.activeElement.classList.contains(self.activeCallbackClass)) {
+				if (!!!self.opts.activeCallback) return;
 				self.opts.activeCallback.call(self);
 				self.activeElement.classList.add(self.activeCallbackClass);
 			}
@@ -247,6 +248,7 @@ var SCROLLER = (function(){
 
 		var endCallback = function(){
 			if (self.activeElement.classList.contains(self.activeCallbackClass)) {
+				if (!!!self.opts.endCallback) return;
 				self.opts.endCallback.call(self);
 			}
 		};
