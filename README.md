@@ -33,6 +33,7 @@ var scene2 = SCROLLER({
 |fixedElement|DOM|-|trackElement 내 스크롤시 fixed될 DOM요소|
 |useFixed|boolean|false|fixed 기능 on/off|
 |trackHeight|number|0|trackHeight의 height값을 보정하는 옵션으로 배율로 입력한다 ex) 2 = 높이값의 2배|
+|offsetY|string, number|0|화면 내 fixedElement의 top offset 보정값(보정값에 맞춰 height 값도 보정됨)|
 |resize|boolean|false|리사이즈시 trackHeight 등 관련 설정들을 업데이트한다|
 |activeElement|DOM|-|activeClass 또는 activeCallback을 실행할 분기점이되는 DOM요소|
 |activeVisibility|string|before|activeClass 및 activeCallback의 동작방식 **visivle**(화면 중간에 구조 위치시 동작**window height값보다 작은 Element만 지원**) / **before**(scrollBottom과 대상 DOM의 offsetTop이 맞닿으면 동작)|
@@ -80,6 +81,10 @@ var scene2 = SCROLLER({
 	window.addEventListener('scroll', function () {
 		scene2.activeAnimation();
 	});
+	```
+- destroy : 모든 설정값을 초기화하고 동작을 비활성화한다.
+	``` javascript
+	scene1.destroy();
 	```
 ---
 ### 4. Utils

@@ -11,6 +11,7 @@
 
 var SCROLLER = (function(){
 	var init = function(opts){
+		this.initialize = true;
 		this.opts = opts;
 		this.correction = (!!!opts.correction ? 0 : opts.correction);
 		this.trackHeight = !!!opts.trackHeight ? 0 : opts.trackHeight;
@@ -18,6 +19,7 @@ var SCROLLER = (function(){
 		this.useFixed = !!!opts.useFixed ? false : opts.useFixed;
 		this.activeVisibility = !!!opts.activeVisibility ? 'before' : opts.activeVisibility;
 		this.activePlay = !!!opts.activePlay ? 'revers' : this.opts.activePlay;
+		this.offsetY = !!!opts.offsetY ? 0 : opts.offsetY;
 		this.resize = !!!opts.resize ? false : opts.resize;
 		this.windowHeight = window.innerHeight;
 		this.setElement();
@@ -29,18 +31,14 @@ var SCROLLER = (function(){
 	fn.bindEvent = function(){
 		var self = this;
 
-		if (!this.resize) {
-			this.elementHandler();
-		} else {
-			window.addEventListener('load', function(){
+		this.elementHandler();
+		if (this.resize) {
+			this.addEventList = function(){
 				self.windowHeight = window.innerHeight;
 				self.elementHandler();
-			});
-	
-			window.addEventListener('resize', function(){
-				self.windowHeight = window.innerHeight;
-				self.elementHandler();
-			});
+			};
+			window.addEventListener('load', this.addEventList);
+			window.addEventListener('resize', this.addEventList);
 		}
 		if (this.opts.IEScroll) {
 			this.IEScrollHandler();
@@ -139,9 +137,17 @@ var SCROLLER = (function(){
 	};
 
 	fn.setFixedHeight = function(){
-		this.fixedElement.style.height = this.windowHeight + 'px';
+		this.fixedElement.style.height = '';
+		this.fixedElement.style.top = '';
 		this.fixedElement.style.position = 'absolute';
-		this.fixedElement.style.top = '0';
+
+		if (typeof(this.offsetY) == 'string') {
+			this.fixedElement.style.height = 'calc('+ this.windowHeight +'px - '+ this.offsetY +')';
+			this.fixedElement.style.top = this.offsetY;
+		} else {
+			this.fixedElement.style.height = (this.windowHeight - this.offsetY) + 'px';
+			this.fixedElement.style.top = this.offsetY + 'px';
+		}
 	}
 
 	fn.setFixedElement = function(){
@@ -151,7 +157,11 @@ var SCROLLER = (function(){
 
 		if (this.winScrollTop <= this.trackTopOffset) {
 			this.fixedElement.style.position = 'absolute';
-			this.fixedElement.style.top = '0';
+			if (typeof(this.offsetY) == 'string') {
+				this.fixedElement.style.top = this.offsetY;
+			} else {
+				this.fixedElement.style.top = this.offsetY + 'px';
+			}
 			this.fixedElement.style.bottom = '';
 		} else if(this.winScrollTop >= this.trackTopOffset && this.winScrollbottom <= this.trackBottomOffset) {
 			this.fixedElement.style.position = 'fixed';
@@ -179,18 +189,22 @@ var SCROLLER = (function(){
 	};
 
 	fn.trackAnimation = function(callback){
+		if (!this.initialize) return;
+
 		this.winScrollTop = this.getScroll().top;
 		this.winScrollbottom = this.getScroll().bottom;
 
-		if (this.opts.useFixed) {
+		if (this.useFixed) {
 			this.setFixedElement();
 		}
 		
 		this.getProgress();
 		callback.call(this);					
-	}
+	};
 
 	fn.activeAnimation = function(){
+		if (!this.initialize) return;
+
 		this.winScrollTop = this.getScroll().top;
 		this.winScrollBottom = this.getScroll().bottom;
 		this.activeElementHeight = this.activeElement.clientHeight;
@@ -286,7 +300,37 @@ var SCROLLER = (function(){
 				}
 			break;
 		}
-	}
+	};
+
+	fn.destroy = function(e){
+		this.trackElement.style.position = '';
+		this.trackElement.style.height = '',
+		this.trackElement.style.paddingTop = '',
+		this.trackElement.style.paddingBottom = '';
+
+		this.fixedElement.style.position = '';
+		this.fixedElement.style.top = '';
+		this.fixedElement.style.height = '';
+
+		this.trackElement = '';
+		this.fixedElement = '';
+		this.activeElement = '';
+
+		this.correction = '';
+		this.trackHeight = '';
+		this.activeCallbackClass = '';
+		this.useFixed = '';
+		this.activeVisibility = '';
+		this.activePlay = '';
+		this.offsetY = '';
+		this.resize = '';
+		this.windowHeight = '';
+
+		window.removeEventListener('load', this.addEventList);
+		window.removeEventListener('resize', this.addEventList);
+
+		this.initialize = false;
+	};
 
 	return function(opts){
 		return new init(opts);
