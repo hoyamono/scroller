@@ -448,69 +448,71 @@ var ANIUTIL = (function(){
 		return new init(opts);
 	}
 
-	var lazyLoad = function(opts){
+	var imageLoader = function(opts){
 		var init = function(){
 			this.opts = opts;
-			this.targetClass = opts.targetClass;
+			this.lazyClass = opts.lazyClass;
+			this.responsiveClass = opts.responsiveClass;
 			this.responsiveFork = opts.responsiveFork;
 			this.targetAttr = opts.targetAttr;
-			this.getLazyElement();
+			this.getLazyImage();
+			this.getResponsiveImage();
 			this.bindEvent();
 		};
 
 		var fn = init.prototype;
 
 		fn.bindEvent = function(){
-			var self = this,
-				timer = null;
+			var self = this;
+
+			this.lazyEvent = function(){
+				self.setLazyImage();
+				if (self.lazyLength == 0) {
+					window.removeEventListener('scroll', self.lazyEvent);
+				}
+			}
+
+			window.addEventListener('DOMContentLoaded', function(){
+				self.setResponsiveInfo();
+				self.setLazyImage();
+			});
+
+			window.addEventListener('scroll', this.lazyEvent);
 
 			if (typeof(this.responsiveFork) == 'object' && typeof(this.targetAttr) == 'object') {
-				window.addEventListener('load', function(){
-					self.setAttributeName();
-				});
-	
 				window.addEventListener('resize', function(){
-					clearTimeout(timer);
-
-					timer = setTimeout(function(){
-						self.setAttributeName();
-					}, 80);
-				});
-
-				setTimeout(function(){
-					window.addEventListener('scroll', function(){
-						self.setLazyImage();
-					});
-					self.setLazyImage();
-					timer = null;
-				}, 100);
-			} else {
-				window.addEventListener('scroll', function(){
-					self.setLazyImage();
-				});
-				
-				self.setLazyImage();
+					self.setResponsiveInfo();
+				});	
 			}
 		};
 
-		fn.getLazyElement = function(){
-			var elementList = document.querySelectorAll(this.targetClass);
+		fn.getLazyImage = function(){
+			var lazyImageList = document.querySelectorAll(this.lazyClass);
 
-			this.lazyLength = elementList.length;
-			this.lazyElement = elementList;
+			this.lazyImages = lazyImageList;
+			this.lazyLength = lazyImageList.length;
 		};
 
-		fn.setAttributeName = function(){
+		fn.getResponsiveImage = function(){
+			var responsiveImageList = document.querySelectorAll(this.responsiveClass);
+
+			this.responsiveImages = responsiveImageList;
+			this.responsiveLength = responsiveImageList.length;
+		};
+
+		fn.setResponsiveInfo = function(){
 			this.windowWidth = window.innerWidth;
 
 			for (var i = 0; i < this.responsiveFork.length; i++) {
 				var nextIndex = i + 1,
 					nextFork = !!!this.responsiveFork[nextIndex] ? 0 : this.responsiveFork[nextIndex];
 
-				if (this.windowWidth < this.responsiveFork[i] && this.windowWidth > nextFork) {
+				if (this.windowWidth <= this.responsiveFork[i] && this.windowWidth > nextFork) {
 					if (this.opts.targetAttr[i] !== this.oldAttr) {
 						this.targetAttr = this.opts.targetAttr[i];
 						this.oldAttr = this.targetAttr;
+						this.setResponsiveImage();
+						console.log(this.windowWidth)
 					}
 				}
 			}
@@ -536,11 +538,22 @@ var ANIUTIL = (function(){
 			}
 		};
 
+		fn.setResponsiveImage = function(){
+			for (var i = 0; i < this.responsiveLength; i++) {
+				var targetImage = this.responsiveImages[i],
+					imgSrc = targetImage.getAttribute(this.targetAttr);
+
+				if (!targetImage.classList.contains(this.lazyClass.split('.')[1])) {
+					targetImage.setAttribute('src', imgSrc);
+				}
+			}
+		};
+
 		fn.setLazyImage = function(){
 			this.windowHeight = window.innerHeight;
 
 			for (var i = 0; i < this.lazyLength; i++) {
-				var targetElement = this.lazyElement[i],
+				var targetElement = this.lazyImages[i],
 					targetElementHeight = null,
 					targetElementHeight = targetElement.clientHeight,
 					targetOffsetTop = this.getOffset(targetElement).top,
@@ -551,8 +564,8 @@ var ANIUTIL = (function(){
 					var imgSrc = targetElement.getAttribute(this.targetAttr);
 
 					targetElement.setAttribute('src', imgSrc);
-					targetElement.classList.remove(this.targetClass.split('.')[1]);
-					this.getLazyElement();
+					targetElement.classList.remove(this.lazyClass.split('.')[1]);
+					this.getLazyImage();
 
 					return;
 				}
@@ -569,8 +582,8 @@ var ANIUTIL = (function(){
 		videoObjectFit: function(opts){
 			videoObjectFit(opts);
 		},
-		lazyLoad: function(opts){
-			lazyLoad(opts);
+		imageLoader: function(opts){
+			imageLoader(opts);
 		}
 	}
 })();

@@ -106,6 +106,22 @@ var scene2 = SCROLLER({
 	|startPoint|number|0~100까지의 progress중 target value값 계산을 시작할 위치 지정|
 	|endPoint|number|0~100까지의 progress중 target value값 계산을 중단할 위치 지정|
 
+- ANIUTIL.imageLoader : Lazy-load 및 responsive image 제어 함수
+	``` javascript
+	ANIUTIL.imageLoader({
+		lazyClass: '.lazy',
+		responsiveClass: '.res-img',
+		responsiveFork: [1920, 1024, 768],
+		targetAttr: ['data-img-pc', 'data-img-tb', 'data-img-mo']
+		//targetAttr: 'data-img'
+	});
+	```
+	|Option|Type|Description|
+	|------|---|-----|
+	|lazyClass|string|lazy-load를 적용할 대상 class|
+	|responsiveClass|string|responsive image적용할 대상 class|
+	|responsiveFork|array|responsive image 분기점,높은해상도 => 낮은해상로 순으로 표기|
+	|targetAttr|array|lazy0load image 또는 responsiveFork의 분기마다 이미지 src를 가져올 attribute 리스트로 array로 표기시 높은해상도 => 낮은해상로 순으로 표기 |
 
 - ANIUTIL.videoObjectFit : wrap 요소에 맞춰 video를 full size로 유지하도록 제어하는 함수
 	``` javascript
