@@ -1,5 +1,5 @@
 /*!
- * Scrolle JavaScript Library v1.0
+ * Scroller JavaScript Library v1.0
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
@@ -18,7 +18,7 @@ var SCROLLER = (function(){
 		this.activeCallbackClass = !!!opts.activeCallbackClass ? 'callback-active' : opts.activeCallbackClass;
 		this.useFixed = !!!opts.useFixed ? false : opts.useFixed;
 		this.activeVisibility = !!!opts.activeVisibility ? 'before' : opts.activeVisibility;
-		this.activePlay = !!!opts.activePlay ? 'revers' : this.opts.activePlay;
+		this.activePlay = !!!opts.activePlay ? 'reverse' : this.opts.activePlay;
 		this.offsetY = !!!opts.offsetY ? 0 : opts.offsetY;
 		this.resize = !!!opts.resize ? false : opts.resize;
 		this.resizeTiming = !!!opts.resizeTiming ? false : opts.resizeTiming;
@@ -301,7 +301,7 @@ var SCROLLER = (function(){
 		}
 
 		switch (removeType) {
-			case 'revers':
+			case 'reverse':
 				if (self.winScrollTop > self.elementOffsetBottom || self.winScrollBottom < self.elementOffsetTop ) {
 					removeHandler();
 				}
@@ -444,6 +444,121 @@ var ANIUTIL = (function(){
 				}
 			}, 100);
 		};
+
+		return new init(opts);
+	}
+
+	var lazyLoad = function(opts){
+		var init = function(){
+			this.opts = opts;
+			this.targetClass = opts.targetClass;
+			this.responsiveFork = opts.responsiveFork;
+			this.targetAttr = opts.targetAttr;
+			this.getLazyElement();
+			this.bindEvent();
+		};
+
+		var fn = init.prototype;
+
+		fn.bindEvent = function(){
+			var self = this,
+				timer = null;
+
+			if (typeof(this.responsiveFork) == 'object' && typeof(this.targetAttr) == 'object') {
+				window.addEventListener('load', function(){
+					self.setAttributeName();
+				});
+	
+				window.addEventListener('resize', function(){
+					clearTimeout(timer);
+
+					timer = setTimeout(function(){
+						self.setAttributeName();
+					}, 80);
+				});
+
+				setTimeout(function(){
+					window.addEventListener('scroll', function(){
+						self.setLazyImage();
+					});
+					self.setLazyImage();
+					timer = null;
+				}, 100);
+			} else {
+				window.addEventListener('scroll', function(){
+					self.setLazyImage();
+				});
+				
+				self.setLazyImage();
+			}
+		};
+
+		fn.getLazyElement = function(){
+			var elementList = document.querySelectorAll(this.targetClass);
+
+			this.lazyLength = elementList.length
+			this.lazyElement = elementList;
+		};
+
+		fn.setAttributeName = function(){
+			this.windowWidth = window.innerWidth;
+
+			for (var i = 0; i < this.responsiveFork.length; i++) {
+				var nextIndex = i + 1,
+					nextFork = !!!this.responsiveFork[nextIndex] ? 0 : this.responsiveFork[nextIndex];
+
+				if (this.windowWidth < this.responsiveFork[i] && this.windowWidth > nextFork) {
+					if (this.opts.targetAttr[i] !== this.oldAttr) {
+						this.targetAttr = this.opts.targetAttr[i];
+						this.oldAttr = this.targetAttr;
+					}
+				}
+			}
+		};
+
+		fn.getOffset = function(element){
+			var top = element.getBoundingClientRect().top + window.pageYOffset,
+				bottom = element.getBoundingClientRect().bottom + window.pageYOffset;
+	
+			return {
+				top: top,
+				bottom: bottom
+			}
+		};
+
+		fn.getScroll = function(){
+			var top = window.pageYOffset,
+				bottom =  top + this.windowHeight;
+	
+			return {
+				top: top,
+				bottom: bottom
+			}
+		};
+
+		fn.setLazyImage = function(){
+			this.windowHeight = window.innerHeight;
+
+			for (var i = 0; i < this.lazyLength; i++) {
+				var targetElement = this.lazyElement[i],
+					targetElementHeight = null,
+					targetElementHeight = targetElement.clientHeight,
+					targetOffsetTop = this.getOffset(targetElement).top,
+					targetOffsetBottom = this.getOffset(targetElement).bottom;
+
+				if (this.getScroll().bottom >= targetOffsetTop && this.getScroll().top < targetOffsetTop ||
+					this.getScroll().top <= targetOffsetBottom && this.getScroll().bottom > targetOffsetBottom) {
+					var imgSrc = targetElement.getAttribute(this.targetAttr);
+
+					targetElement.setAttribute('src', imgSrc);
+					targetElement.classList.remove(this.targetClass.split('.')[1]);
+					this.getLazyElement();
+
+					return;
+				}
+			}
+		};
+
 		return new init(opts);
 	}
 
@@ -453,6 +568,9 @@ var ANIUTIL = (function(){
 		},
 		videoObjectFit: function(opts){
 			videoObjectFit(opts);
+		},
+		lazyLoad: function(opts){
+			lazyLoad(opts);
 		}
 	}
 })();

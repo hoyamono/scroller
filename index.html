@@ -195,6 +195,7 @@
 		</section>
 		<section class="scene3">
 			<div class="content-wrap">
+				<img src="" alt="" class="lazy" data-lazy="">
 				<p class="text1">02 - Video Play + trackAnimation</p>
 				<video src="https://cdn.videvo.net/videvo_files/video/free/2014-08/small_watermarked/Earth_Zoom_In_preview.webm" loop></video>
 			</div>
@@ -241,6 +242,14 @@
 
 	SCROLLER({
 		IEScroll: true, //css transition을 사용할 경우 IE에서 발생하는 떨림을 최소화 하는 옵션, * 한페이지에 한번만 실행 *
+	});
+
+	ANIUTIL.lazyLoad({
+		targetClass: '.lazy',
+		responsiveClass: 'res-img',
+		responsiveFork: [1920, 1024, 768],
+		targetAttr: ['data-lazy', 'data-lazy2', 'data-lazy3']
+		// targetAttr: 'data-lazy'
 	});
 
 	var trackElement1 = document.querySelector('.kv'),

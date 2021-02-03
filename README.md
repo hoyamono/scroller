@@ -20,7 +20,7 @@ var scene2 = SCROLLER({
 	activeElement: trackElement2,
 	correction: 2, //노출위치 보정 (배율값) - ex) activeElement의 높이가 400이라면 offsetTop의 값이 400이 더해진다.
 	activeVisibility: 'visible', //visible: element가 화면 중앙에 위치할 경우 노출, before: window scroll bottom이 element의 offset top과 맞닿을경우 노출
-	activePlay: 'revers', //revers: 역방향 재생, oneWay: 재생 완료 후 scrollTop이 0이될 경우 인터랙션 초기화
+	activePlay: 'reverse', //reversee: 역방향 재생, oneWay: 재생 완료 후 scrollTop이 0이될 경우 인터랙션 초기화
 	activeClass: 'active', //activeClass와 activeCallback 둘중 하나만 사용 가능
 	resize: true
 });
@@ -38,7 +38,7 @@ var scene2 = SCROLLER({
 |resizeTiming|number|-|리사이즈 이벤트 발생시점 제어(리사이즈시마다 이벤트가 발생하지 않고 설정한 시간에 따라 한번 발생)|
 |activeElement|DOM|-|activeClass 또는 activeCallback을 실행할 분기점이되는 DOM요소|
 |activeVisibility|string|before|activeClass 및 activeCallback의 동작방식 **visivle**(화면 중간에 구조 위치시 동작**window height값보다 작은 Element만 지원**) / **before**(scrollBottom과 대상 DOM의 offsetTop이 맞닿으면 동작)|
-|activePlay|string|revers|activeClass / activeCallback 실행방식 **revers**(순방향/역방향 스크롤시 모두 재실행) / **oneWay**(1회 실행 후 스크롤이 화면 최상단에 다시 원위치해야 초기화 및 재실행)|
+|activePlay|string|reversee|activeClass / activeCallback 실행방식 **reversee**(순방향/역방향 스크롤시 모두 재실행) / **oneWay**(1회 실행 후 스크롤이 화면 최상단에 다시 원위치해야 초기화 및 재실행)|
 |activeClass|string|-|activeVisibility 타입에 맞춰 activeElement에 add될 class|
 |activeCallback|function|-|activeVisibility 타입에 맞춰 실행될 함수|
 |endCallback|function|-|activeVisibility 타입에 맞춰 초기화시 실행될 함수|
