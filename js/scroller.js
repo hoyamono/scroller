@@ -453,7 +453,7 @@ var ANIUTIL = (function(){
 			this.opts = opts;
 			this.lazyClass = opts.lazyClass;
 			this.responsiveClass = opts.responsiveClass;
-			this.responsiveFork = opts.responsiveFork;
+			this.responsiveSize = opts.responsiveSize;
 			this.targetAttr = opts.targetAttr;
 			this.getLazyImage();
 			this.getResponsiveImage();
@@ -479,7 +479,7 @@ var ANIUTIL = (function(){
 
 			window.addEventListener('scroll', this.lazyEvent);
 
-			if (typeof(this.responsiveFork) == 'object' && typeof(this.targetAttr) == 'object') {
+			if (typeof(this.responsiveSize) == 'object' && typeof(this.targetAttr) == 'object') {
 				window.addEventListener('resize', function(){
 					self.setResponsiveInfo();
 				});	
@@ -503,11 +503,11 @@ var ANIUTIL = (function(){
 		fn.setResponsiveInfo = function(){
 			this.windowWidth = window.innerWidth;
 
-			for (var i = 0; i < this.responsiveFork.length; i++) {
+			for (var i = 0; i < this.responsiveSize.length; i++) {
 				var nextIndex = i + 1,
-					nextFork = !!!this.responsiveFork[nextIndex] ? 0 : this.responsiveFork[nextIndex];
+					nextFork = !!!this.responsiveSize[nextIndex] ? 0 : this.responsiveSize[nextIndex];
 
-				if (this.windowWidth <= this.responsiveFork[i] && this.windowWidth > nextFork) {
+				if (this.windowWidth <= this.responsiveSize[i] && this.windowWidth > nextFork) {
 					if (this.opts.targetAttr[i] !== this.oldAttr) {
 						this.targetAttr = this.opts.targetAttr[i];
 						this.oldAttr = this.targetAttr;
