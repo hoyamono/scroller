@@ -519,9 +519,14 @@ var ANIUTIL = (function(){
 
 			for (var i = 0; i < this.responsiveSize.length; i++) {
 				var nextIndex = i + 1,
-					nextFork = !!!this.responsiveSize[nextIndex] ? 0 : this.responsiveSize[nextIndex];
-
-				if (this.windowWidth <= this.responsiveSize[i] && this.windowWidth > nextFork) {
+					nextPoint = !!!this.responsiveSize[nextIndex] ? 0 : this.responsiveSize[nextIndex],
+					checkPoint = false;
+				if (i == 0) {
+					checkPoint = this.windowWidth > nextPoint;
+				} else {
+					checkPoint = this.windowWidth <= this.responsiveSize[i] && this.windowWidth > nextPoint;
+				}
+				if (checkPoint) {
 					if (this.opts.targetAttr[i] !== this.oldAttr) {
 						this.targetAttr = this.opts.targetAttr[i];
 						this.oldAttr = this.targetAttr;
