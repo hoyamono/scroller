@@ -578,7 +578,9 @@ var ANIUTIL = (function(){
 					scrollTop = this.getScroll().top - corrHeight,
 					scrollBottom = this.getScroll().bottom + corrHeight,
 					targetOffsetTop = this.getOffset(targetElement).top,
-					targetOffsetBottom = this.getOffset(targetElement).bottom;
+					targetOffsetBottom = this.getOffset(targetElement).bottom,
+					lazyClass = this.lazyClass.split('.'),
+					removeClass = lazyClass[lazyClass.length-1];
 
 				if (scrollBottom > targetOffsetTop && scrollTop <= targetOffsetTop ||
 					scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom||
@@ -587,7 +589,7 @@ var ANIUTIL = (function(){
 					var imgSrc = targetElement.getAttribute(this.targetAttr);
 
 					targetElement.setAttribute('src', imgSrc);
-					targetElement.classList.remove(this.lazyClass.split('.')[1]);
+					targetElement.classList.remove(removeClass);
 					
 					this.getLazyImage();
 				}
