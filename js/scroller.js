@@ -1,10 +1,10 @@
 /*!
- * Scrolle JavaScript Library v1.0
+ * Scrolle JavaScript Library v1.0.1
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
  *
- * Date: 2021-02-01
+ * Date: 2021-02-04
  */
 
 'use strict'
@@ -313,6 +313,222 @@ var ANIUTIL = (function(){
 		}
 
 		return returnValue;
+	}
+
+	var videoObjectFit = function(opts){
+		var init = function(opts){
+			this.opts = opts;
+			this.setElement();
+			this.setVideoStyle();
+			this.bindEvent();
+		};
+
+		var fn = init.prototype;
+
+		fn.setElement = function(){
+			if (this.opts.wrapElement !== undefined) {
+				this.wrapElement = this.opts.wrapElement.jquery ? this.opts.wrapElement[0] : this.opts.wrapElement;
+			}
+	
+			if (this.opts.targetVideo !== undefined) {
+				this.targetVideo = this.opts.targetVideo.jquery ? this.opts.targetVideo[0] : this.opts.targetVideo;
+			}
+		};
+
+		fn.setVideoStyle = function(){
+			this.wrapElement.style.overflow = 'hidden';
+			this.targetVideo.style.position = 'absolute';
+			this.targetVideo.style.top = '50%';
+			this.targetVideo.style.left = '50%';
+			this.targetVideo.style.transform = 'translate(-50%, -50%)';
+		}
+
+		fn.bindEvent = function(){
+			var self = this;
+
+			window.addEventListener('load', function(){
+				self.setVideoSize();
+
+			});
+
+			window.addEventListener('resize', function(){
+				self.setVideoSize();
+			});
+		};
+
+		fn.getVideoInfo = function(){
+			this.wrapWidth = this.wrapElement.clientWidth;
+			this.wrapHeight = this.wrapElement.clientHeight;
+			this.videoWidth = this.targetVideo.clientWidth;
+			this.videoHeight = this.targetVideo.clientHeight;
+			this.wrapRatio = this.wrapHeight / this.wrapWidth;
+			this.videoRatio = this.videoHeight / this.videoWidth;
+		};
+
+		fn.setVideoSize = function(){
+			var self = this,
+				timer = null;			
+
+			clearTimeout(timer);
+
+			timer = setTimeout(function(){
+				self.getVideoInfo();
+
+				if (self.wrapRatio < self.videoRatio) {
+					self.targetVideo.style.width = '100%';
+					self.targetVideo.style.height = 'auto';
+				} else {
+					self.targetVideo.style.width = 'auto';
+					self.targetVideo.style.height = '100%';
+				}
+			}, 100);
+		};
+
+		return new init(opts);
+	}
+
+	var imageLoader = function(opts){
+		var init = function(){
+			this.opts = opts;
+			this.lazyClass = opts.lazyClass;
+			this.responsiveClass = opts.responsiveClass;
+			this.responsiveSize = opts.responsiveSize;
+			this.targetAttr = opts.targetAttr;
+			this.visiblePoint = !!!opts.visiblePoint ? 0 : opts.visiblePoint;
+			this.useDefaultImg = opts.useDefaultImg;
+			this.getLazyImage();
+			this.getResponsiveImage();
+			this.bindEvent();
+		};
+
+		var fn = init.prototype;
+
+		fn.bindEvent = function(){
+			var self = this,
+				responsiveCheck = typeof(this.responsiveSize) == 'object' && typeof(this.targetAttr) == 'object';
+
+			this.lazyEvent = function(){
+				self.setLazyImage();
+				if (self.lazyLength == 0) {
+					window.removeEventListener('scroll', self.lazyEvent);
+				}
+			}
+
+			window.addEventListener('DOMContentLoaded', function(){
+				if (self.useDefaultImg) {
+					self.setDefaultImage();
+				}
+				if (responsiveCheck) {
+					self.setResponsiveInfo();
+				}
+				self.setLazyImage();
+			});
+
+			window.addEventListener('scroll', this.lazyEvent);
+
+			if (responsiveCheck) {
+				window.addEventListener('resize', function(){
+					self.setResponsiveInfo();
+				});	
+			}
+		};
+
+		fn.getLazyImage = function(){
+			var lazyImageList = document.querySelectorAll(this.lazyClass);
+
+			this.lazyImages = lazyImageList;
+			this.lazyLength = lazyImageList.length;
+		};
+
+		fn.getResponsiveImage = function(){
+			var responsiveImageList = document.querySelectorAll(this.responsiveClass);
+
+			this.responsiveImages = responsiveImageList;
+			this.responsiveLength = responsiveImageList.length;
+		};
+
+		fn.setDefaultImage = function(){
+			for (var i = 0; i < this.lazyLength; i++) {
+				this.lazyImages[i].setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH/C1hNUCBEYXRhWE1QAz94cAAh+QQFAAAAACwAAAAAAQABAAACAkQBADs=')
+			};
+		};
+
+		fn.setResponsiveInfo = function(){
+			this.windowWidth = window.innerWidth;
+
+			for (var i = 0; i < this.responsiveSize.length; i++) {
+				var nextIndex = i + 1,
+					nextFork = !!!this.responsiveSize[nextIndex] ? 0 : this.responsiveSize[nextIndex];
+
+				if (this.windowWidth <= this.responsiveSize[i] && this.windowWidth > nextFork) {
+					if (this.opts.targetAttr[i] !== this.oldAttr) {
+						this.targetAttr = this.opts.targetAttr[i];
+						this.oldAttr = this.targetAttr;
+						this.setResponsiveImage();
+					}
+				}
+			}
+		};
+
+		fn.getOffset = function(element){
+			var top = element.getBoundingClientRect().top + window.pageYOffset,
+				bottom = element.getBoundingClientRect().bottom + window.pageYOffset;
+	
+			return {
+				top: top,
+				bottom: bottom
+			}
+		};
+
+		fn.getScroll = function(){
+			var top = window.pageYOffset,
+				bottom =  top + this.windowHeight;
+	
+			return {
+				top: top,
+				bottom: bottom
+			}
+		};
+
+		fn.setResponsiveImage = function(){
+			for (var i = 0; i < this.responsiveLength; i++) {
+				var targetImage = this.responsiveImages[i],
+					imgSrc = targetImage.getAttribute(this.targetAttr);
+
+				if (!targetImage.classList.contains(this.lazyClass.split('.')[1])) {
+					targetImage.setAttribute('src', imgSrc);
+				}
+			}
+		};
+
+		fn.setLazyImage = function(){
+			this.windowHeight = window.innerHeight;
+
+			for (var i = 0; i < this.lazyLength; i++) {
+				var targetElement = this.lazyImages[i],
+					targetElementHeight = null,
+					targetElementHeight = targetElement.clientHeight,
+					corrHeight = this.windowHeight * this.visiblePoint,
+					scrollTop = this.getScroll().top - corrHeight,
+					scrollBottom = this.getScroll().bottom + corrHeight,
+					targetOffsetTop = this.getOffset(targetElement).top,
+					targetOffsetBottom = this.getOffset(targetElement).bottom;
+
+				if (scrollBottom > targetOffsetTop && scrollTop <= targetOffsetTop ||
+					scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom||
+					scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom ||
+					scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) {
+					var imgSrc = targetElement.getAttribute(this.targetAttr);
+
+					targetElement.setAttribute('src', imgSrc);
+					targetElement.classList.remove(this.lazyClass.split('.')[1]);
+					
+					this.getLazyImage();
+				}
+			}
+		};
+
+		return new init(opts);
 	}
 
 	return {
