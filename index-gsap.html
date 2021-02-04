@@ -5,6 +5,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Scroller</title>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.0/gsap.min.js"></script>
 	<script src="./js/scroller.js"></script>
 	<link rel="stylesheet" href="https://meyerweb.com/eric/tools/css/reset/reset200802.css">
 	<style>
@@ -43,6 +44,11 @@
 
 		.kv .text1 {
 			opacity: 1;
+			transition: none;
+		}
+
+		.kv .text1 {
+			transition: none;
 		}
 
 		.content-wrap {
@@ -196,7 +202,10 @@
 		<section class="scene3">
 			<div class="content-wrap">
 				<p class="text1">02 - Video Play + trackAnimation</p>
-				<video src="https://cdn.videvo.net/videvo_files/video/free/2014-08/small_watermarked/Earth_Zoom_In_preview.webm" loop></video>
+				<video loop>
+					<source src="https://cdn.videvo.net/videvo_files/video/free/2014-08/small_watermarked/Earth_Zoom_In_preview.webm" type="video/webm">
+						<source src="https://cdn.videvo.net/videvo_files/video/free/2014-08/small_watermarked/Earth_Zoom_In_preview.mp4" type="video/mp4">
+				</video>
 			</div>
 		</section>
 		<section class="scene4">
@@ -239,6 +248,8 @@
 	// =============================================================================================================== SCENE 생성
 	// ============================================================== Key Visual (scene1)
 
+    var duration = navigator.userAgent.match(/Trident\/7\./) ? 0 : 0.1;
+
 	SCROLLER({
 		IEScroll: true, //css transition을 사용할 경우 IE에서 발생하는 떨림을 최소화 하는 옵션, * 한페이지에 한번만 실행 *
 	});
@@ -253,8 +264,7 @@
 		fixedElement: fixedElement1,
 		useFixed: true,
 		trackHeight: 2.2, //fixed scroll시 track element height값 보정(배율값)
-		resize: true, //resize 이벤트 실행
-		resizeTiming: 70
+		resize: true //resize 이벤트 실행
 	});
 
 	// ============================================================== scene2
@@ -265,7 +275,7 @@
 		activeElement: trackElement2,
 		// correction: 0.4, //노출위치 보정 (배율값)
 		activeVisibility: 'visible', //visible: element가 화면 중앙에 위치할 경우 노출, before: window scroll bottom이 element의 offset top과 맞닿을경우 노출
-		activePlay: 'revers', //revers: 역방향 재생, oneWay: 재생 완료 후 scrollTop이 0이될 경우 인터랙션 초기화
+		activePlay: 'reverse', //reverse: 역방향 재생, oneWay: 재생 완료 후 scrollTop이 0이될 경우 인터랙션 초기화
 		activeClass: 'active', //activeClass와 activeCallback 둘중 하나만 사용 가능
 		resize: true
 	});
@@ -287,7 +297,7 @@
 		activeElement: fixedElement3,
 		// correction: 0.4,
 		activeVisibility: 'before',
-		activePlay: 'revers',
+		activePlay: 'reverse',
 		// activeCallbackClass: 'activeCallbackClass', //콜백함수 실행 완료 후 노출하는 class로 기본값은 callback-active로 설정되어있음
 		activeCallback: function () { //activeClass와 activeCallback 둘중 하나만 사용 가능
 			if (video1.paused && video1.readyState >= 4) {
@@ -367,11 +377,11 @@
 			});
 
 			if (value1Curr >= 0) {
-				aniTarget1_1.style.opacity = value1Curr;
+				gsap.to(aniTarget1_1, duration, {opacity: value1Curr, ease: 'linear'});
 			}
 
 			if (motionValue2 >= 0) {
-				aniTarget1_2.style.opacity = motionValue2;
+				gsap.to(aniTarget1_2, duration, {opacity: motionValue2, ease: 'linear'});
 			}
 		});
 
@@ -387,7 +397,7 @@
 				}),
 				motionValue2 = 1 - motionValue1;
 
-			video1.style.opacity = motionValue2;
+            gsap.to(video1, duration, {opacity: motionValue2, ease: 'linear'});
 		});
 
 		scene4.trackAnimation(function () {
@@ -404,11 +414,13 @@
 			});
 
 			if (motionValue1 >= 0 && motionValue1 <= maxMoveSize) {
-				if (motionValue1 >= maxMoveSize) {
-					aniTarget4.style.transform = 'translateX(-' + motionValue1 + 'px)';
-				} else {
-					aniTarget4.style.transform = 'translateX(-' + motionValue1 + 'px) rotate3d(1, 1, 1, 0deg)';
-				}
+				gsap.to(aniTarget4, 0.1, {onUpdate: function(){
+					if(navigator.userAgent.match(/Trident\/7\./)) {
+						gsap.to(aniTarget4, 0, {translateX: -motionValue1, ease: 'linear'});
+					} else {
+						gsap.to(aniTarget4, 0.1, {translateX: -motionValue1, ease: 'linear'});
+					}
+				}});
 			}
 		});
 
@@ -437,26 +449,12 @@
 				timer2 = null
 				tumer3 = null;
 
-			if (value1curr > 0) {
-				countBox[0].style.transform = 'translate3d(-' + value1curr + '%, 0, 0)';
-			}
-			if (value1curr == 0 || value1curr == 100) {
-				countBox[0].style.transform = 'translateX(-' + value1curr + '%)';
-			}
-
-			if (value2curr > 0) {
-				countBox[1].style.transform = 'translate3d(' + value2curr + '%, -50%, 0)';
-			}
-			if (value2curr == 0 || value2curr == 100) {
-				countBox[1].style.transform = 'translate(' + value2curr + '%, -50%)';
-			}
-
-			if (value3curr > 0) {
-				countBox[2].style.transform = 'translate3d(-' + value3curr + '%, 0, 0)';
-			}
-			if (value3curr == 0 || value3curr == 100) {
-				countBox[2].style.transform = 'translateX(-' + value3curr + '%)';
-			}
+                gsap.to(countBox[0], duration, {translateX: -value1curr + '%', ease: 'linear'});
+                gsap.to(countBox[1], duration, {translateX: value2curr + '%', ease: 'linear'});
+                gsap.to(countBox[2], duration, {translateX: -value3curr + '%', ease: 'linear'});
+			// if (value1curr == 0 || value1curr == 100) {
+			// 	countBox[0].style.transform = 'translateX(-' + value1curr + '%)';
+			// }
 		});
 	};
 	// =============================================================================================================== animation 구현

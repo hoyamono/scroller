@@ -11,10 +11,17 @@
 
 var SCROLLER = (function(){
 	var init = function(opts){
+		this.initialize = true;
 		this.opts = opts;
-		this.correction = !!!opts.correction ? 0 : opts.correction;
-		this.trackHeight = opts.trackHeight;
+		this.correction = (!!!opts.correction ? 0 : opts.correction);
+		this.trackHeight = !!!opts.trackHeight ? 0 : opts.trackHeight;
 		this.activeCallbackClass = !!!opts.activeCallbackClass ? 'callback-active' : opts.activeCallbackClass;
+		this.useFixed = !!!opts.useFixed ? false : opts.useFixed;
+		this.activeVisibility = !!!opts.activeVisibility ? 'before' : opts.activeVisibility;
+		this.activePlay = !!!opts.activePlay ? 'reverse' : this.opts.activePlay;
+		this.offsetY = !!!opts.offsetY ? 0 : opts.offsetY;
+		this.resize = !!!opts.resize ? false : opts.resize;
+		this.resizeTiming = !!!opts.resizeTiming ? false : opts.resizeTiming;
 		this.windowHeight = window.innerHeight;
 		this.setElement();
 		this.bindEvent();
@@ -23,20 +30,26 @@ var SCROLLER = (function(){
 	var fn = init.prototype;
 
 	fn.bindEvent = function(){
-		var self = this;
+		var self = this,
+			setTimeing = null;
 
-		if (!this.opts.resize) {
-			this.elementHandler();
-		} else {
-			window.addEventListener('load', function(){
-				self.windowHeight = window.innerHeight;
-				self.elementHandler();
-			});
-	
-			window.addEventListener('resize', function(){
-				self.windowHeight = window.innerHeight;
-				self.elementHandler();
-			});
+		this.elementHandler();
+		if (this.resize) {
+			this.addEventList = function(){
+				if (!self.resizeTiming) {
+					self.windowHeight = window.innerHeight;
+					self.elementHandler();
+				} else {
+					clearTimeout(setTimeing);
+
+					setTimeing = setTimeout(function(){
+						self.windowHeight = window.innerHeight;
+						self.elementHandler();
+					}, self.resizeTiming);
+				}
+			};
+			window.addEventListener('load', this.addEventList);
+			window.addEventListener('resize', this.addEventList);
 		}
 		if (this.opts.IEScroll) {
 			this.IEScrollHandler();
@@ -45,10 +58,10 @@ var SCROLLER = (function(){
 	};
 
 	fn.elementHandler = function(){
-		if (this.opts.trackHeight > 1) {
+		if (this.trackHeight > 1) {
 			this.setTrackHeigh();
 		}
-		if (this.opts.useFixed) {
+		if (this.useFixed) {
 			this.setFixedHeight();
 		}
 
@@ -76,7 +89,7 @@ var SCROLLER = (function(){
 			this.body.addEventListener('mousewheel', function (e) {
 				e.preventDefault();
 		
-				var wheelDelta = e.wheelDelta / 3;
+				var wheelDelta = e.wheelDelta;
 
 				var currentScrollPosition = window.pageYOffset;
 				window.scrollTo(0, currentScrollPosition - wheelDelta);
@@ -135,9 +148,17 @@ var SCROLLER = (function(){
 	};
 
 	fn.setFixedHeight = function(){
-		this.fixedElement.style.height = this.windowHeight + 'px';
+		this.fixedElement.style.height = '';
+		this.fixedElement.style.top = '';
 		this.fixedElement.style.position = 'absolute';
-		this.fixedElement.style.top = '0';
+
+		if (typeof(this.offsetY) == 'string') {
+			this.fixedElement.style.height = 'calc('+ this.windowHeight +'px - '+ this.offsetY +')';
+			this.fixedElement.style.top = this.offsetY;
+		} else {
+			this.fixedElement.style.height = (this.windowHeight - this.offsetY) + 'px';
+			this.fixedElement.style.top = this.offsetY + 'px';
+		}
 	}
 
 	fn.setFixedElement = function(){
@@ -147,7 +168,11 @@ var SCROLLER = (function(){
 
 		if (this.winScrollTop <= this.trackTopOffset) {
 			this.fixedElement.style.position = 'absolute';
-			this.fixedElement.style.top = '0';
+			if (typeof(this.offsetY) == 'string') {
+				this.fixedElement.style.top = this.offsetY;
+			} else {
+				this.fixedElement.style.top = this.offsetY + 'px';
+			}
 			this.fixedElement.style.bottom = '';
 		} else if(this.winScrollTop >= this.trackTopOffset && this.winScrollbottom <= this.trackBottomOffset) {
 			this.fixedElement.style.position = 'fixed';
@@ -175,22 +200,26 @@ var SCROLLER = (function(){
 	};
 
 	fn.trackAnimation = function(callback){
+		if (!this.initialize) return;
+
 		this.winScrollTop = this.getScroll().top;
 		this.winScrollbottom = this.getScroll().bottom;
 
-		if (this.opts.useFixed) {
+		if (this.useFixed) {
 			this.setFixedElement();
 		}
 		
 		this.getProgress();
 		callback.call(this);					
-	}
+	};
 
 	fn.activeAnimation = function(){
+		if (!this.initialize) return;
 
 		this.winScrollTop = this.getScroll().top;
 		this.winScrollBottom = this.getScroll().bottom;
-		this.correctionValue = (this.windowHeight * this.correction);
+		this.activeElementHeight = this.activeElement.clientHeight;
+		this.correctionValue = this.activeElementHeight * this.correction;
 		this.corScrollTop = this.winScrollTop + this.correctionValue;
 		this.corScrollBottom = this.winScrollBottom - this.correctionValue;
 		this.elementOffsetTop = this.getOffset(this.activeElement).top;
@@ -198,8 +227,8 @@ var SCROLLER = (function(){
 
 		var self = this,
 			activeType = this.opts.activeClass ? 'addClass' : 'callback',
-			visibleTyle = this.opts.activeVisibility,
-			removeType = this.opts.activePlay,
+			visibleTyle = this.activeVisibility,
+			removeType = this.activePlay,
 			corrHeight = this.windowHeight / 2;
 
 		var addActiveClass = function(){
@@ -222,6 +251,7 @@ var SCROLLER = (function(){
 
 		var activeCallback = function(){
 			if (!self.activeElement.classList.contains(self.activeCallbackClass)) {
+				if (!!!self.opts.activeCallback) return;
 				self.opts.activeCallback.call(self);
 				self.activeElement.classList.add(self.activeCallbackClass);
 			}
@@ -229,6 +259,7 @@ var SCROLLER = (function(){
 
 		var endCallback = function(){
 			if (self.activeElement.classList.contains(self.activeCallbackClass)) {
+				if (!!!self.opts.endCallback) return;
 				self.opts.endCallback.call(self);
 			}
 		};
@@ -270,7 +301,7 @@ var SCROLLER = (function(){
 		}
 
 		switch (removeType) {
-			case 'revers':
+			case 'reverse':
 				if (self.winScrollTop > self.elementOffsetBottom || self.winScrollBottom < self.elementOffsetTop ) {
 					removeHandler();
 				}
@@ -282,7 +313,37 @@ var SCROLLER = (function(){
 				}
 			break;
 		}
-	}
+	};
+
+	fn.destroy = function(e){
+		this.trackElement.style.position = '';
+		this.trackElement.style.height = '',
+		this.trackElement.style.paddingTop = '',
+		this.trackElement.style.paddingBottom = '';
+
+		this.fixedElement.style.position = '';
+		this.fixedElement.style.top = '';
+		this.fixedElement.style.height = '';
+
+		this.trackElement = '';
+		this.fixedElement = '';
+		this.activeElement = '';
+
+		this.correction = '';
+		this.trackHeight = '';
+		this.activeCallbackClass = '';
+		this.useFixed = '';
+		this.activeVisibility = '';
+		this.activePlay = '';
+		this.offsetY = '';
+		this.resize = '';
+		this.windowHeight = '';
+
+		window.removeEventListener('load', this.addEventList);
+		window.removeEventListener('resize', this.addEventList);
+
+		this.initialize = false;
+	};
 
 	return function(opts){
 		return new init(opts);
@@ -534,6 +595,12 @@ var ANIUTIL = (function(){
 	return {
 		calRange: function(values){
 			return calRange(values);
+		},
+		videoObjectFit: function(opts){
+			videoObjectFit(opts);
+		},
+		imageLoader: function(opts){
+			imageLoader(opts);
 		}
 	}
 })();
