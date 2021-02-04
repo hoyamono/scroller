@@ -465,7 +465,8 @@ var ANIUTIL = (function(){
 		var fn = init.prototype;
 
 		fn.bindEvent = function(){
-			var self = this;
+			var self = this,
+				responsiveCheck = typeof(this.responsiveSize) == 'object' && typeof(this.targetAttr) == 'object';
 
 			this.lazyEvent = function(){
 				self.setLazyImage();
@@ -478,13 +479,15 @@ var ANIUTIL = (function(){
 				if (self.useDefaultImg) {
 					self.setDefaultImage();
 				}
-				self.setResponsiveInfo();
+				if (responsiveCheck) {
+					self.setResponsiveInfo();
+				}
 				self.setLazyImage();
 			});
 
 			window.addEventListener('scroll', this.lazyEvent);
 
-			if (typeof(this.responsiveSize) == 'object' && typeof(this.targetAttr) == 'object') {
+			if (responsiveCheck) {
 				window.addEventListener('resize', function(){
 					self.setResponsiveInfo();
 				});	
