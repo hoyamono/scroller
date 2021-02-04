@@ -572,9 +572,10 @@ var ANIUTIL = (function(){
 					targetOffsetTop = this.getOffset(targetElement).top,
 					targetOffsetBottom = this.getOffset(targetElement).bottom;
 
-				if (scrollBottom >= targetOffsetTop && scrollTop < targetOffsetTop ||
-					scrollTop <= targetOffsetBottom && scrollBottom > targetOffsetBottom||
-					scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom) {
+				if (scrollBottom > targetOffsetTop && scrollTop <= targetOffsetTop ||
+					scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom||
+					scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom ||
+					scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) {
 					var imgSrc = targetElement.getAttribute(this.targetAttr);
 
 					targetElement.setAttribute('src', imgSrc);
