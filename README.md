@@ -109,9 +109,11 @@ var scene2 = SCROLLER({
 - ANIUTIL.imageLoader : Lazy-load 및 responsive image 제어 함수
 	``` javascript
 	ANIUTIL.imageLoader({
-		lazyClass: '.lazy',
+		lazyClass: '.lazy-img',
 		responsiveClass: '.res-img',
 		responsiveSize: [1920, 1024, 768],
+		visiblePoint: 1,
+		useDefaultImg: true,
 		targetAttr: ['data-img-pc', 'data-img-tb', 'data-img-mo']
 		//targetAttr: 'data-img'
 	});
@@ -122,7 +124,8 @@ var scene2 = SCROLLER({
 	|responsiveClass|string|responsive image적용할 대상 class|
 	|responsiveSize|array|responsive image 분기점,높은해상도 => 낮은해상로 순으로 표기|
 	|targetAttr|array|lazy0load image 또는 responsiveSize의 분기마다 이미지 src를 가져올 attribute 리스트로 array로 표기시 높은해상도 => 낮은해상로 순으로 표기 |
-
+	|visiblePoint|number|이미지 로드시점 설정 ex) 1 = 한화면 전|
+	|useDefaultImg|boolean|이미지 로드 전 src에 더미이미지 할당|
 - ANIUTIL.videoObjectFit : wrap 요소에 맞춰 video를 full size로 유지하도록 제어하는 함수
 	``` javascript
 	ANIUTIL.videoObjectFit({

@@ -455,6 +455,8 @@ var ANIUTIL = (function(){
 			this.responsiveClass = opts.responsiveClass;
 			this.responsiveSize = opts.responsiveSize;
 			this.targetAttr = opts.targetAttr;
+			this.visiblePoint = !!!opts.visiblePoint ? 0 : opts.visiblePoint;
+			this.useDefaultImg = opts.useDefaultImg;
 			this.getLazyImage();
 			this.getResponsiveImage();
 			this.bindEvent();
@@ -473,6 +475,9 @@ var ANIUTIL = (function(){
 			}
 
 			window.addEventListener('DOMContentLoaded', function(){
+				if (self.useDefaultImg) {
+					self.setDefaultImage();
+				}
 				self.setResponsiveInfo();
 				self.setLazyImage();
 			});
@@ -500,6 +505,12 @@ var ANIUTIL = (function(){
 			this.responsiveLength = responsiveImageList.length;
 		};
 
+		fn.setDefaultImage = function(){
+			for (var i = 0; i < this.lazyLength; i++) {
+				this.lazyImages[i].setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH/C1hNUCBEYXRhWE1QAz94cAAh+QQFAAAAACwAAAAAAQABAAACAkQBADs=')
+			};
+		};
+
 		fn.setResponsiveInfo = function(){
 			this.windowWidth = window.innerWidth;
 
@@ -512,7 +523,6 @@ var ANIUTIL = (function(){
 						this.targetAttr = this.opts.targetAttr[i];
 						this.oldAttr = this.targetAttr;
 						this.setResponsiveImage();
-						console.log(this.windowWidth)
 					}
 				}
 			}
@@ -556,18 +566,21 @@ var ANIUTIL = (function(){
 				var targetElement = this.lazyImages[i],
 					targetElementHeight = null,
 					targetElementHeight = targetElement.clientHeight,
+					corrHeight = this.windowHeight * this.visiblePoint,
+					scrollTop = this.getScroll().top - corrHeight,
+					scrollBottom = this.getScroll().bottom + corrHeight,
 					targetOffsetTop = this.getOffset(targetElement).top,
 					targetOffsetBottom = this.getOffset(targetElement).bottom;
 
-				if (this.getScroll().bottom >= targetOffsetTop && this.getScroll().top < targetOffsetTop ||
-					this.getScroll().top <= targetOffsetBottom && this.getScroll().bottom > targetOffsetBottom) {
+				if (scrollBottom >= targetOffsetTop && scrollTop < targetOffsetTop ||
+					scrollTop <= targetOffsetBottom && scrollBottom > targetOffsetBottom||
+					scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom) {
 					var imgSrc = targetElement.getAttribute(this.targetAttr);
 
 					targetElement.setAttribute('src', imgSrc);
 					targetElement.classList.remove(this.lazyClass.split('.')[1]);
+					
 					this.getLazyImage();
-
-					return;
 				}
 			}
 		};
