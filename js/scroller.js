@@ -15,6 +15,7 @@ var SCROLLER = (function(){
 		this.opts = opts;
 		this.correction = (!!!opts.correction ? 0 : opts.correction);
 		this.trackHeight = !!!opts.trackHeight ? 0 : opts.trackHeight;
+		this.activeClass = opts.activeClass;
 		this.activeCallbackClass = !!!opts.activeCallbackClass ? 'callback-active' : opts.activeCallbackClass;
 		this.useFixed = !!!opts.useFixed ? false : opts.useFixed;
 		this.activeVisibility = !!!opts.activeVisibility ? 'before' : opts.activeVisibility;
@@ -239,22 +240,44 @@ var SCROLLER = (function(){
 		this.elementOffsetBottom = this.getOffset(this.activeElement).bottom;
 
 		var self = this,
-			activeType = this.opts.activeClass ? 'addClass' : 'callback',
+			activeType = this.activeClass ? 'addClass' : 'callback',
 			visibleTyle = this.activeVisibility,
 			removeType = this.activePlay,
 			corrHeight = this.windowHeight / 2;
 
 		var addActiveClass = function(){
-			if (!self.activeElement.classList.contains(self.opts.activeClass)) {
-				self.activeElement.classList.add(self.opts.activeClass);
+			if (typeof(self.activeClass) == 'object') {
+				var classLength = self.activeClass.length;
+
+				for (var i = 0; i < classLength; i++) {
+					if (!self.activeElement.classList.contains(self.activeClass[i])) {
+						self.activeElement.classList.add(self.activeClass[i]);
+					}
+				};
+			} else {
+				if (!self.activeElement.classList.contains(self.activeClass)) {
+					self.activeElement.classList.add(self.activeClass);
+				}
 			}
+			
 		};
 
 		var removeActiveClass = function(){
 			if (activeType == 'addClass') {
-				if (self.activeElement.classList.contains(self.opts.activeClass)) {
-					self.activeElement.classList.remove(self.opts.activeClass);
+				if (typeof(self.activeClass) == 'object') {
+					var classLength = self.activeClass.length;
+	
+					for (var i = 0; i < classLength; i++) {
+						if (self.activeElement.classList.contains(self.activeClass[i])) {
+							self.activeElement.classList.remove(self.activeClass[i]);
+						}
+					};
+				} else {
+					if (self.activeElement.classList.contains(self.activeClass)) {
+						self.activeElement.classList.remove(self.activeClass);
+					}
 				}
+
 			} else {
 				if (self.activeElement.classList.contains(self.activeCallbackClass)) {
 					self.activeElement.classList.remove(self.activeCallbackClass);
