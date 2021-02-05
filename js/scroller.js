@@ -574,7 +574,7 @@ var ANIUTIL = (function(){
 				var targetImage = this.responsiveImages[i],
 					imgSrc = targetImage.getAttribute(this.targetAttr);
 
-				if (!targetImage.classList.contains(this.lazyClass.split('.')[1])) {
+				if (targetImage.classList.contains('load-complete')) {
 					targetImage.setAttribute('src', imgSrc);
 				}
 			}
@@ -602,7 +602,10 @@ var ANIUTIL = (function(){
 					var imgSrc = targetElement.getAttribute(this.targetAttr);
 
 					targetElement.setAttribute('src', imgSrc);
-					targetElement.classList.remove(removeClass);
+					if (this.opts.lazyClass.split(' ').length == 1) {
+						targetElement.classList.remove(removeClass);
+					}
+					targetElement.classList.add('load-complete')
 					
 					this.getLazyImage();
 				}
