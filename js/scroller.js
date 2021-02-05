@@ -58,11 +58,13 @@ var SCROLLER = (function(){
 	};
 
 	fn.elementHandler = function(){
+		this.setTrackStyle();
+
 		if (this.trackHeight > 1) {
 			this.setTrackHeigh();
 		}
 		if (this.useFixed) {
-			this.setFixedHeight();
+			this.setFixedStyle();
 		}
 
 		return this;
@@ -147,10 +149,21 @@ var SCROLLER = (function(){
 		this.trackElement.style.paddingBottom = (calTrackHeight / 2) +'px';
 	};
 
-	fn.setFixedHeight = function(){
+	fn.setTrackStyle = function(){
+		if (!!!this.trackElement) return;
+		if (window.getComputedStyle(this.trackElement).position == 'static') {
+			this.trackElement.style.position = 'relative'
+		}
+	};
+
+	fn.setFixedStyle = function(){
 		this.fixedElement.style.height = '';
 		this.fixedElement.style.top = '';
 		this.fixedElement.style.position = 'absolute';
+
+		if (this.fixedElement.clientWidth == 0) {
+			this.fixedElement.style.width = '100%';
+		}
 
 		if (typeof(this.offsetY) == 'string') {
 			this.fixedElement.style.height = 'calc('+ this.windowHeight +'px - '+ this.offsetY +')';
