@@ -519,9 +519,14 @@ var ANIUTIL = (function(){
 
 			for (var i = 0; i < this.responsiveSize.length; i++) {
 				var nextIndex = i + 1,
-					nextFork = !!!this.responsiveSize[nextIndex] ? 0 : this.responsiveSize[nextIndex];
-
-				if (this.windowWidth <= this.responsiveSize[i] && this.windowWidth > nextFork) {
+					nextPoint = !!!this.responsiveSize[nextIndex] ? 0 : this.responsiveSize[nextIndex],
+					checkPoint = false;
+				if (i == 0) {
+					checkPoint = this.windowWidth > nextPoint;
+				} else {
+					checkPoint = this.windowWidth <= this.responsiveSize[i] && this.windowWidth > nextPoint;
+				}
+				if (checkPoint) {
 					if (this.opts.targetAttr[i] !== this.oldAttr) {
 						this.targetAttr = this.opts.targetAttr[i];
 						this.oldAttr = this.targetAttr;
@@ -573,7 +578,9 @@ var ANIUTIL = (function(){
 					scrollTop = this.getScroll().top - corrHeight,
 					scrollBottom = this.getScroll().bottom + corrHeight,
 					targetOffsetTop = this.getOffset(targetElement).top,
-					targetOffsetBottom = this.getOffset(targetElement).bottom;
+					targetOffsetBottom = this.getOffset(targetElement).bottom,
+					lazyClass = this.lazyClass.split('.'),
+					removeClass = lazyClass[lazyClass.length-1];
 
 				if (scrollBottom > targetOffsetTop && scrollTop <= targetOffsetTop ||
 					scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom||
@@ -582,7 +589,7 @@ var ANIUTIL = (function(){
 					var imgSrc = targetElement.getAttribute(this.targetAttr);
 
 					targetElement.setAttribute('src', imgSrc);
-					targetElement.classList.remove(this.lazyClass.split('.')[1]);
+					targetElement.classList.remove(removeClass);
 					
 					this.getLazyImage();
 				}
