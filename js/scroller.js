@@ -543,6 +543,7 @@ var ANIUTIL = (function(){
 					if (this.opts.targetAttr[i] !== this.oldAttr) {
 						this.targetAttr = this.opts.targetAttr[i];
 						this.oldAttr = this.targetAttr;
+						this.attrIndex = i;
 						this.setResponsiveImage();
 					}
 				}
@@ -574,6 +575,10 @@ var ANIUTIL = (function(){
 				var targetImage = this.responsiveImages[i],
 					imgSrc = targetImage.getAttribute(this.targetAttr);
 
+				if (!!!imgSrc) {
+					imgSrc = targetImage.getAttribute(this.opts.targetAttr[this.attrIndex - 1]);
+				}
+
 				if (targetImage.classList.contains('load-complete')) {
 					targetImage.setAttribute('src', imgSrc);
 				}
@@ -599,7 +604,12 @@ var ANIUTIL = (function(){
 					scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom||
 					scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom ||
 					scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) {
+
 					var imgSrc = targetElement.getAttribute(this.targetAttr);
+
+					if (!!!imgSrc) {
+						imgSrc = targetImage.getAttribute(this.opts.targetAttr[this.attrIndex - 1]);
+					}
 
 					targetElement.setAttribute('src', imgSrc);
 					if (this.opts.lazyClass.split(' ').length == 1) {
