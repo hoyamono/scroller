@@ -240,7 +240,6 @@ var SCROLLER = (function(){
 		this.elementOffsetBottom = this.getOffset(this.activeElement).bottom;
 
 		var self = this,
-			activeType = this.activeClass ? 'addClass' : 'callback',
 			visibleTyle = this.activeVisibility,
 			removeType = this.activePlay,
 			corrHeight = this.windowHeight / 2;
@@ -263,25 +262,22 @@ var SCROLLER = (function(){
 		};
 
 		var removeActiveClass = function(){
-			if (activeType == 'addClass') {
-				if (typeof(self.activeClass) == 'object') {
-					var classLength = self.activeClass.length;
-	
-					for (var i = 0; i < classLength; i++) {
-						if (self.activeElement.classList.contains(self.activeClass[i])) {
-							self.activeElement.classList.remove(self.activeClass[i]);
-						}
-					};
-				} else {
-					if (self.activeElement.classList.contains(self.activeClass)) {
-						self.activeElement.classList.remove(self.activeClass);
-					}
-				}
+			if (typeof(self.activeClass) == 'object') {
+				var classLength = self.activeClass.length;
 
+				for (var i = 0; i < classLength; i++) {
+					if (self.activeElement.classList.contains(self.activeClass[i])) {
+						self.activeElement.classList.remove(self.activeClass[i]);
+					}
+				};
 			} else {
-				if (self.activeElement.classList.contains(self.activeCallbackClass)) {
-					self.activeElement.classList.remove(self.activeCallbackClass);
+				if (self.activeElement.classList.contains(self.activeClass)) {
+					self.activeElement.classList.remove(self.activeClass);
 				}
+			}
+
+			if (self.activeElement.classList.contains(self.activeCallbackClass)) {
+				self.activeElement.classList.remove(self.activeCallbackClass);
 			}
 		};
 
@@ -301,23 +297,12 @@ var SCROLLER = (function(){
 		};
 
 		var activeHandler = function(){
-			switch (activeType) {
-				case 'addClass' :
-					addActiveClass();
-				break;
-
-				case 'callback' : 
-					activeCallback();
-				break;
-			}
+			activeCallback();
+			addActiveClass();
 		};
 
 		var removeHandler = function(){
-			switch (activeType) {
-				case 'callback' : 
-					endCallback();
-				break;
-			}
+			endCallback();
 			removeActiveClass();
 		};
 
