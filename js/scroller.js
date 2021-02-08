@@ -15,6 +15,7 @@ var SCROLLER = (function(){
 		this.opts = opts;
 		this.correction = (!!!opts.correction ? 0 : opts.correction);
 		this.trackHeight = !!!opts.trackHeight ? 0 : opts.trackHeight;
+		this.activeClass = opts.activeClass;
 		this.activeCallbackClass = !!!opts.activeCallbackClass ? 'callback-active' : opts.activeCallbackClass;
 		this.useFixed = !!!opts.useFixed ? false : opts.useFixed;
 		this.activeVisibility = !!!opts.activeVisibility ? 'before' : opts.activeVisibility;
@@ -58,11 +59,13 @@ var SCROLLER = (function(){
 	};
 
 	fn.elementHandler = function(){
+		this.setTrackStyle();
+
 		if (this.trackHeight > 1) {
 			this.setTrackHeigh();
 		}
 		if (this.useFixed) {
-			this.setFixedHeight();
+			this.setFixedStyle();
 		}
 
 		return this;
@@ -147,10 +150,21 @@ var SCROLLER = (function(){
 		this.trackElement.style.paddingBottom = (calTrackHeight / 2) +'px';
 	};
 
-	fn.setFixedHeight = function(){
+	fn.setTrackStyle = function(){
+		if (!!!this.trackElement) return;
+		if (window.getComputedStyle(this.trackElement).position == 'static') {
+			this.trackElement.style.position = 'relative'
+		}
+	};
+
+	fn.setFixedStyle = function(){
 		this.fixedElement.style.height = '';
 		this.fixedElement.style.top = '';
 		this.fixedElement.style.position = 'absolute';
+
+		if (this.fixedElement.clientWidth == 0) {
+			this.fixedElement.style.width = '100%';
+		}
 
 		if (typeof(this.offsetY) == 'string') {
 			this.fixedElement.style.height = 'calc('+ this.windowHeight +'px - '+ this.offsetY +')';
@@ -226,26 +240,44 @@ var SCROLLER = (function(){
 		this.elementOffsetBottom = this.getOffset(this.activeElement).bottom;
 
 		var self = this,
-			activeType = this.opts.activeClass ? 'addClass' : 'callback',
 			visibleTyle = this.activeVisibility,
 			removeType = this.activePlay,
 			corrHeight = this.windowHeight / 2;
 
 		var addActiveClass = function(){
-			if (!self.activeElement.classList.contains(self.opts.activeClass)) {
-				self.activeElement.classList.add(self.opts.activeClass);
+			if (typeof(self.activeClass) == 'object') {
+				var classLength = self.activeClass.length;
+
+				for (var i = 0; i < classLength; i++) {
+					if (!self.activeElement.classList.contains(self.activeClass[i])) {
+						self.activeElement.classList.add(self.activeClass[i]);
+					}
+				};
+			} else {
+				if (!self.activeElement.classList.contains(self.activeClass)) {
+					self.activeElement.classList.add(self.activeClass);
+				}
 			}
+			
 		};
 
 		var removeActiveClass = function(){
-			if (activeType == 'addClass') {
-				if (self.activeElement.classList.contains(self.opts.activeClass)) {
-					self.activeElement.classList.remove(self.opts.activeClass);
-				}
+			if (typeof(self.activeClass) == 'object') {
+				var classLength = self.activeClass.length;
+
+				for (var i = 0; i < classLength; i++) {
+					if (self.activeElement.classList.contains(self.activeClass[i])) {
+						self.activeElement.classList.remove(self.activeClass[i]);
+					}
+				};
 			} else {
-				if (self.activeElement.classList.contains(self.activeCallbackClass)) {
-					self.activeElement.classList.remove(self.activeCallbackClass);
+				if (self.activeElement.classList.contains(self.activeClass)) {
+					self.activeElement.classList.remove(self.activeClass);
 				}
+			}
+
+			if (self.activeElement.classList.contains(self.activeCallbackClass)) {
+				self.activeElement.classList.remove(self.activeCallbackClass);
 			}
 		};
 
@@ -265,23 +297,12 @@ var SCROLLER = (function(){
 		};
 
 		var activeHandler = function(){
-			switch (activeType) {
-				case 'addClass' :
-					addActiveClass();
-				break;
-
-				case 'callback' : 
-					activeCallback();
-				break;
-			}
+			activeCallback();
+			addActiveClass();
 		};
 
 		var removeHandler = function(){
-			switch (activeType) {
-				case 'callback' : 
-					endCallback();
-				break;
-			}
+			endCallback();
 			removeActiveClass();
 		};
 
@@ -453,8 +474,8 @@ var ANIUTIL = (function(){
 			this.opts = opts;
 			this.lazyClass = opts.lazyClass;
 			this.responsiveClass = opts.responsiveClass;
-			this.responsiveSize = opts.responsiveSize;
-			this.targetAttr = opts.targetAttr;
+			this.loadOption = opts.loadOption;
+			this.targetAttr = opts.loadOption[0].attribute;
 			this.visiblePoint = !!!opts.visiblePoint ? 0 : opts.visiblePoint;
 			this.useDefaultImg = opts.useDefaultImg;
 			this.getLazyImage();
@@ -466,7 +487,8 @@ var ANIUTIL = (function(){
 
 		fn.bindEvent = function(){
 			var self = this,
-				responsiveCheck = typeof(this.responsiveSize) == 'object' && typeof(this.targetAttr) == 'object';
+				resizeTiming = null,
+				responsiveCheck = this.loadOption;
 
 			this.lazyEvent = function(){
 				self.setLazyImage();
@@ -489,7 +511,11 @@ var ANIUTIL = (function(){
 
 			if (responsiveCheck) {
 				window.addEventListener('resize', function(){
-					self.setResponsiveInfo();
+					clearTimeout(resizeTiming);
+
+					resizeTiming = setTimeout(function(){
+						self.setResponsiveInfo();
+					}, 80);
 				});	
 			}
 		};
@@ -517,19 +543,23 @@ var ANIUTIL = (function(){
 		fn.setResponsiveInfo = function(){
 			this.windowWidth = window.innerWidth;
 
-			for (var i = 0; i < this.responsiveSize.length; i++) {
+			var resolutionLength = this.loadOption.length;
+
+			for (var i = 0; i < resolutionLength; i++) {
 				var nextIndex = i + 1,
-					nextPoint = !!!this.responsiveSize[nextIndex] ? 0 : this.responsiveSize[nextIndex],
+					nextPoint = nextIndex == resolutionLength ? 0 : this.loadOption[nextIndex].resolution,
 					checkPoint = false;
+					console.log(nextPoint)
 				if (i == 0) {
 					checkPoint = this.windowWidth > nextPoint;
 				} else {
-					checkPoint = this.windowWidth <= this.responsiveSize[i] && this.windowWidth > nextPoint;
+					checkPoint = this.windowWidth <= this.loadOption[i].resolution && this.windowWidth > nextPoint;
 				}
 				if (checkPoint) {
-					if (this.opts.targetAttr[i] !== this.oldAttr) {
-						this.targetAttr = this.opts.targetAttr[i];
+					if (this.loadOption[i].attribute !== this.oldAttr) {
+						this.targetAttr = this.loadOption[i].attribute;
 						this.oldAttr = this.targetAttr;
+						this.attrIndex = i;
 						this.setResponsiveImage();
 					}
 				}
@@ -561,7 +591,11 @@ var ANIUTIL = (function(){
 				var targetImage = this.responsiveImages[i],
 					imgSrc = targetImage.getAttribute(this.targetAttr);
 
-				if (!targetImage.classList.contains(this.lazyClass.split('.')[1])) {
+				if (!!!imgSrc) {
+					imgSrc = targetImage.getAttribute(this.loadOption[this.attrIndex - 1].attribute);
+				}
+
+				if (targetImage.classList.contains('load-complete')) {
 					targetImage.setAttribute('src', imgSrc);
 				}
 			}
@@ -586,10 +620,18 @@ var ANIUTIL = (function(){
 					scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom||
 					scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom ||
 					scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) {
+
 					var imgSrc = targetElement.getAttribute(this.targetAttr);
 
+					if (!!!imgSrc) {
+						imgSrc = targetElement.getAttribute(this.loadOption[this.attrIndex - 1].attribute);
+					}
+
 					targetElement.setAttribute('src', imgSrc);
-					targetElement.classList.remove(removeClass);
+					if (this.opts.lazyClass.split(' ').length == 1) {
+						targetElement.classList.remove(removeClass);
+					}
+					targetElement.classList.add('load-complete')
 					
 					this.getLazyImage();
 				}
