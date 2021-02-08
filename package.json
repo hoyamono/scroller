@@ -18,7 +18,10 @@
   },
   "homepage": "https://github.com/hoyamono/scroller#readme",
   "devDependencies": {
+    "@babel/core": "^7.12.13",
+    "@babel/preset-env": "^7.12.13",
     "gulp": "^4.0.2",
+    "gulp-babel": "^8.0.0",
     "gulp-cli": "^2.3.0",
     "gulp-concat": "^2.6.1",
     "gulp-sass": "^4.1.0",
