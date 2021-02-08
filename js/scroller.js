@@ -474,8 +474,8 @@ var ANIUTIL = (function(){
 			this.opts = opts;
 			this.lazyClass = opts.lazyClass;
 			this.responsiveClass = opts.responsiveClass;
-			this.responsiveSize = opts.responsiveSize;
-			this.targetAttr = opts.targetAttr;
+			this.loadOption = opts.loadOption;
+			this.targetAttr = opts.loadOption[0].attribute;
 			this.visiblePoint = !!!opts.visiblePoint ? 0 : opts.visiblePoint;
 			this.useDefaultImg = opts.useDefaultImg;
 			this.getLazyImage();
@@ -487,7 +487,8 @@ var ANIUTIL = (function(){
 
 		fn.bindEvent = function(){
 			var self = this,
-				responsiveCheck = typeof(this.responsiveSize) == 'object' && typeof(this.targetAttr) == 'object';
+				resizeTiming = null,
+				responsiveCheck = this.loadOption;
 
 			this.lazyEvent = function(){
 				self.setLazyImage();
@@ -510,7 +511,11 @@ var ANIUTIL = (function(){
 
 			if (responsiveCheck) {
 				window.addEventListener('resize', function(){
-					self.setResponsiveInfo();
+					clearTimeout(resizeTiming);
+
+					resizeTiming = setTimeout(function(){
+						self.setResponsiveInfo();
+					}, 80);
 				});	
 			}
 		};
@@ -538,18 +543,21 @@ var ANIUTIL = (function(){
 		fn.setResponsiveInfo = function(){
 			this.windowWidth = window.innerWidth;
 
-			for (var i = 0; i < this.responsiveSize.length; i++) {
+			var resolutionLength = this.loadOption.length;
+
+			for (var i = 0; i < resolutionLength; i++) {
 				var nextIndex = i + 1,
-					nextPoint = !!!this.responsiveSize[nextIndex] ? 0 : this.responsiveSize[nextIndex],
+					nextPoint = nextIndex == resolutionLength ? 0 : this.loadOption[nextIndex].resolution,
 					checkPoint = false;
+					console.log(nextPoint)
 				if (i == 0) {
 					checkPoint = this.windowWidth > nextPoint;
 				} else {
-					checkPoint = this.windowWidth <= this.responsiveSize[i] && this.windowWidth > nextPoint;
+					checkPoint = this.windowWidth <= this.loadOption[i].resolution && this.windowWidth > nextPoint;
 				}
 				if (checkPoint) {
-					if (this.opts.targetAttr[i] !== this.oldAttr) {
-						this.targetAttr = this.opts.targetAttr[i];
+					if (this.loadOption[i].attribute !== this.oldAttr) {
+						this.targetAttr = this.loadOption[i].attribute;
 						this.oldAttr = this.targetAttr;
 						this.attrIndex = i;
 						this.setResponsiveImage();
@@ -584,7 +592,7 @@ var ANIUTIL = (function(){
 					imgSrc = targetImage.getAttribute(this.targetAttr);
 
 				if (!!!imgSrc) {
-					imgSrc = targetImage.getAttribute(this.opts.targetAttr[this.attrIndex - 1]);
+					imgSrc = targetImage.getAttribute(this.loadOption[this.attrIndex - 1].attribute);
 				}
 
 				if (targetImage.classList.contains('load-complete')) {
@@ -616,7 +624,7 @@ var ANIUTIL = (function(){
 					var imgSrc = targetElement.getAttribute(this.targetAttr);
 
 					if (!!!imgSrc) {
-						imgSrc = targetImage.getAttribute(this.opts.targetAttr[this.attrIndex - 1]);
+						imgSrc = targetElement.getAttribute(this.loadOption[this.attrIndex - 1].attribute);
 					}
 
 					targetElement.setAttribute('src', imgSrc);

@@ -120,10 +120,18 @@
     ANIUTIL.imageLoader({
 		lazyClass: '.img-box img',
 		responsiveClass: '.res-img',
-		responsiveSize: [1920, 1024, 768],
+		loadOption: [{
+            resolution: 1920,
+            attribute: 'data-img-pc'
+        },{
+            resolution: 1024,
+            attribute: 'data-img-tb'
+        },{
+            resolution: 768,
+            attribute: 'data-img-mo'
+        }],
 		visiblePoint: 1,
 		useDefaultImg: true,
-		targetAttr: ['data-img-pc', 'data-img-tb', 'data-img-mo']
 	});
 </script>
 </html>
