@@ -1,0 +1,28 @@
+{
+  "name": "scroller",
+  "version": "1.0.0",
+  "description": "스크롤 인터렉션 페이지 제작을 위한 라이브러리입니다.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hoyamono/scroller.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hoyamono/scroller/issues"
+  },
+  "homepage": "https://github.com/hoyamono/scroller#readme",
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-cli": "^2.3.0",
+    "gulp-concat": "^2.6.1",
+    "gulp-sass": "^4.1.0",
+    "gulp-uglify": "^3.0.2"
+  },
+  "dependencies": {}
+}
