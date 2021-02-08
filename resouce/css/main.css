@@ -1,0 +1,60 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap");
+html, body { padding: 0; margin: 0; font-family: 'Roboto', sans-serif; }
+
+p { font-size: 70px; color: #fff; }
+
+#wrap { background: #000; }
+
+.text1, .text2 { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); opacity: 0; transition: all 0.1s linear; z-index: 2; }
+
+.kv { position: relative; height: 100vh; text-align: center; vertical-align: middle; }
+
+.kv .text1 { opacity: 1; }
+
+.content-wrap { width: 100%; position: relative; }
+
+.scene2, .scene3, .scene4 { position: relative; height: 100vh; }
+
+.scene2 { height: 103vh; background: #999; }
+
+.scene2 .text1 { transform: translate(-50%, 0); }
+
+.scene2 .text1.active { opacity: 1; transform: translate(-50%, -50%); transition: all 0.6s; }
+
+.scene2 .content-wrap { position: static; }
+
+.scene3 .text1 { transform: translate(-50%, 0); white-space: nowrap; }
+
+.scene3 .callback-active .text1 { opacity: 1; transform: translate(-50%, -50%); transition: all 0.6s; }
+
+.scene4 .content-wrap { overflow: hidden; }
+
+.scene4 .text1 { top: 15%; transform: translate(-50%, 0); opacity: 1; white-space: nowrap; }
+
+.slide-track { position: absolute; bottom: 10%; width: 100%; height: 50%; padding: 0 50px; background: #ddd; box-sizing: border-box; }
+
+.slide-wrap { position: absolute; top: 10%; height: 80%; white-space: nowrap; font-size: 0; transition: transform 0.1s linear; }
+
+.slide-wrap .box { display: inline-block; width: 350px; height: 100%; margin-right: 20px; background: #f1f1f1; }
+
+.slide-wrap .box:last-child { margin-right: 0; }
+
+.scene5 { position: relative; height: 100vh; text-align: center; overflow: hidden; }
+
+.scene5 .content-wrap { overflow: hidden; }
+
+.count-box { position: absolute; width: 400px; height: 15vw; background: #f1f1f1; }
+
+.count-box:nth-child(1) { top: 50px; left: 0; transform: translateX(-100%); }
+
+.count-box:nth-child(2) { top: 50%; right: 0; transform: translateX(100%, -50%); }
+
+.count-box:nth-child(3) { bottom: 50px; left: 0; transform: translateX(-100%); }
+
+.count-box p { line-height: 15vw; color: #000; }
+
+.number { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1; font-size: 80px; color: #fff; }
+
+.img-box { position: relative; width: 100%; height: 1000px; }
+
+.img-box img { width: 100%; height: 100%; opacity: 0.7; }
