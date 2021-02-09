@@ -5,179 +5,9 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Scroller</title>
-	<script src="./js/scroller.js"></script>
+	<script src="./resouces/js/scroller.min.js"></script>
 	<link rel="stylesheet" href="https://meyerweb.com/eric/tools/css/reset/reset200802.css">
-	<style>
-		@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap');
-
-		html,
-		body {
-			padding: 0;
-			margin: 0;
-			font-family: 'Roboto', sans-serif;
-		}
-
-		p {
-			font-size: 70px;
-			color: #fff;
-		}
-
-		.text1,
-		.text2 {
-			position: absolute;
-			left: 50%;
-			top: 50%;
-			transform: translate(-50%, -50%);
-			opacity: 0;
-			transition: all 0.1s linear;
-			z-index: 2;
-		}
-
-		.kv {
-			position: relative;
-			height: 100vh;
-			background: #000;
-			text-align: center;
-			vertical-align: middle;
-		}
-
-		.kv .text1 {
-			opacity: 1;
-		}
-
-		.content-wrap {
-			width: 100%;
-			position: relative;
-		}
-
-		.scene2,
-		.scene3,
-		.scene4 {
-			position: relative;
-			height: 100vh;
-			background: #000;
-		}
-
-		.scene2 {
-			height: 103vh;
-			background: #999;
-		}
-
-		.scene2 .text1 {
-			transform: translate(-50%, 0);
-		}
-
-		.scene2 .text1.active {
-			opacity: 1;
-			transform: translate(-50%, -50%);
-			transition: all 0.6s;
-		}
-
-		.scene2 .content-wrap {
-			position: static;
-		}
-
-		/* .scene3 video {
-			width: 100%;
-			height: 100%;
-			object-fit: cover;
-		} */
-
-		.scene3 .text1 {
-			transform: translate(-50%, 0);
-			white-space: nowrap;
-		}
-
-		.scene3 .callback-active .text1 {
-			opacity: 1;
-			transform: translate(-50%, -50%);
-			transition: all 0.6s;
-		}
-
-		.scene4 .content-wrap {
-			overflow: hidden;
-		}
-
-		.scene4 .text1 {
-			top: 15%;
-			transform: translate(-50%, 0);
-			opacity: 1;
-			white-space: nowrap;
-		}
-
-		.slide-track {
-			position: absolute;
-			bottom: 10%;
-			width: 100%;
-			height: 50%;
-			padding: 0 50px;
-			background: #ddd;
-			box-sizing: border-box;
-		}
-
-		.slide-wrap {
-			position: absolute;
-			top: 10%;
-			height: 80%;
-			white-space: nowrap;
-			font-size: 0;
-			transition: transform 0.1s linear;
-		}
-
-		.slide-wrap .box {
-			display: inline-block;
-			width: 350px;
-			height: 100%;
-			margin-right: 20px;
-			background: #f1f1f1;
-		}
-
-		.slide-wrap .box:last-child {
-			margin-right: 0;
-		}
-
-		.scene5 {
-			position: relative;
-			height: 100vh;
-			background: #000;
-			text-align: center;
-			overflow: hidden;
-		}
-
-		.scene5 .content-wrap {
-			overflow: hidden;
-		}
-
-		.count-box {
-			position: absolute;
-			width: 400px;
-			height: 15vw;
-			background: #f1f1f1;
-		}
-
-		.count-box:nth-child(1) {
-			top: 50px;
-			left: 0;
-			transform: translateX(-100%);
-		}
-
-		.count-box:nth-child(2) {
-			top: 50%;
-			right: 0;
-			transform: translateX(100%, -50%);
-		}
-
-		.count-box:nth-child(3) {
-			bottom: 50px;
-			left: 0;
-			transform: translateX(-100%);
-		}
-
-		.count-box p {
-			line-height: 15vw;
-			color: #000;
-		}
-	</style>
+	<link rel="stylesheet" href="./resouces/css/scroller.css">
 </head>
 
 <body>
@@ -266,7 +96,14 @@
 		// correction: 0.4, //노출위치 보정 (배율값)
 		activeVisibility: 'visible', //visible: element가 화면 중앙에 위치할 경우 노출, before: window scroll bottom이 element의 offset top과 맞닿을경우 노출
 		activePlay: 'reverse', //reverse: 역방향 재생, oneWay: 재생 완료 후 scrollTop이 0이될 경우 인터랙션 초기화
-		activeClass: 'active', //activeClass와 activeCallback 둘중 하나만 사용 가능
+		activeClass: ['active1', 'active2', 'active3', 'active4'],
+		// activeCallbackClass: 'activeCallbackClass', //콜백함수 실행 완료 후 노출하는 class로 기본값은 callback-active로 설정되어있음
+		activeCallback: function () {
+			console.log('active')
+		},
+		endCallback: function () {
+			console.log('end')
+		},
 		resize: true
 	});
 
@@ -288,8 +125,7 @@
 		// correction: 0.4,
 		activeVisibility: 'before',
 		activePlay: 'reverse',
-		// activeCallbackClass: 'activeCallbackClass', //콜백함수 실행 완료 후 노출하는 class로 기본값은 callback-active로 설정되어있음
-		activeCallback: function () { //activeClass와 activeCallback 둘중 하나만 사용 가능
+		activeCallback: function () {
 			if (video1.paused && video1.readyState >= 4) {
 				video1.play();
 			} else {

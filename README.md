@@ -4,7 +4,7 @@
 
 ## Example Code
 ---
-### 1. SCROLLER 객체 생성
+### 1. SCROLLER 객체 생성 (https://hoyamono.github.io/scroller/)
 스크롤러 객체는 되도록 변수에 담아 사용하고 resize 또는 scroll 이벤트와 같은 이벤트에 포함하여 사용하는것을 지양해야함.
 ``` javascript
 var scene1 = SCROLLER({
@@ -106,24 +106,30 @@ var scene2 = SCROLLER({
 	|startPoint|number|0~100까지의 progress중 target value값 계산을 시작할 위치 지정|
 	|endPoint|number|0~100까지의 progress중 target value값 계산을 중단할 위치 지정|
 
-- ANIUTIL.imageLoader : Lazy-load 및 responsive image 제어 함수
+- ANIUTIL.imageLoader : Lazy-load 및 responsive image 제어 함수 (https://hoyamono.github.io/scroller/image-loader.html)
 	``` javascript
 	ANIUTIL.imageLoader({
-		lazyClass: '.lazy-img',
+		lazyClass: '.img-box img',
 		responsiveClass: '.res-img',
-		responsiveSize: [1920, 1024, 768],
+		loadOption: [{
+            resolution: 1920,
+            attribute: 'data-img-pc'
+        },{
+            resolution: 1024,
+            attribute: 'data-img-tb'
+        },{
+            resolution: 768,
+            attribute: 'data-img-mo'
+        }],
 		visiblePoint: 1,
 		useDefaultImg: true,
-		targetAttr: ['data-img-pc', 'data-img-tb', 'data-img-mo']
-		//targetAttr: 'data-img'
 	});
 	```
 	|Option|Type|Description|
 	|------|---|-----|
 	|lazyClass|string|lazy-load를 적용할 대상 class|
 	|responsiveClass|string|responsive image적용할 대상 class|
-	|responsiveSize|array|responsive image 분기점,높은해상도 => 낮은해상로 순으로 표기|
-	|targetAttr|array|lazy0load image 또는 responsiveSize의 분기마다 이미지 src를 가져올 attribute 리스트로 array로 표기시 높은해상도 => 낮은해상로 순으로 표기 |
+	|loadOption|array(object)|resolution : responsive image 분기점,높은해상도(lazy-load만 사용시 resolution 표기 제외) => 낮은해상로 순으로 표기 / attribute : 해당 분기점에서 치환할 이미지 경로를 담고있는 attribute 표기|
 	|visiblePoint|number|이미지 로드시점 설정 ex) 1 = 한화면 전|
 	|useDefaultImg|boolean|이미지 로드 전 src에 더미이미지 할당|
 - ANIUTIL.videoObjectFit : wrap 요소에 맞춰 video를 full size로 유지하도록 제어하는 함수
