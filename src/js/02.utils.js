@@ -99,6 +99,7 @@ var ANIUTIL = (function(){
 	var imageLoader = function(opts){
 		var init = function(){
 			this.opts = opts;
+			this.lazyComplateClass = 'load-complete';
 			this.lazyClass = opts.lazyClass;
 			this.responsiveClass = opts.responsiveClass;
 			this.loadOption = opts.loadOption;
@@ -119,7 +120,8 @@ var ANIUTIL = (function(){
 
 			this.lazyEvent = function(){
 				self.setLazyImage();
-				if (self.lazyLength == 0) {
+
+				if (self.lazyCompleteLength == self.lazyLength) {
 					window.removeEventListener('scroll', self.lazyEvent);
 				}
 			}
@@ -148,10 +150,12 @@ var ANIUTIL = (function(){
 		};
 
 		fn.getLazyImage = function(){
-			var lazyImageList = document.querySelectorAll(this.lazyClass);
+			var lazyImageList = document.querySelectorAll(this.lazyClass),
+				lazyCompleteList = document.querySelectorAll('.' + this.lazyComplateClass);
 
 			this.lazyImages = lazyImageList;
-			this.lazyLength = lazyImageList.length;
+			this.lazyLength = lazyImageList.length,
+			this.lazyCompleteLength = lazyCompleteList.length;
 		};
 
 		fn.getResponsiveImage = function(){
@@ -219,17 +223,58 @@ var ANIUTIL = (function(){
 					imgSrc = targetImage.getAttribute(this.targetAttr);
 
 				if (!!!imgSrc) {
-					imgSrc = targetImage.getAttribute(this.loadOption[this.attrIndex - 1].attribute);
+					imgSrc = this.findImageHandler(targetImage);
 				}
 
-				if (targetImage.classList.contains('load-complete')) {
+				if (targetImage.classList.contains(this.lazyComplateClass)) {
+					console.log(1)				
 					targetImage.setAttribute('src', imgSrc);
+				}
+			}
+
+
+		};
+
+		fn.findRemainingImageAttr = function(element){
+			var attrLength = this.loadOption.length;
+
+			for (var i = 0; i < attrLength; i++) {
+				var getAttr = element.getAttribute(this.loadOption[i].attribute);
+				if (getAttr) {
+					return getAttr;
+					break;
 				}
 			}
 		};
 
+		fn.findNextImage = function(element){
+			var isIndex = this.attrIndex;
+
+			for (var i = isIndex; i >= 0; i--) {
+				var getAttr = element.getAttribute(this.loadOption[i].attribute);
+
+				if (getAttr) {
+					return getAttr;
+					break;
+				}
+
+				if (i == 0 && getAttr == undefined) {
+					return this.findRemainingImageAttr(element)
+				}
+			};
+		};
+
+		fn.findImageHandler = function(element){
+			if (this.attrIndex !==0) {
+				return this.findNextImage(element);
+			} else {
+				return this.findRemainingImageAttr(element)
+			}
+			
+		}
+
 		fn.setLazyImage = function(){
-			this.windowHeight = window.innerHeight;
+			this.windowHeight = window.innerHeight;			
 
 			for (var i = 0; i < this.lazyLength; i++) {
 				var targetElement = this.lazyImages[i],
@@ -251,7 +296,7 @@ var ANIUTIL = (function(){
 					var imgSrc = targetElement.getAttribute(this.targetAttr);
 
 					if (!!!imgSrc) {
-						imgSrc = targetElement.getAttribute(this.loadOption[this.attrIndex - 1].attribute);
+						imgSrc = this.findImageHandler(targetElement);
 					}
 
 					targetElement.setAttribute('src', imgSrc);
