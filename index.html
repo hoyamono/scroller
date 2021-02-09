@@ -96,14 +96,8 @@
 		// correction: 0.4, //노출위치 보정 (배율값)
 		activeVisibility: 'visible', //visible: element가 화면 중앙에 위치할 경우 노출, before: window scroll bottom이 element의 offset top과 맞닿을경우 노출
 		activePlay: 'reverse', //reverse: 역방향 재생, oneWay: 재생 완료 후 scrollTop이 0이될 경우 인터랙션 초기화
-		activeClass: ['active1', 'active2', 'active3', 'active4'],
+		activeClass: ['active'],
 		// activeCallbackClass: 'activeCallbackClass', //콜백함수 실행 완료 후 노출하는 class로 기본값은 callback-active로 설정되어있음
-		activeCallback: function () {
-			console.log('active')
-		},
-		endCallback: function () {
-			console.log('end')
-		},
 		resize: true
 	});
 
