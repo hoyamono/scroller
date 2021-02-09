@@ -1,3 +1,12 @@
+/*!
+ * ANI-Util JavaScript Library v1.0
+ *
+ * Copyright 2021. Yoon jae-ho
+ * Released under the MIT license
+ *
+ * Date: 2021-02-09
+ */
+
 var ANIUTIL = (function(){
 	var calRange = function(values){
 		var values = {
