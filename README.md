@@ -4,7 +4,7 @@
 
 ## Example Code
 ---
-### 1. SCROLLER 객체 생성
+### 1. SCROLLER 객체 생성 (https://hoyamono.github.io/scroller/)
 스크롤러 객체는 되도록 변수에 담아 사용하고 resize 또는 scroll 이벤트와 같은 이벤트에 포함하여 사용하는것을 지양해야함.
 ``` javascript
 var scene1 = SCROLLER({
@@ -106,7 +106,7 @@ var scene2 = SCROLLER({
 	|startPoint|number|0~100까지의 progress중 target value값 계산을 시작할 위치 지정|
 	|endPoint|number|0~100까지의 progress중 target value값 계산을 중단할 위치 지정|
 
-- ANIUTIL.imageLoader : Lazy-load 및 responsive image 제어 함수
+- ANIUTIL.imageLoader : Lazy-load 및 responsive image 제어 함수 (https://hoyamono.github.io/scroller/image-loader.html)
 	``` javascript
 	ANIUTIL.imageLoader({
 		lazyClass: '.img-box img',
