@@ -1,10 +1,10 @@
 /*!
- * Scrolle JavaScript Library v1.0.1
+ * Scrolle JavaScript Library v1.0.2
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
  *
- * Date: 2021-02-04
+ * Date: 2021-02-09
  */
 
 'use strict'
