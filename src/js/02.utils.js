@@ -247,7 +247,7 @@ var ANIUTIL = (function(){
 			}
 		};
 
-		fn.findNextImage = function(element){
+		fn.findNextImageAttr = function(element){
 			var isIndex = this.attrIndex;
 
 			for (var i = isIndex; i >= 0; i--) {
@@ -266,7 +266,7 @@ var ANIUTIL = (function(){
 
 		fn.findImageHandler = function(element){
 			if (this.attrIndex !==0) {
-				return this.findNextImage(element);
+				return this.findNextImageAttr(element);
 			} else {
 				return this.findRemainingImageAttr(element)
 			}
