@@ -176,7 +176,7 @@ var ANIUTIL = (function(){
 				var nextIndex = i + 1,
 					nextPoint = nextIndex == resolutionLength ? 0 : this.loadOption[nextIndex].resolution,
 					checkPoint = false;
-					console.log(nextPoint)
+
 				if (i == 0) {
 					checkPoint = this.windowWidth > nextPoint;
 				} else {
