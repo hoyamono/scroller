@@ -1,10 +1,10 @@
 /*!
- * Scrolle JavaScript Library v1.0.1
+ * Scrolle JavaScript Library v1.0.2
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
  *
- * Date: 2021-02-04
+ * Date: 2021-02-09
  */
 
 'use strict'
@@ -15,6 +15,7 @@ var SCROLLER = (function(){
 		this.opts = opts;
 		this.correction = (!!!opts.correction ? 0 : opts.correction);
 		this.trackHeight = !!!opts.trackHeight ? 0 : opts.trackHeight;
+		this.activeClass = opts.activeClass;
 		this.activeCallbackClass = !!!opts.activeCallbackClass ? 'callback-active' : opts.activeCallbackClass;
 		this.useFixed = !!!opts.useFixed ? false : opts.useFixed;
 		this.activeVisibility = !!!opts.activeVisibility ? 'before' : opts.activeVisibility;
@@ -58,11 +59,13 @@ var SCROLLER = (function(){
 	};
 
 	fn.elementHandler = function(){
+		this.setTrackStyle();
+
 		if (this.trackHeight > 1) {
 			this.setTrackHeigh();
 		}
 		if (this.useFixed) {
-			this.setFixedHeight();
+			this.setFixedStyle();
 		}
 
 		return this;
@@ -147,10 +150,21 @@ var SCROLLER = (function(){
 		this.trackElement.style.paddingBottom = (calTrackHeight / 2) +'px';
 	};
 
-	fn.setFixedHeight = function(){
+	fn.setTrackStyle = function(){
+		if (!!!this.trackElement) return;
+		if (window.getComputedStyle(this.trackElement).position == 'static') {
+			this.trackElement.style.position = 'relative'
+		}
+	};
+
+	fn.setFixedStyle = function(){
 		this.fixedElement.style.height = '';
 		this.fixedElement.style.top = '';
 		this.fixedElement.style.position = 'absolute';
+
+		if (this.fixedElement.clientWidth == 0) {
+			this.fixedElement.style.width = '100%';
+		}
 
 		if (typeof(this.offsetY) == 'string') {
 			this.fixedElement.style.height = 'calc('+ this.windowHeight +'px - '+ this.offsetY +')';
@@ -226,26 +240,44 @@ var SCROLLER = (function(){
 		this.elementOffsetBottom = this.getOffset(this.activeElement).bottom;
 
 		var self = this,
-			activeType = this.opts.activeClass ? 'addClass' : 'callback',
 			visibleTyle = this.activeVisibility,
 			removeType = this.activePlay,
 			corrHeight = this.windowHeight / 2;
 
 		var addActiveClass = function(){
-			if (!self.activeElement.classList.contains(self.opts.activeClass)) {
-				self.activeElement.classList.add(self.opts.activeClass);
+			if (typeof(self.activeClass) == 'object') {
+				var classLength = self.activeClass.length;
+
+				for (var i = 0; i < classLength; i++) {
+					if (!self.activeElement.classList.contains(self.activeClass[i])) {
+						self.activeElement.classList.add(self.activeClass[i]);
+					}
+				};
+			} else {
+				if (!self.activeElement.classList.contains(self.activeClass)) {
+					self.activeElement.classList.add(self.activeClass);
+				}
 			}
+			
 		};
 
 		var removeActiveClass = function(){
-			if (activeType == 'addClass') {
-				if (self.activeElement.classList.contains(self.opts.activeClass)) {
-					self.activeElement.classList.remove(self.opts.activeClass);
-				}
+			if (typeof(self.activeClass) == 'object') {
+				var classLength = self.activeClass.length;
+
+				for (var i = 0; i < classLength; i++) {
+					if (self.activeElement.classList.contains(self.activeClass[i])) {
+						self.activeElement.classList.remove(self.activeClass[i]);
+					}
+				};
 			} else {
-				if (self.activeElement.classList.contains(self.activeCallbackClass)) {
-					self.activeElement.classList.remove(self.activeCallbackClass);
+				if (self.activeElement.classList.contains(self.activeClass)) {
+					self.activeElement.classList.remove(self.activeClass);
 				}
+			}
+
+			if (self.activeElement.classList.contains(self.activeCallbackClass)) {
+				self.activeElement.classList.remove(self.activeCallbackClass);
 			}
 		};
 
@@ -265,23 +297,12 @@ var SCROLLER = (function(){
 		};
 
 		var activeHandler = function(){
-			switch (activeType) {
-				case 'addClass' :
-					addActiveClass();
-				break;
-
-				case 'callback' : 
-					activeCallback();
-				break;
-			}
+			activeCallback();
+			addActiveClass();
 		};
 
 		var removeHandler = function(){
-			switch (activeType) {
-				case 'callback' : 
-					endCallback();
-				break;
-			}
+			endCallback();
 			removeActiveClass();
 		};
 
@@ -347,267 +368,5 @@ var SCROLLER = (function(){
 
 	return function(opts){
 		return new init(opts);
-	}
-})();
-
-var ANIUTIL = (function(){
-	var calRange = function(values){
-		var values = {
-			targetValue: values.targetValue,
-			progress: values.progress,
-			startPoint: !!!values.startPoint ? 0 : values.startPoint,
-			endPoint: !!!values.endPoint ? 100 : values.endPoint
-		}
-	
-		if (values.startPoint > 0) {
-			values.endPoint = values.endPoint - values.startPoint > 0 ? values.endPoint - values.startPoint : values.endPoint;
-		}
-
-		var returnValue = values.targetValue * (values.progress - values.startPoint) / values.endPoint;
-	
-		if (returnValue > values.targetValue) {
-			returnValue = values.targetValue;
-		}
-
-		if (returnValue < 0) {
-			returnValue = 0;
-		}
-
-		return returnValue;
-	}
-
-	var videoObjectFit = function(opts){
-		var init = function(opts){
-			this.opts = opts;
-			this.setElement();
-			this.setVideoStyle();
-			this.bindEvent();
-		};
-
-		var fn = init.prototype;
-
-		fn.setElement = function(){
-			if (this.opts.wrapElement !== undefined) {
-				this.wrapElement = this.opts.wrapElement.jquery ? this.opts.wrapElement[0] : this.opts.wrapElement;
-			}
-	
-			if (this.opts.targetVideo !== undefined) {
-				this.targetVideo = this.opts.targetVideo.jquery ? this.opts.targetVideo[0] : this.opts.targetVideo;
-			}
-		};
-
-		fn.setVideoStyle = function(){
-			this.wrapElement.style.overflow = 'hidden';
-			this.targetVideo.style.position = 'absolute';
-			this.targetVideo.style.top = '50%';
-			this.targetVideo.style.left = '50%';
-			this.targetVideo.style.transform = 'translate(-50%, -50%)';
-		}
-
-		fn.bindEvent = function(){
-			var self = this;
-
-			window.addEventListener('load', function(){
-				self.setVideoSize();
-
-			});
-
-			window.addEventListener('resize', function(){
-				self.setVideoSize();
-			});
-		};
-
-		fn.getVideoInfo = function(){
-			this.wrapWidth = this.wrapElement.clientWidth;
-			this.wrapHeight = this.wrapElement.clientHeight;
-			this.videoWidth = this.targetVideo.clientWidth;
-			this.videoHeight = this.targetVideo.clientHeight;
-			this.wrapRatio = this.wrapHeight / this.wrapWidth;
-			this.videoRatio = this.videoHeight / this.videoWidth;
-		};
-
-		fn.setVideoSize = function(){
-			var self = this,
-				timer = null;			
-
-			clearTimeout(timer);
-
-			timer = setTimeout(function(){
-				self.getVideoInfo();
-
-				if (self.wrapRatio < self.videoRatio) {
-					self.targetVideo.style.width = '100%';
-					self.targetVideo.style.height = 'auto';
-				} else {
-					self.targetVideo.style.width = 'auto';
-					self.targetVideo.style.height = '100%';
-				}
-			}, 100);
-		};
-
-		return new init(opts);
-	}
-
-	var imageLoader = function(opts){
-		var init = function(){
-			this.opts = opts;
-			this.lazyClass = opts.lazyClass;
-			this.responsiveClass = opts.responsiveClass;
-			this.responsiveSize = opts.responsiveSize;
-			this.targetAttr = opts.targetAttr;
-			this.visiblePoint = !!!opts.visiblePoint ? 0 : opts.visiblePoint;
-			this.useDefaultImg = opts.useDefaultImg;
-			this.getLazyImage();
-			this.getResponsiveImage();
-			this.bindEvent();
-		};
-
-		var fn = init.prototype;
-
-		fn.bindEvent = function(){
-			var self = this,
-				responsiveCheck = typeof(this.responsiveSize) == 'object' && typeof(this.targetAttr) == 'object';
-
-			this.lazyEvent = function(){
-				self.setLazyImage();
-				if (self.lazyLength == 0) {
-					window.removeEventListener('scroll', self.lazyEvent);
-				}
-			}
-
-			window.addEventListener('DOMContentLoaded', function(){
-				if (self.useDefaultImg) {
-					self.setDefaultImage();
-				}
-				if (responsiveCheck) {
-					self.setResponsiveInfo();
-				}
-				self.setLazyImage();
-			});
-
-			window.addEventListener('scroll', this.lazyEvent);
-
-			if (responsiveCheck) {
-				window.addEventListener('resize', function(){
-					self.setResponsiveInfo();
-				});	
-			}
-		};
-
-		fn.getLazyImage = function(){
-			var lazyImageList = document.querySelectorAll(this.lazyClass);
-
-			this.lazyImages = lazyImageList;
-			this.lazyLength = lazyImageList.length;
-		};
-
-		fn.getResponsiveImage = function(){
-			var responsiveImageList = document.querySelectorAll(this.responsiveClass);
-
-			this.responsiveImages = responsiveImageList;
-			this.responsiveLength = responsiveImageList.length;
-		};
-
-		fn.setDefaultImage = function(){
-			for (var i = 0; i < this.lazyLength; i++) {
-				this.lazyImages[i].setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH/C1hNUCBEYXRhWE1QAz94cAAh+QQFAAAAACwAAAAAAQABAAACAkQBADs=')
-			};
-		};
-
-		fn.setResponsiveInfo = function(){
-			this.windowWidth = window.innerWidth;
-
-			for (var i = 0; i < this.responsiveSize.length; i++) {
-				var nextIndex = i + 1,
-					nextPoint = !!!this.responsiveSize[nextIndex] ? 0 : this.responsiveSize[nextIndex],
-					checkPoint = false;
-				if (i == 0) {
-					checkPoint = this.windowWidth > nextPoint;
-				} else {
-					checkPoint = this.windowWidth <= this.responsiveSize[i] && this.windowWidth > nextPoint;
-				}
-				if (checkPoint) {
-					if (this.opts.targetAttr[i] !== this.oldAttr) {
-						this.targetAttr = this.opts.targetAttr[i];
-						this.oldAttr = this.targetAttr;
-						this.setResponsiveImage();
-					}
-				}
-			}
-		};
-
-		fn.getOffset = function(element){
-			var top = element.getBoundingClientRect().top + window.pageYOffset,
-				bottom = element.getBoundingClientRect().bottom + window.pageYOffset;
-	
-			return {
-				top: top,
-				bottom: bottom
-			}
-		};
-
-		fn.getScroll = function(){
-			var top = window.pageYOffset,
-				bottom =  top + this.windowHeight;
-	
-			return {
-				top: top,
-				bottom: bottom
-			}
-		};
-
-		fn.setResponsiveImage = function(){
-			for (var i = 0; i < this.responsiveLength; i++) {
-				var targetImage = this.responsiveImages[i],
-					imgSrc = targetImage.getAttribute(this.targetAttr);
-
-				if (!targetImage.classList.contains(this.lazyClass.split('.')[1])) {
-					targetImage.setAttribute('src', imgSrc);
-				}
-			}
-		};
-
-		fn.setLazyImage = function(){
-			this.windowHeight = window.innerHeight;
-
-			for (var i = 0; i < this.lazyLength; i++) {
-				var targetElement = this.lazyImages[i],
-					targetElementHeight = null,
-					targetElementHeight = targetElement.clientHeight,
-					corrHeight = this.windowHeight * this.visiblePoint,
-					scrollTop = this.getScroll().top - corrHeight,
-					scrollBottom = this.getScroll().bottom + corrHeight,
-					targetOffsetTop = this.getOffset(targetElement).top,
-					targetOffsetBottom = this.getOffset(targetElement).bottom,
-					lazyClass = this.lazyClass.split('.'),
-					removeClass = lazyClass[lazyClass.length-1];
-
-				if (scrollBottom > targetOffsetTop && scrollTop <= targetOffsetTop ||
-					scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom||
-					scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom ||
-					scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) {
-					var imgSrc = targetElement.getAttribute(this.targetAttr);
-
-					targetElement.setAttribute('src', imgSrc);
-					targetElement.classList.remove(removeClass);
-					
-					this.getLazyImage();
-				}
-			}
-		};
-
-		return new init(opts);
-	}
-
-	return {
-		calRange: function(values){
-			return calRange(values);
-		},
-		videoObjectFit: function(opts){
-			videoObjectFit(opts);
-		},
-		imageLoader: function(opts){
-			imageLoader(opts);
-		}
 	}
 })();
