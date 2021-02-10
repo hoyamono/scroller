@@ -135,7 +135,7 @@ var SCROLLER = function () {
     },
     setTrackHeigh: function () {
       this.trackElement.style.paddingTop = '', this.trackElement.style.paddingBottom = '';
-      var isTrackHeight = this.trackElement.clientHeight,
+      var isTrackHeight = this.trackElement.clientHeight == 0 ? this.windowHeight : this.trackElement.clientHeight,
           calTrackHeight = isTrackHeight * this.trackHeight - isTrackHeight;
       this.trackElement.style.paddingTop = calTrackHeight / 2 + 'px';
       this.trackElement.style.paddingBottom = calTrackHeight / 2 + 'px';
