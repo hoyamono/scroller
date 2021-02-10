@@ -1,7 +1,6 @@
 # SCROLLER
 스크롤 인터렉션 페이지 제작을 위한 라이브러리입니다.
 
-
 ## Example Code
 ---
 ### 1. SCROLLER 객체 생성 (https://hoyamono.github.io/scroller/)
@@ -95,7 +94,68 @@ var scene2 = SCROLLER({
 	scene1.destroy();
 	```
 ---
-### 4. Utils
+
+# RANGEHANDLER
+progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함수를 실행하는 라이브러리
+
+
+## Example Code
+
+
+### 1. 객체생성
+- RANGEHANDLER를 변수에 담아 객체를 생성한다
+	``` javascript
+	var animation1 = RANGEHANDLER({
+		targetValue: 1,
+		startPoint: 20,
+		endPoint: 50,
+		onStart: function(){
+			console.log('onStart')
+		},
+		onUpdate: function(){
+			console.log('onUpdate')
+		},
+		onComplate: function(){
+			console.log('onComplate')
+		},
+		reverseStart: function(){
+			console.log('reverseStart')
+		},
+		reverseComplate: function(){
+			console.log('reverseComplate')
+		}
+	});
+	```
+
+
+### 2. Option List
+|Option|Type|Description|
+|------|-----|-------|
+|targetValue|number|progress가 100이됐을때 도달할 value값|
+|progress|number|현재 progress값|
+|startPoint|number|0~100까지의 progress중 target value값 계산을 시작할 위치 지정|
+|endPoint|number|0~100까지의 progress중 target value값 계산을 중단할 위치 지정|
+|onStart|function|스크롤 시작시 실행될 함수|
+|onComplate|function|스크롤 완료 후 실행될 함수|
+|reverseStart|function|역방향 스크롤 시작식 실행될 함수|
+|reverseComplate|function|역방향 스크롤 완료 후 실행될 함수|
+|onUpdate|function|스크롤 시작 후 스크롤 중 실행될 함수|
+
+
+### 3. Methods
+- calValue(progress): progress에 따라 객체 생성시 설정한 포인트에 맞는 value값을 return한다.
+- activeAnimation(progress): 객체 생성시 설정한 callback 함수를 분기에 맞게 실행한다.
+	``` javascript
+	window.addEventListener('scroll', function () {
+		var motionValue1 = rangAnimation.calValue(progress); // progress 값을 통해 분기에 따른 value 값 획득
+
+		animation1.activeAnimation(progress);// progress 값을 통해 분기에 따른 callback 함수 실행
+	});
+	```
+---
+
+
+# ANI Utils
 - ANIUTIL.calRange : trackAnimation에서 제공하는 progress의 값이 0~100%까지 도달할때까지 진행상황에 맞춰 value 값을 계산해주는 함수.
 	``` javascript
 	ANIUTIL.calRange({
@@ -119,15 +179,15 @@ var scene2 = SCROLLER({
 		lazyClass: '.img-box img',
 		responsiveClass: '.res-img',
 		loadOption: [{
-            resolution: 1920,
-            attribute: 'data-img-pc'
-        },{
-            resolution: 1024,
-            attribute: 'data-img-tb'
-        },{
-            resolution: 768,
-            attribute: 'data-img-mo'
-        }],
+			resolution: 1920,
+			attribute: 'data-img-pc'
+		},{
+			resolution: 1024,
+			attribute: 'data-img-tb'
+		},{
+			resolution: 768,
+			attribute: 'data-img-mo'
+		}],
 		visiblePoint: 1,
 		useDefaultImg: true,
 	});
