@@ -96,6 +96,50 @@ var scene2 = SCROLLER({
 	```
 ---
 ### 4. Utils
+- RANGEANIMATION : trackAnimation에서 제공하는 progress의 값이 0~100%까지 도달할때까지 진행상황에 맞춰 value 값 계산 및 분기별 callback 함수를 실행하여 animation을 구현하는 함수
+	|Option|Type|Description|
+	|------|---|-----|
+	|targetValue|number|progress가 100이됐을때 도달할 value값|
+	|progress|number|현재 progress값|
+	|startPoint|number|0~100까지의 progress중 target value값 계산을 시작할 위치 지정|
+	|endPoint|number|0~100까지의 progress중 target value값 계산을 중단할 위치 지정|
+	|onStart|function|스크롤 시작시 실행될 함수|
+	|onComplate|function|스크롤 완료 후 실행될 함수|
+	|reverseStart|function|역방향 스크롤 시작식 실행될 함수|
+	|reverseComplate|function|역방향 스크롤 완료 후 실행될 함수|
+	|onUpdate|function|스크롤 시작 후 스크롤 중 실행될 함수|
+	---
+	- Methods
+	
+
+	``` javascript
+	var animation1 = RANGEANIMATION({
+		targetValue: 1,
+		startPoint: 20,
+		endPoint: 50,
+		onStart: function(){
+			console.log('onStart')
+		},
+		onUpdate: function(){
+			console.log('onUpdate')
+		},
+		onComplate: function(){
+			console.log('onComplate')
+		},
+		reverseStart: function(){
+			console.log('reverseStart')
+		},
+		reverseComplate: function(){
+			console.log('reverseComplate')
+		}
+	});
+
+	window.addEventListener('scroll', function () {
+		var motionValue1 = animation1.activeAnimation(this.progress);
+	});
+
+	---
+
 - ANIUTIL.calRange : trackAnimation에서 제공하는 progress의 값이 0~100%까지 도달할때까지 진행상황에 맞춰 value 값을 계산해주는 함수.
 	``` javascript
 	ANIUTIL.calRange({
