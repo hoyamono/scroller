@@ -207,27 +207,6 @@
 		}
 	});
 
-	var rangAnimation2 = RANGEHANDLER({
-		targetValue: 1,
-		startPoint: 1,
-		endPoint: 99,
-		onStart: function(){
-			console.log('onStart')
-		},
-		onUpdate: function(){
-			console.log('onUpdate')
-		},
-		onComplate: function(){
-			console.log('onComplate')
-		},
-		reverseStart: function(){
-			console.log('reverseStart')
-		},
-		reverseComplate: function(){
-			console.log('reverseComplate')
-		}
-	});
-
 	var animationHandler = function () {
 		scene1.trackAnimation(function () {
 			var progress = this.progress;
@@ -241,7 +220,8 @@
 				endPoint: 60
 			});
 
-			// rangAnimation.activeAnimation(progress)
+			rangAnimation.activeAnimation(progress)
+
 			if (value1Curr >= 0) {
 				aniTarget1_1.style.opacity = value1Curr;
 			}
@@ -262,7 +242,7 @@
 					startdPoint: 70
 				}),
 				motionValue2 = 1 - motionValue1;
-				rangAnimation2.activeAnimation(this.progress)
+
 			video1.style.opacity = motionValue2;
 		});
 
