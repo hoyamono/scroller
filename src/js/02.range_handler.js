@@ -13,6 +13,8 @@ var RANGEHANDLER = (function(){
 		this.targetValue = opts.targetValue;
 		this.startPoint = !!!opts.startPoint ? 0 : opts.startPoint;
 		this.endPoint = !!!opts.endPoint ? 100 : opts.endPoint;
+		this.activeStartPoint = this.startPoint + 1;
+		this.activeEndPoint = this.endPoint - 1;
 		this.onStart = opts.onStart;
 		this.onUpdate = opts.onUpdate;
 		this.onComplate = opts.onComplate;
@@ -35,10 +37,10 @@ var RANGEHANDLER = (function(){
 
 	fn.calValue = function(progress){
 		if (this.startPoint > 0) {
-			this.endPoint = this.endPoint - this.startPoint > 0 ? this.endPoint - this.startPoint : this.endPoint;
+			this.corrEndPoint = this.corrEndPoint - this.startPoint > 0 ? this.corrEndPoint - this.startPoint : this.corrEndPoint;
 		}
 	
-		var returnValue = this.targetValue * (progress - this.startPoint) / this.endPoint;
+		var returnValue = this.targetValue * (progress - this.startPoint) / this.corrEndPoint;
 	
 		if (returnValue > this.targetValue) {
 			returnValue = this.targetValue;
@@ -92,21 +94,13 @@ var RANGEHANDLER = (function(){
 	}
 
 	fn.checkScrollType = function(progress){
-		if (progress >= this.startPoint &&
-			!this.activeReverseStart &&
-			!this.activeReverseComplate &&
-			!this.complateReverseCallback &&
-			!this.activeOnStart &&
-			!this.activeOnComplate &&
-			!this.complateOnCallback) {
-			return 'pass';
-		} else if (progress >= this.startPoint && !this.complateOnCallback && !this.activeOnStart && this.isDirection == 'down') {
+		if (progress > this.activeStartPoint && progress < this.activeEndPoint && !this.complateOnCallback && !this.activeOnStart && this.isDirection == 'down') {
 			return 'onStart';
-		} else if (progress >= this.opts.endPoint && !this.complateOnCallback && !this.activeOnComplate && this.isDirection == 'down') {
+		} else if (progress > this.activeEndPoint && !this.complateOnCallback && !this.activeOnComplate && this.isDirection == 'down') {
 			return 'onComplate';
-		} else if (progress <= this.opts.endPoint && this.complateOnCallback && !this.activeReverseStart && this.isDirection == 'up') {
+		} else if (progress < this.activeEndPoint && this.complateOnCallback && !this.activeReverseStart && this.isDirection == 'up') {
 			return 'reverseStart';
-		} else if (progress <= this.startPoint && this.complateOnCallback && !this.activeReverseComplate && this.isDirection == 'up') {
+		} else if (progress < this.activeStartPoint && this.complateOnCallback && !this.activeReverseComplate && this.isDirection == 'up') {
 			return 'reverseComplate';
 		} else if (this.activeOnStart && !this.activeOnComplate && this.isDirection == 'down' ||
 			this.activeOnStart && !this.activeOnComplate && this.isDirection == 'up' ||
@@ -122,9 +116,9 @@ var RANGEHANDLER = (function(){
 
 		switch (this.checkScrollType(progress)) {
 			case 'onUpdate':
-				if (this.activeReverseStart && progress >= this.opts.endPoint && this.isDirection == 'down') {
+				if (this.activeReverseStart && progress > this.activeEndPoint && this.isDirection == 'down') {
 					this.callBackList.onComplate.call(this);
-				} else if (this.activeOnStart && progress <= this.startPoint && this.isDirection == 'up') {
+				} else if (this.activeOnStart && progress < this.activeStartPoint && this.isDirection == 'up') {
 					this.callBackList.reverseComplate.call(this);
 				} else {
 					this.onUpdate();
@@ -136,6 +130,16 @@ var RANGEHANDLER = (function(){
 			break;
 
 			case 'onComplate':
+				if (progress > this.activeStartPoint &&
+					!this.activeReverseStart &&
+					!this.activeReverseComplate &&
+					!this.complateReverseCallback &&
+					!this.activeOnStart &&
+					!this.activeOnComplate &&
+					!this.complateOnCallback) {
+						this.callBackList.onStart.call(this);
+						this.onUpdate();
+				}
 				this.callBackList.onComplate.call(this);
 			break;
 
@@ -145,11 +149,6 @@ var RANGEHANDLER = (function(){
 
 			case 'reverseComplate':
 				this.callBackList.reverseComplate.call(this);
-			break;
-
-			case 'pass':
-				this.onUpdate();
-				this.callBackList.onComplate.call(this);
 			break;
 		}
 	};
