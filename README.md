@@ -48,10 +48,17 @@ var scene2 = SCROLLER({
 ---
 ### 3. Methods
 - trackAnimation : fixed animation 구현시 사용하는 Method로 설정된 trackElement구간에서 scroll시 progress 정보를 제공하고 callback 함수를 실행한다.
+	|property|Type|Description|
+	|------|---|-----|
+	|this.progress|number|trackElement구간의 scroll 진행상황 0 ~ 100까지의 value제공|
+	|this.wheelDirection|string|현재 스크롤 방향 표시 'up, down' string으로 제공|
+	---
 	``` javascript
 	window.addEventListener('scroll', function () {
 		scene1.trackAnimation(function () {
 			var progress = this.progress; //trackElement구간의 scroll 진행상황 0 ~ 100까지의 value제공
+
+			var wheelDirection = this.wheelDirection; //현재 스크롤 방향 표시 'up, down' string으로 제공
 
 			var motionValue1 = ANIUTIL.calRange({
 					targetValue: 1,
