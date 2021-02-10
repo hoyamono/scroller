@@ -5,7 +5,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Scroller</title>
-	<script src="./resouces/js/scroller.min.js"></script>
+	<script src="./resouces/js/scroller.js"></script>
 	<link rel="stylesheet" href="https://meyerweb.com/eric/tools/css/reset/reset200802.css">
 	<link rel="stylesheet" href="./resouces/css/scroller.css">
 </head>
@@ -72,6 +72,14 @@
 	SCROLLER({
 		IEScroll: true, //css transition을 사용할 경우 IE에서 발생하는 떨림을 최소화 하는 옵션, * 한페이지에 한번만 실행 *
 	});
+
+	// var sequence = ANIUTIL.sequence({
+	// 	fileAddr: 'https://www.samsung.com/global/galaxy/galaxy-buds-pro/images/',
+	// 	fileName: 'galaxy-buds-pro-kv-seq-{num}',
+	// 	startCount: 0,
+	// 	endCount: 104,
+	// 	speed: 1
+	// });
 
 	var trackElement1 = document.querySelector('.kv'),
 		fixedElement1 = document.querySelector('.kv .content-wrap'),

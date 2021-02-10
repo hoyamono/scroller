@@ -202,13 +202,28 @@ var SCROLLER = (function(){
 		
 		this.progress = (scrollTop / trackHeight) * 100;
 
-		if (this.progress < 0) {
-			return this.progress = 0;
-		} else if (this.progress > 100) {
-			return this.progress = 100;
-		} else {
-			return this.progress;
+		var getWheelDirection = function(){
+			if (this.progress > this.oldProgress) {
+				this.wheelDirection = 'down';
+			} else {
+				this.wheelDirection = 'up';
+			}
 		}
+		if (this.progress < 0) {
+			getWheelDirection.call(this);
+			this.progress = 0;
+			this.oldProgress = 0;
+		} else if (this.progress > 100) {
+			getWheelDirection.call(this);
+			this.progress = 100;
+			this.oldProgress = 100;
+		} else {
+			getWheelDirection.call(this);
+			this.progress = this.progress;
+			this.oldProgress = this.progress;
+		}
+
+		return this.progress;
 	};
 
 	fn.trackAnimation = function(callback){
