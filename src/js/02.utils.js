@@ -1,3 +1,12 @@
+/*!
+ * ANI-Util JavaScript Library v1.0
+ *
+ * Copyright 2021. Yoon jae-ho
+ * Released under the MIT license
+ *
+ * Date: 2021-02-09
+ */
+
 var ANIUTIL = (function(){
 	var calRange = function(values){
 		var values = {
@@ -131,7 +140,7 @@ var ANIUTIL = (function(){
 					self.setDefaultImage();
 				}
 				if (responsiveCheck) {
-					self.setResponsiveInfo();
+					self.responsiveHandler();
 				}
 				self.setLazyImage();
 			});
@@ -143,11 +152,32 @@ var ANIUTIL = (function(){
 					clearTimeout(resizeTiming);
 
 					resizeTiming = setTimeout(function(){
-						self.setResponsiveInfo();
+						self.responsiveHandler();
 					}, 80);
 				});	
 			}
 		};
+
+		fn.utilList = {
+			getOffset: function(element){
+				var top = element.getBoundingClientRect().top + window.pageYOffset,
+					bottom = element.getBoundingClientRect().bottom + window.pageYOffset;
+		
+				return {
+					top: top,
+					bottom: bottom
+				}
+			},
+			getScroll: function(){
+				var top = window.pageYOffset,
+					bottom =  top + this.windowHeight;
+		
+				return {
+					top: top,
+					bottom: bottom
+				}
+			}
+		}
 
 		fn.getLazyImage = function(){
 			var lazyImageList = document.querySelectorAll(this.lazyClass),
@@ -171,7 +201,7 @@ var ANIUTIL = (function(){
 			};
 		};
 
-		fn.setResponsiveInfo = function(){
+		fn.responsiveHandler = function(){
 			this.windowWidth = window.innerWidth;
 
 			var resolutionLength = this.loadOption.length;
@@ -197,26 +227,6 @@ var ANIUTIL = (function(){
 			}
 		};
 
-		fn.getOffset = function(element){
-			var top = element.getBoundingClientRect().top + window.pageYOffset,
-				bottom = element.getBoundingClientRect().bottom + window.pageYOffset;
-	
-			return {
-				top: top,
-				bottom: bottom
-			}
-		};
-
-		fn.getScroll = function(){
-			var top = window.pageYOffset,
-				bottom =  top + this.windowHeight;
-	
-			return {
-				top: top,
-				bottom: bottom
-			}
-		};
-
 		fn.setResponsiveImage = function(){
 			for (var i = 0; i < this.responsiveLength; i++) {
 				var targetImage = this.responsiveImages[i],
@@ -227,7 +237,6 @@ var ANIUTIL = (function(){
 				}
 
 				if (targetImage.classList.contains(this.lazyComplateClass)) {
-					console.log(1)				
 					targetImage.setAttribute('src', imgSrc);
 				}
 			}
@@ -278,13 +287,11 @@ var ANIUTIL = (function(){
 
 			for (var i = 0; i < this.lazyLength; i++) {
 				var targetElement = this.lazyImages[i],
-					targetElementHeight = null,
-					targetElementHeight = targetElement.clientHeight,
 					corrHeight = this.windowHeight * this.visiblePoint,
-					scrollTop = this.getScroll().top - corrHeight,
-					scrollBottom = this.getScroll().bottom + corrHeight,
-					targetOffsetTop = this.getOffset(targetElement).top,
-					targetOffsetBottom = this.getOffset(targetElement).bottom,
+					scrollTop = this.utilList.getScroll.call(this).top - corrHeight,
+					scrollBottom = this.utilList.getScroll.call(this).bottom + corrHeight,
+					targetOffsetTop = this.utilList.getOffset.call(this, targetElement).top,
+					targetOffsetBottom = this.utilList.getOffset.call(this, targetElement).bottom,
 					lazyClass = this.lazyClass.split('.'),
 					removeClass = lazyClass[lazyClass.length-1];
 
