@@ -7,7 +7,7 @@ p { font-size: 70px; color: #fff; }
 
 .text1, .text2 { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); opacity: 0; transition: all 0.1s linear; z-index: 2; }
 
-.kv { position: relative; height: 100vh; text-align: center; vertical-align: middle; }
+.kv { position: relative; text-align: center; vertical-align: middle; }
 
 .kv .text1 { opacity: 1; }
 
