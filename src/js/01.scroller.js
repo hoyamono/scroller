@@ -253,8 +253,10 @@ var SCROLLER = (function(){
 		this.winScrollBottom = this.utilList.getScroll.call(this).bottom;
 		this.activeElementHeight = this.activeElement.clientHeight;
 		this.correctionValue = this.activeElementHeight * this.correction;
-		this.corScrollTop = this.winScrollTop + this.correctionValue;
-		this.corScrollBottom = this.winScrollBottom - this.correctionValue;
+		this.activeScrollTop = this.winScrollTop + this.correctionValue;
+		this.activeScrollBottom = this.winScrollBottom - this.correctionValue;
+		this.removeScrollTop = this.winScrollTop - this.correctionValue;
+		this.removeScrollBottom = this.winScrollBottom + this.correctionValue;
 		this.elementOffsetTop = this.utilList.getOffset.call(this, this.activeElement).top;
 		this.elementOffsetBottom = this.utilList.getOffset.call(this, this.activeElement).bottom;
 
@@ -327,14 +329,16 @@ var SCROLLER = (function(){
 
 		switch (visibleTyle) {
 			case 'before':
-				if (self.corScrollBottom < self.elementOffsetBottom && self.corScrollBottom >= self.elementOffsetTop ||
-					self.corScrollBottom < self.elementOffsetBottom && self.corScrollBottom >= self.elementOffsetBottom) {
+				if (self.activeScrollBottom < self.elementOffsetBottom && self.activeScrollBottom >= self.elementOffsetTop ||
+					self.activeScrollBottom < self.elementOffsetBottom && self.activeScrollBottom >= self.elementOffsetBottom ||
+					this.activePlay == 'oneWay' && self.activeScrollBottom >= self.elementOffsetTop) {
 					activeHandler();
 				}
 			break;
 
 			case 'visible':
-				if (self.corScrollBottom >= self.elementOffsetTop + corrHeight && self.corScrollTop  < self.elementOffsetTop) {
+				if (self.activeScrollBottom >= self.elementOffsetTop + corrHeight && self.activeScrollTop < self.elementOffsetTop ||
+					this.activePlay == 'oneWay' && self.activeScrollBottom >= self.elementOffsetTop + corrHeight) {
 					activeHandler();
 				}
 			break;
@@ -342,13 +346,13 @@ var SCROLLER = (function(){
 
 		switch (removeType) {
 			case 'reverse':
-				if (self.winScrollTop > self.elementOffsetBottom || self.winScrollBottom < self.elementOffsetTop ) {
+				if (self.removeScrollTop > self.elementOffsetBottom || self.removeScrollBottom < self.elementOffsetTop ) {
 					removeHandler();
 				}
 			break;
 
 			case 'oneWay':
-				if (self.winScrollBottom < self.elementOffsetTop ) {
+				if (self.removeScrollBottom < self.elementOffsetTop ) {
 					removeHandler();
 				}
 			break;
