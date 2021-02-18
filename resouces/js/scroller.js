@@ -323,14 +323,14 @@ var SCROLLER = function () {
 
     switch (visibleTyle) {
       case 'before':
-        if (self.corScrollBottom < self.elementOffsetBottom && self.corScrollBottom >= self.elementOffsetTop || self.corScrollBottom < self.elementOffsetBottom && self.corScrollBottom >= self.elementOffsetBottom) {
+        if (self.corScrollBottom < self.elementOffsetBottom && self.corScrollBottom >= self.elementOffsetTop || self.corScrollBottom < self.elementOffsetBottom && self.corScrollBottom >= self.elementOffsetBottom || this.activePlay == 'oneWay' && self.corScrollBottom >= self.elementOffsetTop) {
           activeHandler();
         }
 
         break;
 
       case 'visible':
-        if (self.corScrollBottom >= self.elementOffsetTop + corrHeight && self.corScrollTop < self.elementOffsetTop) {
+        if (self.corScrollBottom >= self.elementOffsetTop + corrHeight && self.corScrollTop < self.elementOffsetTop || this.activePlay == 'oneWay' && self.corScrollBottom >= self.elementOffsetTop + corrHeight) {
           activeHandler();
         }
 
@@ -446,8 +446,6 @@ var RANGEHANDLER = function () {
 
   fn.callBackList = {
     onStart: function () {
-      console.log(this.onStart == true);
-
       if (this.onStart) {
         this.onStart();
       }
