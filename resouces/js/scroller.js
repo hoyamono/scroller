@@ -446,11 +446,19 @@ var RANGEHANDLER = function () {
 
   fn.callBackList = {
     onStart: function () {
-      this.onStart();
+      console.log(this.onStart == true);
+
+      if (this.onStart) {
+        this.onStart();
+      }
+
       this.activeOnStart = true;
     },
     onComplate: function () {
-      this.onComplate();
+      if (this.onComplate) {
+        this.onComplate();
+      }
+
       this.activeOnComplate = true;
       this.complateOnCallback = true;
       this.activeReverseStart = false;
@@ -458,16 +466,27 @@ var RANGEHANDLER = function () {
       this.complateReverseCallback = false;
     },
     reverseStart: function () {
-      this.reverseStart();
+      if (this.reverseStart) {
+        this.reverseStart();
+      }
+
       this.activeReverseStart = true;
     },
     reverseComplate: function () {
-      this.reverseComplate();
+      if (this.reverseComplate) {
+        this.reverseComplate();
+      }
+
       this.activeReverseComplate = true;
       this.complateReverseCallback = true;
       this.activeOnStart = false;
       this.activeOnComplate = false;
       this.complateOnCallback = false;
+    },
+    onUpdate: function () {
+      if (this.onUpdate) {
+        this.onUpdate();
+      }
     }
   };
 
@@ -496,7 +515,7 @@ var RANGEHANDLER = function () {
         } else if (this.activeOnStart && progress < this.activeStartPoint && this.isDirection == 'up') {
           this.callBackList.reverseComplate.call(this);
         } else {
-          this.onUpdate();
+          this.callBackList.onUpdate.call(this);
         }
 
         break;
@@ -508,7 +527,7 @@ var RANGEHANDLER = function () {
       case 'onComplate':
         if (progress > this.activeStartPoint && !this.activeReverseStart && !this.activeReverseComplate && !this.complateReverseCallback && !this.activeOnStart && !this.activeOnComplate && !this.complateOnCallback) {
           this.callBackList.onStart.call(this);
-          this.onUpdate();
+          this.callBackList.onUpdate.call(this);
         }
 
         this.callBackList.onComplate.call(this);
