@@ -857,6 +857,98 @@ var ANIUTIL = function () {
     return new init(opts);
   };
 
+  var sequencePlayer = function (opts) {
+    var init = function (opts) {
+      this.opts = opts;
+      this.targetElement = opts.targetElement;
+      this.imageList = [];
+      this.setCanvas();
+      this.loadImages();
+    };
+
+    var fn = init.prototype;
+
+    fn.setCanvas = function () {
+      this.canvas = document.createElement('CANVAS');
+      this.context = this.canvas.getContext('2d');
+      this.targetElement.append(this.canvas);
+      this.canvas.width = this.opts.width;
+      this.canvas.height = this.opts.height;
+      console.log(this.context);
+    };
+
+    fn.loadImages = function () {
+      var self = this;
+
+      for (var i = this.opts.startNum; i <= this.opts.endNum; i++) {
+        var isImage = new Image();
+        isImage.src = this.opts.path + this.opts.name + i + '.' + this.opts.extension;
+
+        (function (idx) {
+          isImage.addEventListener('load', function () {
+            self.imageList[idx] = this;
+            self.imagesLength = self.imageList.length;
+
+            if (self.opts.autoPlay && self.imagesLength == self.opts.endNum + 1) {
+              self.play();
+            }
+          });
+        })(i);
+      }
+    };
+
+    fn.play = function (type) {
+      if (!!!type) {
+        this.sequenceAutoplay();
+      } else {}
+    };
+
+    fn.reverse = function (type) {
+      if (!!!type) {} else {}
+    };
+
+    fn.pause = function () {
+      console.log('pause');
+      window.cancelAnimationFrame(this.playAnimation);
+    };
+
+    fn.sequenceAutoplay = function () {
+      var self = this,
+          playCount = this.opts.endNum / this.opts.playTime,
+          startTime,
+          progress;
+
+      if (!!!this.playIndex) {
+        this.playIndex = 0;
+      }
+
+      var animation = function (timestemp) {
+        if (!!!startTime) {
+          startTime = parseInt(timestemp);
+        }
+
+        progress = parseInt(timestemp) - startTime;
+
+        if (self.playIndex <= self.opts.endNum) {
+          self.context.clearRect(0, 0, self.opts.width, self.opts.height);
+          self.context.drawImage(self.imageList[self.playIndex], 0, 0, self.opts.width, self.opts.height);
+          console.log(playCount++);
+          self.playIndex++;
+          self.playAnimation = window.requestAnimationFrame(animation);
+        } else {
+          self.pause();
+          console.log('end');
+        }
+
+        ;
+      };
+
+      this.playAnimation = window.requestAnimationFrame(animation);
+    };
+
+    return new init(opts);
+  };
+
   var addClass = function (opts) {
     var classLength = opts.classList.length;
 
@@ -892,6 +984,9 @@ var ANIUTIL = function () {
     },
     removeClass: function (opts) {
       removeClass(opts);
+    },
+    sequencePlayer: function (opts) {
+      sequencePlayer(opts);
     }
   };
 }();
