@@ -562,9 +562,22 @@ var SEQUENCEPLAYER = function (opts) {
   var fn = init.prototype;
 
   fn.setCanvas = function () {
-    this.canvas = document.createElement('CANVAS');
+    var checkElement = function (element) {
+      if (element.tagName == 'CANVAS') {
+        this.canvas = element;
+      } else {
+        this.canvas = document.createElement('CANVAS');
+        this.targetElement.append(this.canvas);
+      }
+    };
+
+    if (this.targetElement.jquery) {
+      checkElement.call(this, this.targetElement[0]);
+    } else {
+      checkElement.call(this, this.targetElement);
+    }
+
     this.context = this.canvas.getContext('2d');
-    this.targetElement.append(this.canvas);
     this.canvas.width = this.opts.width;
     this.canvas.height = this.opts.height;
   };
