@@ -69,7 +69,7 @@
 	// =============================================================================================================== SCENE 생성
 	// ============================================================== Key Visual (scene1)
 
-	ANIUTIL.sequencePlayer({
+	var seq1 = SEQUENCEPLAYER({
 		targetElement: document.querySelector('.kv'),
 		startNum: 0,
 		endNum: 104,
@@ -78,10 +78,10 @@
 		extension: 'jpg',
 		width: 1267,
 		height: 922,
-		autoPlay: true,
-		playTime: 2.5
+		// autoPlay: true,
+		playTime: 3000
 	});
-
+	seq1.play();
 	SCROLLER({
 		IEScroll: true, //css transition을 사용할 경우 IE에서 발생하는 떨림을 최소화 하는 옵션, * 한페이지에 한번만 실행 *
 	});
