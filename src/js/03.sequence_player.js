@@ -192,28 +192,37 @@ var SEQUENCEPLAYER = (function(){
 
                 switch(type) {
                     case undefined:
-                        if (self.usePlay && self.useReverse) {
-                            var corrTime = self.opts.playTime - self.pausePlayingTime;
+                        // if (self.usePlay && self.useReverse) {
+                        //     var corrTime = self.opts.playTime - self.pausePlayingTime;
 
-                            self.playIndex = Math.ceil((progress + corrTime) * playInterval);
-                            console.log('timeControll_2 : ', self.playIndex, progress, self.pausePlayingTime, playInterval, startTime,)
-                            self.playingTime = progress + corrTime;
+                        //     self.playIndex = Math.ceil((progress + corrTime) * playInterval);
+                        //     console.log('timeControll_2 : ', self.playIndex, progress, self.pausePlayingTime, playInterval, startTime,)
+                        //     self.playingTime = progress + corrTime;
 
-                            if (self.playingTime > self.opts.playTime) {
-                                _resetStatus();
+                        //     if (self.playingTime > self.opts.playTime) {
+                        //         _resetStatus();
 
-                                return;
-                            };
-                        } else {
-                            self.playIndex = Math.ceil((progress + self.pausePlayingTime) * playInterval);
-                            self.playingTime = progress + self.pausePlayingTime;
+                        //         return;
+                        //     };
+                        // } else {
+                        //     self.playIndex = Math.ceil((progress + self.pausePlayingTime) * playInterval);
+                        //     self.playingTime = progress + self.pausePlayingTime;
 
-                            if (self.playingTime > self.opts.playTime) {
-                                _resetStatus();
+                        //     if (self.playingTime > self.opts.playTime) {
+                        //         _resetStatus();
 
-                                return;
-                            };
-                        }
+                        //         return;
+                        //     };
+                        // }
+                        self.playIndex = Math.ceil((progress + self.pausePlayingTime) * playInterval);
+                        self.playingTime = progress + self.pausePlayingTime;
+
+                        if (self.playingTime > self.opts.playTime) {
+                            _resetStatus();
+
+                            return;
+                        };
+
                     break;
 
                     case 'reverse':
