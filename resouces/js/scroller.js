@@ -556,6 +556,8 @@ var SEQUENCEPLAYER = function () {
     this.playIndex = null;
     this.playingTime = 0;
     this.pausePlayingTime = 0;
+    this.usePlay = false;
+    this.useReverse = false;
     this.setCanvas();
     this.loadImages();
     return this;
@@ -620,7 +622,6 @@ var SEQUENCEPLAYER = function () {
 
   fn.play = function (index) {
     if (this.isPlay) return;
-    console.log('play');
     var idx = index > this.opts.endNum ? this.opts.endNum : index;
 
     if (index == undefined) {
@@ -634,30 +635,28 @@ var SEQUENCEPLAYER = function () {
         this.drawCanvas(idx);
       }
     }
-
-    this.usePlay = true;
   };
 
   fn.reverse = function () {
     if (this.isPlay) return;
-    console.log('reverse');
 
     if (this.loadCount !== this.opts.endNum) {
       this.sequenceLoadCheck('reverse');
     } else {
       this.activeSequence('reverse');
     }
-
-    this.useReverse = true;
   };
 
   fn.pause = function () {
     if (!this.isPlay) return;
-    console.log('pause');
+
+    if (this.useReverse && this.usePlayIng) {
+      this.useReverse = false;
+    }
+
     window.cancelAnimationFrame(this.playAnimation);
     this.isPlay = false;
     this.pausePlayingTime = this.playingTime;
-    console.log('pause : ', this.playIndex);
   };
 
   fn.drawCanvas = function (index) {
@@ -696,12 +695,10 @@ var SEQUENCEPLAYER = function () {
       self.playIndex = null;
       self.pause();
       self.isPlay = false;
-
-      if (self.usePlay) {
-        self.usePlay = false;
-      } else if (self.useReverse) {
-        self.useReverse = false;
-      }
+      self.usePlay = false;
+      self.usePlayIng = false;
+      self.useReverse = false;
+      self.useReverseIng = false;
     };
 
     var _animation = {
@@ -735,38 +732,38 @@ var SEQUENCEPLAYER = function () {
 
         switch (type) {
           case undefined:
-            // if (self.usePlay && self.useReverse) {
-            //     var corrTime = self.opts.playTime - self.pausePlayingTime;
-            //     self.playIndex = Math.ceil((progress + corrTime) * playInterval);
-            //     console.log('timeControll_2 : ', self.playIndex, progress, self.pausePlayingTime, playInterval, startTime,)
-            //     self.playingTime = progress + corrTime;
-            //     if (self.playingTime > self.opts.playTime) {
-            //         _resetStatus();
-            //         return;
-            //     };
-            // } else {
-            //     self.playIndex = Math.ceil((progress + self.pausePlayingTime) * playInterval);
-            //     self.playingTime = progress + self.pausePlayingTime;
-            //     if (self.playingTime > self.opts.playTime) {
-            //         _resetStatus();
-            //         return;
-            //     };
-            // }
-            self.playIndex = Math.ceil((progress + self.pausePlayingTime) * playInterval);
-            self.playingTime = progress + self.pausePlayingTime;
+            if (self.useReverse && !self.useReverseIng) {
+              self.usePlayIng = true;
+              var corrTime = self.opts.playTime - self.pausePlayingTime;
+              self.playIndex = Math.ceil((progress + corrTime) * playInterval);
+              self.playingTime = progress + corrTime;
 
-            if (self.playingTime > self.opts.playTime) {
-              _resetStatus();
+              if (self.playingTime > self.opts.playTime) {
+                _resetStatus();
 
-              return;
+                return;
+              }
+
+              ;
+            } else {
+              self.usePlay = true;
+              self.playIndex = Math.ceil((progress + self.pausePlayingTime) * playInterval);
+              self.playingTime = progress + self.pausePlayingTime;
+
+              if (self.playingTime > self.opts.playTime) {
+                _resetStatus();
+
+                return;
+              }
+
+              ;
             }
 
-            ;
             break;
 
           case 'reverse':
-            if (self.usePlay) {
-              console.log(1);
+            if (self.usePlay || self.usePlayIng && self.useReverse) {
+              self.useReverseIng = true;
               var corrTime = self.pausePlayingTime - self.opts.playTime;
               self.playIndex = Math.floor((self.opts.playTime + corrTime - progress) * playInterval);
               self.playingTime = self.opts.playTime + corrTime - progress;
@@ -779,7 +776,7 @@ var SEQUENCEPLAYER = function () {
 
               ;
             } else {
-              console.log(2);
+              self.useReverse = true;
               self.playIndex = Math.floor((self.opts.playTime - (progress + self.pausePlayingTime)) * playInterval);
               self.playingTime = progress + self.pausePlayingTime;
 
