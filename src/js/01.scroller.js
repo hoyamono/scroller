@@ -1,5 +1,5 @@
 /*!
- * Scrolle JavaScript Library v1.0.2
+ * Scrolle JavaScript Library v1.0.3
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
@@ -140,12 +140,18 @@ var SCROLLER = (function(){
 			}
 		},
 		setTrackHeigh: function(){
+			this.trackElement.style.height = '';
 			this.trackElement.style.paddingTop = '',
 			this.trackElement.style.paddingBottom = '';
 
-			var isTrackHeight = this.trackElement.clientHeight,
+			var checkTrackHeight = this.trackElement.clientHeight == 0,
+				isTrackHeight =  checkTrackHeight ? this.windowHeight : this.trackElement.clientHeight,
 				calTrackHeight = (isTrackHeight * this.trackHeight) - isTrackHeight;
-			
+
+			if (checkTrackHeight) {
+				this.trackElement.style.height = this.windowHeight +'px';
+			}
+			this.trackElement.style.boxSizing = 'content-box';
 			this.trackElement.style.paddingTop = (calTrackHeight / 2) +'px';
 			this.trackElement.style.paddingBottom = (calTrackHeight / 2) +'px';
 		},
@@ -237,7 +243,9 @@ var SCROLLER = (function(){
 		}
 		
 		this.getProgress();
-		callback.call(this);					
+		if (callback) {
+			callback.call(this);
+		}
 	};
 
 	fn.activeAnimation = function(){
@@ -247,8 +255,10 @@ var SCROLLER = (function(){
 		this.winScrollBottom = this.utilList.getScroll.call(this).bottom;
 		this.activeElementHeight = this.activeElement.clientHeight;
 		this.correctionValue = this.activeElementHeight * this.correction;
-		this.corScrollTop = this.winScrollTop + this.correctionValue;
-		this.corScrollBottom = this.winScrollBottom - this.correctionValue;
+		this.activeScrollTop = this.winScrollTop + this.correctionValue;
+		this.activeScrollBottom = this.winScrollBottom - this.correctionValue;
+		this.removeScrollTop = this.winScrollTop - this.correctionValue;
+		this.removeScrollBottom = this.winScrollBottom + this.correctionValue;
 		this.elementOffsetTop = this.utilList.getOffset.call(this, this.activeElement).top;
 		this.elementOffsetBottom = this.utilList.getOffset.call(this, this.activeElement).bottom;
 
@@ -258,6 +268,8 @@ var SCROLLER = (function(){
 			corrHeight = this.windowHeight / 2;
 
 		var addActiveClass = function(){
+			if (!!!self.activeClass) return;
+			
 			if (typeof(self.activeClass) == 'object') {
 				var classLength = self.activeClass.length;
 
@@ -321,14 +333,16 @@ var SCROLLER = (function(){
 
 		switch (visibleTyle) {
 			case 'before':
-				if (self.corScrollBottom < self.elementOffsetBottom && self.corScrollBottom >= self.elementOffsetTop ||
-					self.corScrollBottom < self.elementOffsetBottom && self.corScrollBottom >= self.elementOffsetBottom) {
+				if (self.activeScrollTop <= self.elementOffsetTop && self.activeScrollBottom >= self.elementOffsetTop ||
+					self.activeScrollTop <= self.elementOffsetBottom && self.activeScrollBottom >= self.elementOffsetBottom ||
+					this.activePlay == 'oneWay' && self.activeScrollBottom >= self.elementOffsetTop) {
 					activeHandler();
 				}
 			break;
 
 			case 'visible':
-				if (self.corScrollBottom >= self.elementOffsetTop + corrHeight && self.corScrollTop  < self.elementOffsetTop) {
+				if (self.activeScrollBottom >= self.elementOffsetTop + corrHeight && self.activeScrollTop <= self.elementOffsetTop ||
+					this.activePlay == 'oneWay' && self.activeScrollBottom >= self.elementOffsetTop + corrHeight) {
 					activeHandler();
 				}
 			break;
@@ -336,13 +350,13 @@ var SCROLLER = (function(){
 
 		switch (removeType) {
 			case 'reverse':
-				if (self.winScrollTop > self.elementOffsetBottom || self.winScrollBottom < self.elementOffsetTop ) {
+				if (self.removeScrollTop > self.elementOffsetBottom || self.removeScrollBottom < self.elementOffsetTop ) {
 					removeHandler();
 				}
 			break;
 
 			case 'oneWay':
-				if (self.winScrollBottom < self.elementOffsetTop ) {
+				if (self.removeScrollBottom < self.elementOffsetTop ) {
 					removeHandler();
 				}
 			break;

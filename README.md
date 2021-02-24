@@ -1,7 +1,6 @@
 # SCROLLER
 스크롤 인터렉션 페이지 제작을 위한 라이브러리입니다.
 
-
 ## Example Code
 ---
 ### 1. SCROLLER 객체 생성 (https://hoyamono.github.io/scroller/)
@@ -95,7 +94,110 @@ var scene2 = SCROLLER({
 	scene1.destroy();
 	```
 ---
-### 4. Utils
+
+# Range Handler
+progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함수를 실행하는 라이브러리
+
+
+## Example Code
+
+
+### 1. 객체생성
+- RANGEHANDLER를 변수에 담아 객체를 생성한다
+	``` javascript
+	var animation1 = RANGEHANDLER({
+		targetValue: 1,
+		startPoint: 20,
+		endPoint: 50,
+		onStart: function(){
+			console.log('onStart')
+		},
+		onUpdate: function(){
+			console.log('onUpdate')
+		},
+		onComplate: function(){
+			console.log('onComplate')
+		},
+		reverseStart: function(){
+			console.log('reverseStart')
+		},
+		reverseComplate: function(){
+			console.log('reverseComplate')
+		}
+	});
+	```
+
+
+### 2. Option List
+|Option|Type|Description|
+|------|-----|-------|
+|targetValue|number|progress가 100이됐을때 도달할 value값|
+|progress|number|현재 progress값|
+|startPoint|number|0~100까지의 progress중 target value값 계산을 시작할 위치 지정|
+|endPoint|number|0~100까지의 progress중 target value값 계산을 중단할 위치 지정|
+|onStart|function|스크롤 시작시 실행될 함수|
+|onComplate|function|스크롤 완료 후 실행될 함수|
+|reverseStart|function|역방향 스크롤 시작식 실행될 함수|
+|reverseComplate|function|역방향 스크롤 완료 후 실행될 함수|
+|onUpdate|function|스크롤 시작 후 스크롤 중 실행될 함수|
+
+
+### 3. Methods
+- calValue(progress): progress에 따라 객체 생성시 설정한 포인트에 맞는 value값을 return한다.
+- activeAnimation(progress): 객체 생성시 설정한 callback 함수를 분기에 맞게 실행한다.
+	``` javascript
+	window.addEventListener('scroll', function () {
+		var motionValue1 = rangAnimation.calValue(progress); // progress 값을 통해 분기에 따른 value 값 획득
+
+		animation1.activeAnimation(progress);// progress 값을 통해 분기에 따른 callback 함수 실행
+	});
+	```
+---
+# Sequence Player
+progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함수를 실행하는 라이브러리
+
+
+## Example Code
+
+
+### 1. 객체생성
+- SEQUENCEPLAYER 변수에 담아 객체를 생성한다
+	``` javascript
+	var seq1 = SEQUENCEPLAYER({
+		targetElement: document.querySelector('.scene6 .content-wrap'),
+		startNum: 0,
+		endNum: 170,
+		path: './resouces/img/seq/',
+		name: 'Earth_Zoom_In_preview',
+		extension: 'jpg',
+		width: 426,
+		height: 240,
+		autoPlay: true,
+		playTime: 3000
+	});
+	```
+### 2. Option List
+|Option|Type|Description|
+|------|-----|-------|
+|targetElement|DOM|canvas태그 또는 canvas를 생성할 대상 Element로 대상이 canvas태그일 경우 대상 Element를 통해 시퀀스를 실행하고 canvas태그가 아닐경우 하위에 canvas구조를 생성하여 시퀀스를 실행한다|
+|startNum|number|시퀀스 시작지점(첫 시퀀스 이미지 넘버)|
+|endNum|number|마지막 시퀀스(마지막 시퀀스 이미지 넘버)|
+|path|string|시퀀스 이미지 경로|
+|name|string|시퀀스 이미지명|
+|extension|string|이미지 확장자|
+|width|number|이미지 너비값|
+|height|number|이미지 높이|
+|autoPlay|boolean|오토플레이|
+|playTime|number|시간 지정시 지정한 시간 내 시퀀스 재생(미지정시 모니터 프레임에 맞워 시퀀스 재생)|
+|addType|string|'append'시 targetElement 마지막 요소로 canvas 추가(기본 'prepend')|
+---
+### 3. Methods
+- play: 재생(실행시 index를 인자로 넘길 경우 해당 index의 시퀀스 이미지 노출)
+- reverse: 역재생
+- pause: 정지
+- stop: 종료
+---
+# ANI Utils
 - ANIUTIL.calRange : trackAnimation에서 제공하는 progress의 값이 0~100%까지 도달할때까지 진행상황에 맞춰 value 값을 계산해주는 함수.
 	``` javascript
 	ANIUTIL.calRange({
@@ -119,15 +221,15 @@ var scene2 = SCROLLER({
 		lazyClass: '.img-box img',
 		responsiveClass: '.res-img',
 		loadOption: [{
-            resolution: 1920,
-            attribute: 'data-img-pc'
-        },{
-            resolution: 1024,
-            attribute: 'data-img-tb'
-        },{
-            resolution: 768,
-            attribute: 'data-img-mo'
-        }],
+			resolution: 1920,
+			attribute: 'data-img-pc'
+		},{
+			resolution: 1024,
+			attribute: 'data-img-tb'
+		},{
+			resolution: 768,
+			attribute: 'data-img-mo'
+		}],
 		visiblePoint: 1,
 		useDefaultImg: true,
 	});
