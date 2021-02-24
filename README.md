@@ -95,7 +95,7 @@ var scene2 = SCROLLER({
 	```
 ---
 
-# RANGEHANDLER
+# Range Handler
 progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함수를 실행하는 라이브러리
 
 
@@ -153,8 +153,50 @@ progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함�
 	});
 	```
 ---
+# Sequence Player
+progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함수를 실행하는 라이브러리
 
 
+## Example Code
+
+
+### 1. 객체생성
+- SEQUENCEPLAYER 변수에 담아 객체를 생성한다
+	``` javascript
+	var seq1 = SEQUENCEPLAYER({
+		targetElement: document.querySelector('.scene6 .content-wrap'),
+		startNum: 0,
+		endNum: 170,
+		path: './resouces/img/seq/',
+		name: 'Earth_Zoom_In_preview',
+		extension: 'jpg',
+		width: 426,
+		height: 240,
+		autoPlay: true,
+		playTime: 3000
+	});
+	```
+### 2. Option List
+|Option|Type|Description|
+|------|-----|-------|
+|targetElement|DOM|canvas태그 또는 canvas를 생성할 대상 Element로 대상이 canvas태그일 경우 대상 Element를 통해 시퀀스를 실행하고 canvas태그가 아닐경우 하위에 canvas구조를 생성하여 시퀀스를 실행한다|
+|startNum|number|시퀀스 시작지점(첫 시퀀스 이미지 넘버)|
+|endNum|number|마지막 시퀀스(마지막 시퀀스 이미지 넘버)|
+|path|string|시퀀스 이미지 경로|
+|name|string|시퀀스 이미지명|
+|extension|string|이미지 확장자|
+|width|number|이미지 너비값|
+|height|number|이미지 높이|
+|autoPlay|boolean|오토플레이|
+|playTime|number|시간 지정시 지정한 시간 내 시퀀스 재생(미지정시 모니터 프레임에 맞워 시퀀스 재생)|
+|addType|string|'append'시 targetElement 마지막 요소로 canvas 추가(기본 'prepend')|
+---
+### 3. Methods
+- play: 재생(실행시 index를 인자로 넘길 경우 해당 index의 시퀀스 이미지 노출)
+- reverse: 역재생
+- pause: 정지
+- stop: 종료
+---
 # ANI Utils
 - ANIUTIL.calRange : trackAnimation에서 제공하는 progress의 값이 0~100%까지 도달할때까지 진행상황에 맞춰 value 값을 계산해주는 함수.
 	``` javascript
