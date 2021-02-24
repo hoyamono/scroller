@@ -268,6 +268,8 @@ var SCROLLER = (function(){
 			corrHeight = this.windowHeight / 2;
 
 		var addActiveClass = function(){
+			if (!!!self.activeClass) return;
+			
 			if (typeof(self.activeClass) == 'object') {
 				var classLength = self.activeClass.length;
 
@@ -331,8 +333,8 @@ var SCROLLER = (function(){
 
 		switch (visibleTyle) {
 			case 'before':
-				if (self.activeScrollBottom < self.elementOffsetBottom && self.activeScrollBottom >= self.elementOffsetTop ||
-					self.activeScrollBottom < self.elementOffsetBottom && self.activeScrollBottom >= self.elementOffsetBottom ||
+				if (self.activeScrollTop <= self.elementOffsetTop && self.activeScrollBottom >= self.elementOffsetTop ||
+					self.activeScrollTop <= self.elementOffsetBottom && self.activeScrollBottom >= self.elementOffsetBottom ||
 					this.activePlay == 'oneWay' && self.activeScrollBottom >= self.elementOffsetTop) {
 					activeHandler();
 				}
@@ -340,6 +342,7 @@ var SCROLLER = (function(){
 
 			case 'visible':
 				if (self.activeScrollBottom >= self.elementOffsetTop + corrHeight && self.activeScrollTop < self.elementOffsetTop ||
+					self.activeScrollTop <= self.elementOffsetTop && self.activeScrollBottom >= self.elementOffsetBottom ||
 					this.activePlay == 'oneWay' && self.activeScrollBottom >= self.elementOffsetTop + corrHeight) {
 					activeHandler();
 				}
