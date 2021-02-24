@@ -29,7 +29,6 @@ p {
 
 .kv {
 	position: relative;
-	height: 100vh;
 	text-align: center;
 	vertical-align: middle;
 	.text1 {
@@ -127,6 +126,32 @@ p {
 
 	.content-wrap {
 		overflow: hidden;
+	}
+}
+
+.scene6, .scene7 {
+	position: relative;
+	height: 100vh;
+	text-align: center;
+	overflow: hidden;
+
+	.content-wrap {
+		overflow: hidden;
+	}
+
+	.text1 {
+		opacity: 1;
+	}
+
+	.controller {
+		position: absolute; 
+		right: 0; 
+		bottom:0; 
+		z-index: 100;
+	}
+	canvas {
+		width: 100%;
+		height: auto;
 	}
 }
 

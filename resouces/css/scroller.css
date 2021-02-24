@@ -7,7 +7,7 @@ p { font-size: 70px; color: #fff; }
 
 .text1, .text2 { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); opacity: 0; transition: all 0.1s linear; z-index: 2; }
 
-.kv { position: relative; height: 100vh; text-align: center; vertical-align: middle; }
+.kv { position: relative; text-align: center; vertical-align: middle; }
 
 .kv .text1 { opacity: 1; }
 
@@ -42,6 +42,16 @@ p { font-size: 70px; color: #fff; }
 .scene5 { position: relative; height: 100vh; text-align: center; overflow: hidden; }
 
 .scene5 .content-wrap { overflow: hidden; }
+
+.scene6, .scene7 { position: relative; height: 100vh; text-align: center; overflow: hidden; }
+
+.scene6 .content-wrap, .scene7 .content-wrap { overflow: hidden; }
+
+.scene6 .text1, .scene7 .text1 { opacity: 1; }
+
+.scene6 .controller, .scene7 .controller { position: absolute; right: 0; bottom: 0; z-index: 100; }
+
+.scene6 canvas, .scene7 canvas { width: 100%; height: auto; }
 
 .count-box { position: absolute; width: 400px; height: 15vw; background: #f1f1f1; }
 
