@@ -869,6 +869,7 @@ var ANIUTIL = function () {
   var videoObjectFit = function (opts) {
     var init = function (opts) {
       this.opts = opts;
+      this.resizeTiming = opts.resizeTiming ? opts.resizeTiming : 100;
       this.setElement();
       this.setVideoStyle();
       this.bindEvent();
@@ -927,7 +928,7 @@ var ANIUTIL = function () {
           self.targetVideo.style.width = 'auto';
           self.targetVideo.style.height = '100%';
         }
-      }, 100);
+      }, this.resizeTiming);
     };
 
     return new init(opts);
