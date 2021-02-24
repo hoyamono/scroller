@@ -1,5 +1,5 @@
 /*!
- * Scrolle JavaScript Library v1.0.2
+ * Scrolle JavaScript Library v1.0.3
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
@@ -337,7 +337,7 @@ var SCROLLER = function () {
         break;
 
       case 'visible':
-        if (self.activeScrollBottom >= self.elementOffsetTop + corrHeight && self.activeScrollTop < self.elementOffsetTop || self.activeScrollTop <= self.elementOffsetTop && self.activeScrollBottom >= self.elementOffsetBottom || this.activePlay == 'oneWay' && self.activeScrollBottom >= self.elementOffsetTop + corrHeight) {
+        if (self.activeScrollBottom >= self.elementOffsetTop + corrHeight && self.activeScrollTop <= self.elementOffsetTop || this.activePlay == 'oneWay' && self.activeScrollBottom >= self.elementOffsetTop + corrHeight) {
           activeHandler();
         }
 
@@ -552,6 +552,14 @@ var RANGEHANDLER = function () {
     return new init(opts);
   };
 }();
+/*!
+ * Sequence Player JavaScript Library v1.0
+ *
+ * Copyright 2021. Yoon jae-ho
+ * Released under the MIT license
+ *
+ * Date: 2021-02-24
+ */
 var SEQUENCEPLAYER = function () {
   var init = function (opts) {
     this.opts = opts;
