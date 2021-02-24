@@ -238,7 +238,10 @@ var SCROLLER = function () {
     }
 
     this.getProgress();
-    callback.call(this);
+
+    if (callback) {
+      callback.call(this);
+    }
   };
 
   fn.activeAnimation = function () {
@@ -571,7 +574,12 @@ var SEQUENCEPLAYER = function () {
         this.canvas = element;
       } else {
         this.canvas = document.createElement('CANVAS');
-        this.targetElement.append(this.canvas);
+
+        if (this.opts.addType == 'append') {
+          this.targetElement.append(this.canvas);
+        } else {
+          this.targetElement.prepend(this.canvas);
+        }
       }
     };
 
@@ -659,8 +667,20 @@ var SEQUENCEPLAYER = function () {
     this.pausePlayingTime = this.playingTime;
   };
 
+  fn.stop = function () {
+    this.pause();
+    this.playIndex = null;
+    this.playingTime = 0;
+    this.pausePlayingTime = 0;
+    this.usePlay = false;
+    this.usePlayIng = false;
+    this.useReverse = false;
+    this.useReverseIng = false;
+    this.drawCanvas(this.opts.startNum);
+  };
+
   fn.drawCanvas = function (index) {
-    if (this.oldPlayIndex == this.playIndex) return;
+    if (!!!index && this.oldPlayIndex == this.playIndex) return;
     this.context.clearRect(0, 0, this.opts.width, this.opts.height);
     this.context.drawImage(this.imageList[index >= 0 ? index : this.playIndex], 0, 0, this.opts.width, this.opts.height);
     this.oldPlayIndex = this.playIndex;

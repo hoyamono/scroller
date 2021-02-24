@@ -13,11 +13,6 @@
 <body>
 	<div id="wrap">
 		<section class="kv">
-			<div style="position: fixed; right: 0; bottom:0; z-index: 100;">
-				<button onclick="seq1.play()">play</button>
-				<button onclick="seq1.pause()">pause</button>
-				<button onclick="seq1.reverse()">reverse</button>
-		</div>
 			<div class="content-wrap">
 				<p class="text1">SCROLLER</p>
 				<p class="text2">SAMPLE MOTION</p>
@@ -66,6 +61,21 @@
 				</div>
 			</div>
 		</section>
+		<section class="scene6">
+			<div class="content-wrap">
+				<p class="text1">05 - Sequence Player : Scroll</p>
+			</div>
+		</section>
+		<section class="scene7">
+			<div class="controller">
+				<button onclick="seq2.play()">play</button>
+				<button onclick="seq2.pause()">pause</button>
+				<button onclick="seq2.reverse()">reverse</button>
+			</div>
+			<div class="content-wrap">
+				<p class="text1">06 - Sequence Player : Auto Play + Time Controll</p>
+			</div>
+		</section>
 	</div>
 </body>
 
@@ -75,18 +85,31 @@
 	// ============================================================== Key Visual (scene1)
 
 	var seq1 = SEQUENCEPLAYER({
-		targetElement: document.querySelector('.kv'),
+		targetElement: document.querySelector('.scene6 .content-wrap'),
 		startNum: 0,
-		endNum: 104,
-		path: 'https://www.samsung.com/global/galaxy/galaxy-buds-pro/images/',
-		name: 'galaxy-buds-pro-kv-seq-',
+		endNum: 170,
+		path: './resouces/img/seq/',
+		name: 'Earth_Zoom_In_preview',
 		extension: 'jpg',
-		width: 1267,
-		height: 922,
+		width: 426,
+		height: 240,
 		// autoPlay: true,
-		playTime: 3000
+		// playTime: 3000
+		addType: 'append'
 	});
-	seq1.play();
+
+	var seq2 = SEQUENCEPLAYER({
+		targetElement: document.querySelector('.scene7 .content-wrap'),
+		startNum: 0,
+		endNum: 170,
+		path: './resouces/img/seq/',
+		name: 'Earth_Zoom_In_preview',
+		extension: 'jpg',
+		width: 426,
+		height: 240,
+		playTime: 5000
+	});
+
 	SCROLLER({
 		IEScroll: true, //css transition을 사용할 경우 IE에서 발생하는 떨림을 최소화 하는 옵션, * 한페이지에 한번만 실행 *
 	});
@@ -197,6 +220,33 @@
 		fixedElement: fixedElement5,
 		useFixed: true,
 		trackHeight: 1.5,
+		resize: true
+	});
+
+	var trackElement6 = document.querySelector('.scene6'),
+		fixedElement6 = document.querySelector('.scene6 .content-wrap');
+
+	var scene6 = SCROLLER({
+		trackElement: trackElement6,
+		fixedElement: fixedElement6,
+		useFixed: true,
+		trackHeight: 3,
+		resize: true
+	});
+
+
+	var trackElement7 = document.querySelector('.scene7')
+
+	var scene7 = SCROLLER({
+		activeElement: trackElement7,
+		activeVisibility: 'before',
+		activePlay: 'reverse',
+		activeCallback: function(){
+			seq2.play();
+		},
+		endCallback: function () {
+			seq2.stop();
+		},
 		resize: true
 	});
 
@@ -332,6 +382,20 @@
 				countBox[2].style.transform = 'translateX(-' + value3curr + '%)';
 			}
 		});
+
+		scene6.trackAnimation(function(){
+			var motionValue1 = ANIUTIL.calRange({
+				targetValue: 170,
+				progress: this.progress,
+				startPoint: 0,
+				endPoint: 100
+			});
+
+			console.log(parseInt(motionValue1));
+			seq1.play(parseInt(motionValue1));
+		});
+
+		scene7.activeAnimation();
 	};
 	// =============================================================================================================== animation 구현
 

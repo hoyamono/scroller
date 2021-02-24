@@ -243,7 +243,9 @@ var SCROLLER = (function(){
 		}
 		
 		this.getProgress();
-		callback.call(this);					
+		if (callback) {
+			callback.call(this);
+		}
 	};
 
 	fn.activeAnimation = function(){
