@@ -1,5 +1,5 @@
 /*!
- * Scrolle JavaScript Library v1.0.2
+ * Scrolle JavaScript Library v1.0.3
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
@@ -341,8 +341,7 @@ var SCROLLER = (function(){
 			break;
 
 			case 'visible':
-				if (self.activeScrollBottom >= self.elementOffsetTop + corrHeight && self.activeScrollTop < self.elementOffsetTop ||
-					self.activeScrollTop <= self.elementOffsetTop && self.activeScrollBottom >= self.elementOffsetBottom ||
+				if (self.activeScrollBottom >= self.elementOffsetTop + corrHeight && self.activeScrollTop <= self.elementOffsetTop ||
 					this.activePlay == 'oneWay' && self.activeScrollBottom >= self.elementOffsetTop + corrHeight) {
 					activeHandler();
 				}

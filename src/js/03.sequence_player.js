@@ -1,3 +1,12 @@
+/*!
+ * Sequence Player JavaScript Library v1.0
+ *
+ * Copyright 2021. Yoon jae-ho
+ * Released under the MIT license
+ *
+ * Date: 2021-02-24
+ */
+
 var SEQUENCEPLAYER = (function(){
     var init = function(opts){
         this.opts = opts;
