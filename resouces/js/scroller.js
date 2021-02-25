@@ -69,7 +69,6 @@ var SCROLLER = function () {
     }
 
     return this;
-    IEScrollHandler;
   };
 
   fn.utilList = {
