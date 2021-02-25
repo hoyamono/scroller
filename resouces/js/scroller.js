@@ -53,7 +53,7 @@ var SCROLLER = function () {
     }
 
     if (this.opts.IEScroll) {
-      this.utilList.IEScrollHandler();
+      this.utilList.IEScrollHandler.call(this);
     }
   };
 
@@ -69,12 +69,13 @@ var SCROLLER = function () {
     }
 
     return this;
+    IEScrollHandler;
   };
 
   fn.utilList = {
     IEScrollHandler: function () {
       if (navigator.userAgent.match(/Trident\/7\./)) {
-        this.body.addEventListener('mousewheel', function (e) {
+        this.body.addEventListener('DOMMouseScroll mousewheel wheel', function (e) {
           e.preventDefault();
           var wheelDelta = e.wheelDelta;
           var currentScrollPosition = window.pageYOffset;
@@ -586,9 +587,15 @@ var SEQUENCEPLAYER = function () {
         this.canvas = document.createElement('CANVAS');
 
         if (this.opts.addType == 'append') {
-          this.targetElement.append(this.canvas);
+          this.targetElement.appendChild(this.canvas);
         } else {
-          this.targetElement.prepend(this.canvas);
+          var firstChild = this.targetElement.firstElementChild;
+
+          if (!!!firstChild) {
+            this.targetElement.appendChild(this.canvas);
+          } else {
+            firstChild.parentNode.insertBefore(this.canvas, firstChild);
+          }
         }
       }
     };

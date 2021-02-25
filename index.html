@@ -114,14 +114,6 @@
 		IEScroll: true, //css transition을 사용할 경우 IE에서 발생하는 떨림을 최소화 하는 옵션, * 한페이지에 한번만 실행 *
 	});
 
-	// var sequence = ANIUTIL.sequence({
-	// 	fileAddr: 'https://www.samsung.com/global/galaxy/galaxy-buds-pro/images/',
-	// 	fileName: 'galaxy-buds-pro-kv-seq-{num}',
-	// 	startCount: 0,
-	// 	endCount: 104,
-	// 	speed: 1
-	// });
-
 	var trackElement1 = document.querySelector('.kv'),
 		fixedElement1 = document.querySelector('.kv .content-wrap'),
 		aniTarget1_1 = document.querySelector('.kv .text1'),
@@ -157,11 +149,6 @@
 		video1 = document.querySelector('.scene3 video');
 
 	video1.muted = true;
-
-	var videoSet = ANIUTIL.videoObjectFit({ //비디오 사이즈 제어 라이브러리
-		wrapElement: fixedElement3,
-		targetVideo: video1
-	});
 
 	var scene3 = SCROLLER({
 		activeElement: fixedElement3,

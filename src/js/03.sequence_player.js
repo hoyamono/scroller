@@ -34,9 +34,15 @@ var SEQUENCEPLAYER = (function(){
             } else {
                 this.canvas = document.createElement('CANVAS');
                 if (this.opts.addType == 'append') {
-                    this.targetElement.append(this.canvas);
+                    this.targetElement.appendChild(this.canvas);
                 } else {
-                    this.targetElement.prepend(this.canvas);
+                    var firstChild = this.targetElement.firstElementChild;
+                    if (!!!firstChild) {
+                        this.targetElement.appendChild(this.canvas);
+                    } else {
+                        firstChild.parentNode.insertBefore(this.canvas, firstChild);
+                    }
+                    
                 }
                 
             }
