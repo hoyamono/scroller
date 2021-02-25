@@ -69,7 +69,6 @@ var SCROLLER = function () {
     }
 
     return this;
-    IEScrollHandler;
   };
 
   fn.utilList = {
@@ -198,22 +197,34 @@ var SCROLLER = function () {
     }
   };
 
-  fn.getWheelDirection = function () {
-    if (this.winScrollTop > this.oldWinScrollTop) {
-      this.wheelDirection = 'down';
-    } else {
-      this.wheelDirection = 'up';
-    }
-
-    this.oldWinScrollTop = this.winScrollTop;
-  };
-
   fn.getProgress = function () {
     var trackTopOffset = this.utilList.getOffset.call(this, this.trackElement).top - this.windowHeight * this.correction,
         trackHeight = this.trackElement.clientHeight - this.windowHeight,
         scrollTop = this.winScrollTop - trackTopOffset;
     this.progress = scrollTop / trackHeight * 100;
-    this.getWheelDirection();
+
+    var getWheelDirection = function () {
+      if (this.progress > this.oldProgress) {
+        this.wheelDirection = 'down';
+      } else {
+        this.wheelDirection = 'up';
+      }
+    };
+
+    if (this.progress < 0) {
+      getWheelDirection.call(this);
+      this.progress = 0;
+      this.oldProgress = 0;
+    } else if (this.progress > 100) {
+      getWheelDirection.call(this);
+      this.progress = 100;
+      this.oldProgress = 100;
+    } else {
+      getWheelDirection.call(this);
+      this.progress = this.progress;
+      this.oldProgress = this.progress;
+    }
+
     return this.progress;
   };
 
@@ -317,18 +328,16 @@ var SCROLLER = function () {
       removeActiveClass();
     };
 
-    this.getWheelDirection();
-
     switch (visibleTyle) {
       case 'before':
-        if (this.activeScrollTop <= this.elementOffsetTop && this.activeScrollBottom >= this.elementOffsetTop || this.activeScrollTop <= this.elementOffsetBottom && this.activeScrollBottom >= this.elementOffsetBottom || this.activePlay == 'oneWay' && this.activeScrollBottom >= this.elementOffsetTop) {
+        if (self.activeScrollTop <= self.elementOffsetTop && self.activeScrollBottom >= self.elementOffsetTop || self.activeScrollTop <= self.elementOffsetBottom && self.activeScrollBottom >= self.elementOffsetBottom || this.activePlay == 'oneWay' && self.activeScrollBottom >= self.elementOffsetTop) {
           activeHandler();
         }
 
         break;
 
       case 'visible':
-        if (this.wheelDirection == 'down' && this.activeScrollBottom >= this.elementOffsetTop + corrHeight && this.activeScrollTop <= this.elementOffsetTop || this.wheelDirection == 'up' && this.activeScrollBottom <= this.elementOffsetBottom + corrHeight && this.activeScrollTop <= this.elementOffsetTop || this.activePlay == 'oneWay' && this.activeScrollBottom >= this.elementOffsetTop + corrHeight) {
+        if (self.activeScrollBottom >= self.elementOffsetTop + corrHeight && self.activeScrollTop <= self.elementOffsetTop || this.activePlay == 'oneWay' && self.activeScrollBottom >= self.elementOffsetTop + corrHeight) {
           activeHandler();
         }
 
@@ -337,27 +346,15 @@ var SCROLLER = function () {
 
     switch (removeType) {
       case 'reverse':
-        if (visibleTyle == 'visible') {
-          if (this.wheelDirection == 'down' && this.removeScrollTop > this.elementOffsetBottom + corrHeight || this.wheelDirection == 'up' && this.removeScrollBottom < this.elementOffsetTop - corrHeight) {
-            removeHandler();
-          }
-        } else {
-          if (this.removeScrollTop > this.elementOffsetBottom || this.removeScrollBottom < this.elementOffsetTop) {
-            removeHandler();
-          }
+        if (self.removeScrollTop > self.elementOffsetBottom || self.removeScrollBottom < self.elementOffsetTop) {
+          removeHandler();
         }
 
         break;
 
       case 'oneWay':
-        if (visibleTyle == 'visible') {
-          if (this.removeScrollBottom < this.elementOffsetTop - corrHeight) {
-            removeHandler();
-          }
-        } else {
-          if (this.removeScrollBottom < this.elementOffsetTop) {
-            removeHandler();
-          }
+        if (self.removeScrollBottom < self.elementOffsetTop) {
+          removeHandler();
         }
 
         break;
