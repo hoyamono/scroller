@@ -27,6 +27,8 @@ p { font-size: 70px; color: #fff; }
 
 .scene3 .callback-active .text1 { opacity: 1; transform: translate(-50%, -50%); transition: all 0.6s; }
 
+.scene3 video { position: absolute; top: 50%; left: 50%; min-width: 100%; min-height: 100%; transform: translate(-50%, -50%); }
+
 .scene4 .content-wrap { overflow: hidden; }
 
 .scene4 .text1 { top: 15%; transform: translate(-50%, 0); opacity: 1; white-space: nowrap; }
@@ -45,13 +47,13 @@ p { font-size: 70px; color: #fff; }
 
 .scene6, .scene7 { position: relative; height: 100vh; text-align: center; overflow: hidden; }
 
-.scene6 .content-wrap, .scene7 .content-wrap { overflow: hidden; }
+.scene6 .content-wrap, .scene7 .content-wrap { overflow: hidden; height: 100%; }
 
 .scene6 .text1, .scene7 .text1 { opacity: 1; }
 
 .scene6 .controller, .scene7 .controller { position: absolute; right: 0; bottom: 0; z-index: 100; }
 
-.scene6 canvas, .scene7 canvas { width: 100%; height: auto; }
+.scene6 canvas, .scene7 canvas { min-width: 100%; min-height: 100%; }
 
 .count-box { position: absolute; width: 400px; height: 15vw; background: #f1f1f1; }
 
