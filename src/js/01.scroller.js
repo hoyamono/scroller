@@ -68,7 +68,7 @@ var SCROLLER = (function(){
 			this.elementEventList.setFixedStyle.call(this);
 		}
 
-		return this;IEScrollHandler
+		return this;
 	};
 
 	fn.utilList = {
