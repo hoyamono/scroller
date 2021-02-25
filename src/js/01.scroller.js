@@ -53,7 +53,7 @@ var SCROLLER = (function(){
 			window.addEventListener('resize', this.addEventList);
 		}
 		if (this.opts.IEScroll) {
-			this.utilList.IEScrollHandler();
+			this.utilList.IEScrollHandler.call(this);
 		}
 
 	};
@@ -68,13 +68,13 @@ var SCROLLER = (function(){
 			this.elementEventList.setFixedStyle.call(this);
 		}
 
-		return this;
+		return this;IEScrollHandler
 	};
 
 	fn.utilList = {
 		IEScrollHandler: function(){
 			if(navigator.userAgent.match(/Trident\/7\./)) {
-				this.body.addEventListener('mousewheel', function (e) {
+				this.body.addEventListener('DOMMouseScroll mousewheel wheel', function (e) {
 					e.preventDefault();
 			
 					var wheelDelta = e.wheelDelta;

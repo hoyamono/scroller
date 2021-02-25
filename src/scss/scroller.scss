@@ -74,6 +74,15 @@ p {
 		transform: translate(-50%, -50%);
 		transition: all 0.6s;
 	}
+
+	video {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		min-width: 100%;
+		min-height: 100%;
+		transform: translate(-50%, -50%);
+	}
 }
 
 .scene4 {
@@ -137,6 +146,7 @@ p {
 
 	.content-wrap {
 		overflow: hidden;
+		height: 100%;
 	}
 
 	.text1 {
@@ -150,8 +160,8 @@ p {
 		z-index: 100;
 	}
 	canvas {
-		width: 100%;
-		height: auto;
+		min-width: 100%;
+		min-height: 100%;
 	}
 }
 
