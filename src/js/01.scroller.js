@@ -14,6 +14,7 @@ var SCROLLER = (function(){
 		this.initialize = true;
 		this.opts = opts;
 		this.correction = (!!!opts.correction ? 0 : opts.correction);
+		this.removeCorrection =  (!!!opts.removeCorrection ? 0 : opts.removeCorrection);
 		this.trackHeight = !!!opts.trackHeight ? 0 : opts.trackHeight;
 		this.activeClass = opts.activeClass;
 		this.activeCallbackClass = !!!opts.activeCallbackClass ? 'callback-active' : opts.activeCallbackClass;
@@ -246,12 +247,14 @@ var SCROLLER = (function(){
 		this.winScrollBottom = this.utilList.getScroll.call(this).bottom;
 		this.activeElementHeight = this.activeElement.clientHeight;
 		this.correctionValue = this.activeElementHeight * this.correction;
-		this.activeScrollTop = this.winScrollTop + this.correctionValue;
-		this.activeScrollBottom = this.winScrollBottom - this.correctionValue;
-		this.removeScrollTop = this.winScrollTop - this.correctionValue;
-		this.removeScrollBottom = this.winScrollBottom + this.correctionValue;
+		this.removeCorrectionValue = this.activeElementHeight * this.removeCorrection
 		this.elementOffsetTop = this.utilList.getOffset.call(this, this.activeElement).top;
 		this.elementOffsetBottom = this.utilList.getOffset.call(this, this.activeElement).bottom;
+
+		this.downScrollTop = this.winScrollTop - this.correctionValue
+		this.downScrollBottom = this.winScrollBottom - this.correctionValue;
+		this.upScrollTop = this.winScrollTop + this.correctionValue;
+		this.upScrollBottom = this.winScrollBottom + this.correctionValue;
 
 		var self = this,
 			visibleTyle = this.activeVisibility,
@@ -326,18 +329,20 @@ var SCROLLER = (function(){
 
 		switch (visibleTyle) {
 			case 'before':
-				if (this.activeScrollTop <= this.elementOffsetTop && this.activeScrollBottom >= this.elementOffsetTop ||
-					this.activeScrollTop <= this.elementOffsetBottom && this.activeScrollBottom >= this.elementOffsetBottom ||
-					this.activePlay == 'oneWay' && this.activeScrollBottom >= this.elementOffsetTop) {
+				if (this.downScrollBottom >= this.elementOffsetTop && this.downScrollTop <= this.elementOffsetTop  ||
+					this.upScrollTop <= this.elementOffsetBottom && this.upScrollBottom >= this.elementOffsetBottom ||
+					this.activePlay == 'oneWay' && this.downScrollBottom >= this.elementOffsetTop) {
 					activeHandler();
+					this.activeStatus = true;
 				}
 			break;
 
 			case 'visible':
-				if (this.wheelDirection == 'down' && this.activeScrollBottom >= this.elementOffsetTop + corrHeight && this.activeScrollTop <= this.elementOffsetTop ||
-					this.wheelDirection == 'up' && this.activeScrollBottom <= this.elementOffsetBottom + corrHeight && this.activeScrollTop <= this.elementOffsetTop ||
-					this.activePlay == 'oneWay' && this.activeScrollBottom >= this.elementOffsetTop + corrHeight) {
+				if (this.wheelDirection == 'down' && this.downScrollBottom >= this.elementOffsetTop + corrHeight && this.downScrollTop <= this.elementOffsetTop ||
+					this.wheelDirection == 'up' && this.upScrollTop <= this.elementOffsetBottom - corrHeight && this.upScrollBottom >= this.elementOffsetBottom ||
+					this.activePlay == 'oneWay' && this.winScrollBottom >= this.elementOffsetTop + corrHeight) {
 					activeHandler();
+					this.activeStatus = true;
 				}
 			break;
 		}
@@ -345,26 +350,30 @@ var SCROLLER = (function(){
 		switch (removeType) {
 			case 'reverse':
 				if (visibleTyle == 'visible') {
-					if (this.wheelDirection == 'down' && this.removeScrollTop > this.elementOffsetBottom + corrHeight ||
-						this.wheelDirection == 'up' && this.removeScrollBottom < this.elementOffsetTop - corrHeight) {
+					if (this.activeStatus && this.wheelDirection == 'down' && this.winScrollTop > this.elementOffsetBottom ||
+						this.activeStatus && this.wheelDirection == 'up' && this.winScrollBottom < this.elementOffsetTop) {
 						removeHandler();
+						this.activeStatus = false;
 					}
 				} else {
-					if (this.removeScrollTop > this.elementOffsetBottom || this.removeScrollBottom < this.elementOffsetTop ) {
+					if (this.activeStatus && this.winScrollTop < this.elementOffsetTop && this.winScrollBottom < this.elementOffsetTop ||
+						this.activeStatus && this.winScrollTop > this.elementOffsetBottom && this.winScrollBottom > this.elementOffsetBottom) {
 						removeHandler();
+						this.activeStatus = false;
 					}
 				}
 			break;
 
 			case 'oneWay':
-
 				if (visibleTyle == 'visible') {
-					if (this.removeScrollBottom < this.elementOffsetTop - corrHeight) {
+					if (this.activeStatus && this.winScrollBottom < this.elementOffsetTop) {
 						removeHandler();
+						this.activeStatus = false;
 					}
 				} else {
-					if (this.removeScrollBottom < this.elementOffsetTop) {
+					if (this.activeStatus && this.winScrollTop < this.elementOffsetTop && this.winScrollBottom < this.elementOffsetTop) {
 						removeHandler();
+						this.activeStatus = false;
 					}
 				}
 
