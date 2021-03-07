@@ -1,5 +1,5 @@
 /*!
- * Scrolle JavaScript Library v1.0.3
+ * Scrolle JavaScript Library v1.0.4
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
@@ -14,6 +14,7 @@ var SCROLLER = (function(){
 		this.initialize = true;
 		this.opts = opts;
 		this.correction = (!!!opts.correction ? 0 : opts.correction);
+		this.removeCorrection =  (!!!opts.removeCorrection ? 0 : opts.removeCorrection);
 		this.trackHeight = !!!opts.trackHeight ? 0 : opts.trackHeight;
 		this.activeClass = opts.activeClass;
 		this.activeCallbackClass = !!!opts.activeCallbackClass ? 'callback-active' : opts.activeCallbackClass;
@@ -201,6 +202,16 @@ var SCROLLER = (function(){
 		}
 	};
 
+	fn.getWheelDirection = function(){
+		if (this.winScrollTop > this.oldWinScrollTop) {
+			this.wheelDirection = 'down';
+		} else {
+			this.wheelDirection = 'up';
+		}
+
+		this.oldWinScrollTop = this.winScrollTop;
+	}
+
 	fn.getProgress = function(){
 		var trackTopOffset = this.utilList.getOffset.call(this, this.trackElement).top - (this.windowHeight * this.correction),
 			trackHeight = this.trackElement.clientHeight - this.windowHeight,
@@ -208,26 +219,7 @@ var SCROLLER = (function(){
 		
 		this.progress = (scrollTop / trackHeight) * 100;
 
-		var getWheelDirection = function(){
-			if (this.progress > this.oldProgress) {
-				this.wheelDirection = 'down';
-			} else {
-				this.wheelDirection = 'up';
-			}
-		}
-		if (this.progress < 0) {
-			getWheelDirection.call(this);
-			this.progress = 0;
-			this.oldProgress = 0;
-		} else if (this.progress > 100) {
-			getWheelDirection.call(this);
-			this.progress = 100;
-			this.oldProgress = 100;
-		} else {
-			getWheelDirection.call(this);
-			this.progress = this.progress;
-			this.oldProgress = this.progress;
-		}
+		this.getWheelDirection();
 
 		return this.progress;
 	};
@@ -255,12 +247,14 @@ var SCROLLER = (function(){
 		this.winScrollBottom = this.utilList.getScroll.call(this).bottom;
 		this.activeElementHeight = this.activeElement.clientHeight;
 		this.correctionValue = this.activeElementHeight * this.correction;
-		this.activeScrollTop = this.winScrollTop + this.correctionValue;
-		this.activeScrollBottom = this.winScrollBottom - this.correctionValue;
-		this.removeScrollTop = this.winScrollTop - this.correctionValue;
-		this.removeScrollBottom = this.winScrollBottom + this.correctionValue;
+		this.removeCorrectionValue = this.activeElementHeight * this.removeCorrection
 		this.elementOffsetTop = this.utilList.getOffset.call(this, this.activeElement).top;
 		this.elementOffsetBottom = this.utilList.getOffset.call(this, this.activeElement).bottom;
+
+		this.downScrollTop = this.winScrollTop - this.correctionValue
+		this.downScrollBottom = this.winScrollBottom - this.correctionValue;
+		this.upScrollTop = this.winScrollTop + this.correctionValue;
+		this.upScrollBottom = this.winScrollBottom + this.correctionValue;
 
 		var self = this,
 			visibleTyle = this.activeVisibility,
@@ -331,34 +325,59 @@ var SCROLLER = (function(){
 			removeActiveClass();
 		};
 
+		this.getWheelDirection();
+
 		switch (visibleTyle) {
 			case 'before':
-				if (self.activeScrollTop <= self.elementOffsetTop && self.activeScrollBottom >= self.elementOffsetTop ||
-					self.activeScrollTop <= self.elementOffsetBottom && self.activeScrollBottom >= self.elementOffsetBottom ||
-					this.activePlay == 'oneWay' && self.activeScrollBottom >= self.elementOffsetTop) {
+				if (this.downScrollBottom >= this.elementOffsetTop && this.downScrollTop <= this.elementOffsetTop  ||
+					this.upScrollTop <= this.elementOffsetBottom && this.upScrollBottom >= this.elementOffsetBottom ||
+					this.activePlay == 'oneWay' && this.downScrollBottom >= this.elementOffsetTop) {
 					activeHandler();
+					this.activeStatus = true;
 				}
 			break;
 
 			case 'visible':
-				if (self.activeScrollBottom >= self.elementOffsetTop + corrHeight && self.activeScrollTop <= self.elementOffsetTop ||
-					this.activePlay == 'oneWay' && self.activeScrollBottom >= self.elementOffsetTop + corrHeight) {
+				if (this.wheelDirection == 'down' && this.downScrollBottom >= this.elementOffsetTop + corrHeight && this.downScrollTop <= this.elementOffsetTop ||
+					this.wheelDirection == 'up' && this.upScrollTop <= this.elementOffsetBottom - corrHeight && this.upScrollBottom >= this.elementOffsetBottom ||
+					this.activePlay == 'oneWay' && this.winScrollBottom >= this.elementOffsetTop + corrHeight) {
 					activeHandler();
+					this.activeStatus = true;
 				}
 			break;
 		}
 
 		switch (removeType) {
 			case 'reverse':
-				if (self.removeScrollTop > self.elementOffsetBottom || self.removeScrollBottom < self.elementOffsetTop ) {
-					removeHandler();
+				if (visibleTyle == 'visible') {
+					if (this.activeStatus && this.wheelDirection == 'down' && this.winScrollTop > this.elementOffsetBottom ||
+						this.activeStatus && this.wheelDirection == 'up' && this.winScrollBottom < this.elementOffsetTop) {
+						removeHandler();
+						this.activeStatus = false;
+					}
+				} else {
+					if (this.activeStatus && this.winScrollTop < this.elementOffsetTop && this.winScrollBottom < this.elementOffsetTop ||
+						this.activeStatus && this.winScrollTop > this.elementOffsetBottom && this.winScrollBottom > this.elementOffsetBottom) {
+						removeHandler();
+						this.activeStatus = false;
+					}
 				}
 			break;
 
 			case 'oneWay':
-				if (self.removeScrollBottom < self.elementOffsetTop ) {
-					removeHandler();
+				if (visibleTyle == 'visible') {
+					if (this.activeStatus && this.winScrollBottom < this.elementOffsetTop) {
+						removeHandler();
+						this.activeStatus = false;
+					}
+				} else {
+					if (this.activeStatus && this.winScrollTop < this.elementOffsetTop && this.winScrollBottom < this.elementOffsetTop) {
+						removeHandler();
+						this.activeStatus = false;
+					}
 				}
+
+
 			break;
 		}
 	};
