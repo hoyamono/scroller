@@ -1,5 +1,5 @@
 /*!
- * Scrolle JavaScript Library v1.0.3
+ * Scrolle JavaScript Library v1.0.4
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
@@ -628,16 +628,19 @@ var SEQUENCEPLAYER = function () {
       isImage.src = this.opts.path + this.opts.name + i + '.' + this.opts.extension;
 
       (function (idx) {
-        isImage.addEventListener('load', function () {
+        var imageLoadEvent = function () {
           self.imageList[idx] = this;
 
           if (self.loadCount < self.opts.endNum) {
             self.loadCount++;
+            this.removeEventListener('load', imageLoadEvent);
           } else if (self.opts.autoPlay && self.loadCount == self.opts.endNum) {
             self.play();
             return;
           }
-        });
+        };
+
+        isImage.addEventListener('load', imageLoadEvent);
       })(i);
     }
   };
