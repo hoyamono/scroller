@@ -60,14 +60,15 @@ var SEQUENCEPLAYER = (function(){
     };
 
     fn.loadImages = function(){
-        var self = this;
+        var self = this,
+            isImage;
 
         for(var i = this.opts.startNum; i <= this.opts.endNum; i++) {
-            var isImage = new Image();
+            isImage = new Image();
 
             isImage.src = this.opts.path + this.opts.name + i + '.' + this.opts.extension;
 
-            (function(idx){
+            (function(idx, imgElement){
                 var imageLoadEvent = function(){
                     self.imageList[idx] = this;
 
@@ -80,8 +81,10 @@ var SEQUENCEPLAYER = (function(){
                     }
                 }
 
-                isImage.addEventListener('load', imageLoadEvent);
-            })(i);
+                imgElement.addEventListener('load', imageLoadEvent);
+            })(i, isImage);
+
+            isImage = null;
         }
     };
 
