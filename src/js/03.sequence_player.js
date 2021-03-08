@@ -60,25 +60,31 @@ var SEQUENCEPLAYER = (function(){
     };
 
     fn.loadImages = function(){
-        var self = this;
+        var self = this,
+            isImage;
 
         for(var i = this.opts.startNum; i <= this.opts.endNum; i++) {
-            var isImage = new Image();
+            isImage = new Image();
 
             isImage.src = this.opts.path + this.opts.name + i + '.' + this.opts.extension;
 
-            (function(idx){
-                isImage.addEventListener('load', function(){
+            (function(idx, imgElement){
+                var imageLoadEvent = function(){
                     self.imageList[idx] = this;
 
                     if (self.loadCount < self.opts.endNum) {
                         self.loadCount++;
+                        this.removeEventListener('load', imageLoadEvent);
                     } else if (self.opts.autoPlay && self.loadCount == self.opts.endNum) {
                         self.play();
                         return;
                     }
-                });
-            })(i);
+                }
+
+                imgElement.addEventListener('load', imageLoadEvent);
+            })(i, isImage);
+
+            isImage = null;
         }
     };
 

@@ -1,5 +1,5 @@
 /*!
- * Scrolle JavaScript Library v1.0.3
+ * Scrolle JavaScript Library v1.0.4
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
