@@ -37,10 +37,10 @@ var RANGEHANDLER = (function(){
 
 	fn.calValue = function(progress){
 		if (this.startPoint > 0) {
-			this.endPoint = this.endPoint - this.startPoint > 0 ? this.endPoint - this.startPoint : this.endPoint;
+			var endPoint = this.endPoint - this.startPoint > 0 ? this.endPoint - this.startPoint : this.endPoint;
 		}
 	
-		var returnValue = this.targetValue * (progress - this.startPoint) / this.endPoint;
+		var returnValue = this.targetValue * (progress - this.startPoint) / endPoint;
 	
 		if (returnValue > this.targetValue) {
 			returnValue = this.targetValue;
