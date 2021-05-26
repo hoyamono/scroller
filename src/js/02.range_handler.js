@@ -36,7 +36,7 @@ var RANGEHANDLER = (function(){
 	var fn = init.prototype;
 
 	fn.calValue = function(progress){
-		if (this.startPoint > 0) {
+		if (this.startPoint >= 0) {
 			var endPoint = this.endPoint - this.startPoint > 0 ? this.endPoint - this.startPoint : this.endPoint;
 		}
 	
