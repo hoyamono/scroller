@@ -115,14 +115,14 @@ progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함�
 		onUpdate: function(){
 			console.log('onUpdate')
 		},
-		onComplate: function(){
-			console.log('onComplate')
+		onComplete: function(){
+			console.log('onComplete')
 		},
-		reverseStart: function(){
-			console.log('reverseStart')
+		onReverseStart: function(){
+			console.log('onReverseStart')
 		},
-		reverseComplate: function(){
-			console.log('reverseComplate')
+		onRreverseComplete: function(){
+			console.log('onRreverseComplete')
 		}
 	});
 	```
@@ -136,9 +136,9 @@ progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함�
 |startPoint|number|0~100까지의 progress중 target value값 계산을 시작할 위치 지정|
 |endPoint|number|0~100까지의 progress중 target value값 계산을 중단할 위치 지정|
 |onStart|function|스크롤 시작시 실행될 함수|
-|onComplate|function|스크롤 완료 후 실행될 함수|
-|reverseStart|function|역방향 스크롤 시작식 실행될 함수|
-|reverseComplate|function|역방향 스크롤 완료 후 실행될 함수|
+|onComplete|function|스크롤 완료 후 실행될 함수|
+|onReverseStart|function|역방향 스크롤 시작식 실행될 함수|
+|onRreverseComplete|function|역방향 스크롤 완료 후 실행될 함수|
 |onUpdate|function|스크롤 시작 후 스크롤 중 실행될 함수|
 
 
