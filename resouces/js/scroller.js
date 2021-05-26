@@ -416,16 +416,16 @@ var RANGEHANDLER = function () {
     this.activeEndPoint = this.endPoint - 1;
     this.onStart = opts.onStart;
     this.onUpdate = opts.onUpdate;
-    this.onComplete = opts.onComplete;
-    this.onReverseStart = opts.onReverseStart;
-    this.onReverseComplete = opts.onReverseComplete;
+    this.onComplate = opts.onComplate;
+    this.reverseStart = opts.reverseStart;
+    this.reverseComplate = opts.reverseComplate;
     this.oldScroll = 0;
     this.activeOnStart = false;
-    this.activeonComplete = false;
-    this.completeOnCallback = false;
-    this.activeonReverseStart = false;
-    this.activeonReverseComplete = false;
-    this.completeReverseCallback = false;
+    this.activeOnComplate = false;
+    this.complateOnCallback = false;
+    this.activeReverseStart = false;
+    this.activeReverseComplate = false;
+    this.complateReverseCallback = false;
     return this;
   };
 
@@ -433,10 +433,10 @@ var RANGEHANDLER = function () {
 
   fn.calValue = function (progress) {
     if (this.startPoint > 0) {
-      this.endPoint = this.endPoint - this.startPoint > 0 ? this.endPoint - this.startPoint : this.endPoint;
+      var endPoint = this.endPoint - this.startPoint > 0 ? this.endPoint - this.startPoint : this.endPoint;
     }
 
-    var returnValue = this.targetValue * (progress - this.startPoint) / this.endPoint;
+    var returnValue = this.targetValue * (progress - this.startPoint) / endPoint;
 
     if (returnValue > this.targetValue) {
       returnValue = this.targetValue;
@@ -469,34 +469,34 @@ var RANGEHANDLER = function () {
 
       this.activeOnStart = true;
     },
-    onComplete: function () {
-      if (this.onComplete) {
-        this.onComplete();
+    onComplate: function () {
+      if (this.onComplate) {
+        this.onComplate();
       }
 
-      this.activeonComplete = true;
-      this.completeOnCallback = true;
-      this.activeonReverseStart = false;
-      this.activeonReverseComplete = false;
-      this.completeReverseCallback = false;
+      this.activeOnComplate = true;
+      this.complateOnCallback = true;
+      this.activeReverseStart = false;
+      this.activeReverseComplate = false;
+      this.complateReverseCallback = false;
     },
-    onReverseStart: function () {
-      if (this.onReverseStart) {
-        this.onReverseStart();
+    reverseStart: function () {
+      if (this.reverseStart) {
+        this.reverseStart();
       }
 
-      this.activeonReverseStart = true;
+      this.activeReverseStart = true;
     },
-    onReverseComplete: function () {
-      if (this.onReverseComplete) {
-        this.onReverseComplete();
+    reverseComplate: function () {
+      if (this.reverseComplate) {
+        this.reverseComplate();
       }
 
-      this.activeonReverseComplete = true;
-      this.completeReverseCallback = true;
+      this.activeReverseComplate = true;
+      this.complateReverseCallback = true;
       this.activeOnStart = false;
-      this.activeonComplete = false;
-      this.completeOnCallback = false;
+      this.activeOnComplate = false;
+      this.complateOnCallback = false;
     },
     onUpdate: function () {
       if (this.onUpdate) {
@@ -506,15 +506,15 @@ var RANGEHANDLER = function () {
   };
 
   fn.checkScrollType = function (progress) {
-    if (progress > this.activeStartPoint && progress < this.activeEndPoint && !this.completeOnCallback && !this.activeOnStart && this.isDirection == 'down') {
+    if (progress > this.activeStartPoint && progress < this.activeEndPoint && !this.complateOnCallback && !this.activeOnStart && this.isDirection == 'down') {
       return 'onStart';
-    } else if (progress > this.activeEndPoint && !this.completeOnCallback && !this.activeonComplete && this.isDirection == 'down') {
-      return 'onComplete';
-    } else if (progress < this.activeEndPoint && this.completeOnCallback && !this.activeonReverseStart && this.isDirection == 'up') {
-      return 'onReverseStart';
-    } else if (progress < this.activeStartPoint && this.completeOnCallback && !this.activeonReverseComplete && this.isDirection == 'up') {
-      return 'onReverseComplete';
-    } else if (this.activeOnStart && !this.activeonComplete && this.isDirection == 'down' || this.activeOnStart && !this.activeonComplete && this.isDirection == 'up' || this.activeonReverseStart && !this.activeonReverseComplete && this.isDirection == 'down' || this.activeonReverseStart && !this.activeonReverseComplete && this.isDirection == 'up') {
+    } else if (progress > this.activeEndPoint && !this.complateOnCallback && !this.activeOnComplate && this.isDirection == 'down') {
+      return 'onComplate';
+    } else if (progress < this.activeEndPoint && this.complateOnCallback && !this.activeReverseStart && this.isDirection == 'up') {
+      return 'reverseStart';
+    } else if (progress < this.activeStartPoint && this.complateOnCallback && !this.activeReverseComplate && this.isDirection == 'up') {
+      return 'reverseComplate';
+    } else if (this.activeOnStart && !this.activeOnComplate && this.isDirection == 'down' || this.activeOnStart && !this.activeOnComplate && this.isDirection == 'up' || this.activeReverseStart && !this.activeReverseComplate && this.isDirection == 'down' || this.activeReverseStart && !this.activeReverseComplate && this.isDirection == 'up') {
       return 'onUpdate';
     }
   };
@@ -525,10 +525,10 @@ var RANGEHANDLER = function () {
 
     switch (this.checkScrollType(progress)) {
       case 'onUpdate':
-        if (this.activeonReverseStart && progress > this.activeEndPoint && this.isDirection == 'down') {
-          this.callBackList.onComplete.call(this);
+        if (this.activeReverseStart && progress > this.activeEndPoint && this.isDirection == 'down') {
+          this.callBackList.onComplate.call(this);
         } else if (this.activeOnStart && progress < this.activeStartPoint && this.isDirection == 'up') {
-          this.callBackList.onReverseComplete.call(this);
+          this.callBackList.reverseComplate.call(this);
         } else {
           this.callBackList.onUpdate.call(this);
         }
@@ -539,21 +539,21 @@ var RANGEHANDLER = function () {
         this.callBackList.onStart.call(this);
         break;
 
-      case 'onComplete':
-        if (progress > this.activeStartPoint && !this.activeonReverseStart && !this.activeonReverseComplete && !this.completeReverseCallback && !this.activeOnStart && !this.activeonComplete && !this.completeOnCallback) {
+      case 'onComplate':
+        if (progress > this.activeStartPoint && !this.activeReverseStart && !this.activeReverseComplate && !this.complateReverseCallback && !this.activeOnStart && !this.activeOnComplate && !this.complateOnCallback) {
           this.callBackList.onStart.call(this);
           this.callBackList.onUpdate.call(this);
         }
 
-        this.callBackList.onComplete.call(this);
+        this.callBackList.onComplate.call(this);
         break;
 
-      case 'onReverseStart':
-        this.callBackList.onReverseStart.call(this);
+      case 'reverseStart':
+        this.callBackList.reverseStart.call(this);
         break;
 
-      case 'onReverseComplete':
-        this.callBackList.onReverseComplete.call(this);
+      case 'reverseComplate':
+        this.callBackList.reverseComplate.call(this);
         break;
     }
   };
