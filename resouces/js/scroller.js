@@ -986,7 +986,7 @@ var ANIUTIL = function () {
         }
       };
 
-      window.addEventListener('DOMContentLoaded', function () {
+      document.addEventListener('DOMContentLoaded', function () {
         if (self.useDefaultImg) {
           self.setDefaultImage();
         }
@@ -1029,10 +1029,14 @@ var ANIUTIL = function () {
     };
 
     fn.getLazyImage = function () {
-      var lazyImageList = document.querySelectorAll(this.lazyClass),
-          lazyCompleteList = document.querySelectorAll('.' + this.lazyComplateClass);
+      var lazyImageList = document.querySelectorAll(this.lazyClass);
       this.lazyImages = lazyImageList;
-      this.lazyLength = lazyImageList.length, this.lazyCompleteLength = lazyCompleteList.length;
+      this.lazyLength = lazyImageList.length;
+    };
+
+    fn.checkCompleteImage = function () {
+      var lazyCompleteList = document.querySelectorAll('.' + this.lazyComplateClass);
+      this.lazyCompleteLength = lazyCompleteList.length;
     };
 
     fn.getResponsiveImage = function () {
@@ -1157,7 +1161,7 @@ var ANIUTIL = function () {
           }
 
           targetElement.classList.add('load-complete');
-          this.getLazyImage();
+          this.checkCompleteImage();
         }
       }
     };
