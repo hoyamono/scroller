@@ -530,18 +530,18 @@ var ANIUTIL = function () {
         }
       };
 
-      document.addEventListener('DOMContentLoaded', function () {
-        if (self.useDefaultImg) {
-          self.setDefaultImage();
-        }
+      if (self.useDefaultImg) {
+        self.setDefaultImage();
+      }
 
-        if (responsiveCheck) {
-          self.responsiveHandler();
-        }
+      if (responsiveCheck) {
+        self.responsiveHandler();
+      }
 
-        self.setLazyImage();
+      window.addEventListener('load', function () {
+        self.lazyEvent();
       });
-      window.addEventListener('scroll', this.lazyEvent);
+      window.addEventListener('scroll', self.lazyEvent);
 
       if (responsiveCheck) {
         window.addEventListener('resize', function () {
