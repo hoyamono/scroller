@@ -247,7 +247,7 @@ var SCROLLER = function () {
     this.upScrollTop = this.winScrollTop + this.correctionValue;
     this.upScrollBottom = this.winScrollBottom + this.correctionValue;
     var self = this,
-        visibleTyle = this.activeVisibility,
+        visibleType = this.activeVisibility,
         removeType = this.activePlay,
         corrHeight = this.windowHeight / 2;
 
@@ -320,9 +320,9 @@ var SCROLLER = function () {
 
     this.getWheelDirection();
 
-    switch (visibleTyle) {
+    switch (visibleType) {
       case 'before':
-        if (this.downScrollBottom >= this.elementOffsetTop && this.downScrollTop <= this.elementOffsetTop || this.upScrollTop <= this.elementOffsetBottom && this.upScrollBottom >= this.elementOffsetBottom || this.activePlay == 'oneWay' && this.downScrollBottom >= this.elementOffsetTop) {
+        if (this.wheelDirection == 'down' && this.downScrollBottom >= this.elementOffsetTop && this.downScrollTop <= this.elementOffsetTop || this.wheelDirection == 'up' && this.upScrollTop <= this.elementOffsetBottom && this.upScrollBottom >= this.elementOffsetBottom || this.activePlay == 'oneWay' && this.downScrollBottom >= this.elementOffsetTop) {
           activeHandler();
           this.activeStatus = true;
         }
@@ -340,7 +340,7 @@ var SCROLLER = function () {
 
     switch (removeType) {
       case 'reverse':
-        if (visibleTyle == 'visible') {
+        if (visibleType == 'visible') {
           if (this.activeStatus && this.wheelDirection == 'down' && this.winScrollTop > this.elementOffsetBottom || this.activeStatus && this.wheelDirection == 'up' && this.winScrollBottom < this.elementOffsetTop) {
             removeHandler();
             this.activeStatus = false;
@@ -355,7 +355,7 @@ var SCROLLER = function () {
         break;
 
       case 'oneWay':
-        if (visibleTyle == 'visible') {
+        if (visibleType == 'visible') {
           if (this.activeStatus && this.winScrollBottom < this.elementOffsetTop) {
             removeHandler();
             this.activeStatus = false;
