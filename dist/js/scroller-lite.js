@@ -19,7 +19,7 @@ const SCROLLER = function () {
     this.activeCallbackClass = !!!opts.activeCallbackClass ? 'callback-active' : opts.activeCallbackClass;
     this.useStrictMode = opts.useStrictMode == undefined ? true : opts.useStrictMode;
     this.useFixed = !!!opts.useFixed ? false : opts.useFixed;
-    this.useViewportOver = !!!opts.useViewportOver ? false : opts.useViewportOver;
+    this.useViewportOver = !!!opts.useViewportOver ? true : opts.useViewportOver;
     this.activeVisibility = !!!opts.activeVisibility ? 'before' : opts.activeVisibility;
     this.activeType = !!!opts.activeType ? 'reverse' : this.opts.activeType;
     this.offsetY = !!!opts.offsetY ? 0 : opts.offsetY;

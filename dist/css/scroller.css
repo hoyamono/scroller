@@ -45,15 +45,31 @@ p { font-size: 70px; color: #fff; }
 
 .scene5 .content-wrap { overflow: hidden; }
 
-.scene6, .scene7 { position: relative; height: 100vh; text-align: center; overflow: hidden; }
+.scene6, .scene7, .scene8, .scene9 { position: relative; height: 100vh; text-align: center; overflow: hidden; }
 
-.scene6 .content-wrap, .scene7 .content-wrap { overflow: hidden; height: 100%; }
+.scene6 .content-wrap, .scene7 .content-wrap, .scene8 .content-wrap, .scene9 .content-wrap { overflow: hidden; height: 100%; }
 
-.scene6 .text1, .scene7 .text1 { opacity: 1; }
+.scene6 .text1, .scene7 .text1, .scene8 .text1, .scene9 .text1 { opacity: 1; }
 
-.scene6 .controller, .scene7 .controller { position: absolute; right: 0; bottom: 0; z-index: 100; }
+.scene6 .controller, .scene7 .controller, .scene8 .controller, .scene9 .controller { position: absolute; right: 0; bottom: 0; z-index: 100; }
 
-.scene6 canvas, .scene7 canvas { min-width: 100%; min-height: 100%; }
+.scene6 canvas, .scene7 canvas, .scene8 canvas, .scene9 canvas { min-width: 100%; min-height: 100%; }
+
+.scene8 { height: 140vh; }
+
+.scene8 .text1, .scene8 .imgbox { position: absolute; left: 50%; top: 60%; }
+
+.scene8 .text1 { transform: translate(-50%, 0); }
+
+.scene8 .imgbox { top: 12%; width: 400px; height: 600px; background: #444; transform: translate(0, 0); }
+
+.scene8 .box2 { top: 20%; left: 20%; transform: scale(0.7); opacity: 0.8; }
+
+.scene8 .box3 { top: 50%; left: auto; right: 5%; transform: scale(0.5); opacity: 0.5; }
+
+.scene8 .box4 { top: 0%; left: 5%; transform: scale(0.3); opacity: 0.5; }
+
+.scene9 { height: 150vh; }
 
 .count-box { position: absolute; width: 400px; height: 15vw; background: #f1f1f1; }
 
