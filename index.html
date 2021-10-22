@@ -8,6 +8,7 @@
 	<script src="./dist/js/scroller.js"></script>
 	<link rel="stylesheet" href="https://meyerweb.com/eric/tools/css/reset/reset200802.css">
 	<link rel="stylesheet" href="./dist/css/scroller.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.8.0/gsap.min.js"></script>
 </head>
 
 <body>
@@ -75,6 +76,15 @@
 			<div class="content-wrap">
 				<p class="text1">06 - Sequence Player : Auto Play + Time Controll</p>
 			</div>
+		</section>
+		<section class="scene8">
+			<p class="text1">07 - parallax</p>
+			<div class="imgbox box1"></div>
+			<div class="imgbox box2"></div>
+			<div class="imgbox box3"></div>
+			<div class="imgbox box4"></div>
+		</section>
+		<section class="scene9">
 		</section>
 	</div>
 </body>
@@ -231,6 +241,18 @@ document.addEventListener('DOMContentLoaded', function(){
 		},
 	});
 
+
+	var trackElement8 = document.querySelector('.scene8'),
+		text8 = trackElement8.querySelector('.text1'),
+		imgbox1 = trackElement8.querySelector('.imgbox'),
+		imgbox2 = trackElement8.querySelector('.imgbox.box2'),
+		imgbox3 = trackElement8.querySelector('.imgbox.box3'),
+		imgbox4 = trackElement8.querySelector('.imgbox.box4');
+
+	var scene8 = SCROLLER({
+		trackElement: trackElement8,
+		useFixed: false,
+	});
 	// =============================================================================================================== SCENE 생성
 
 	// =============================================================================================================== animation 구현
@@ -375,7 +397,44 @@ document.addEventListener('DOMContentLoaded', function(){
 		});
 
 		scene7.activeAnimation();
+
+		scene8.trackAnimation(function(){
+			var motionValue1 = ANIUTIL.calRange({
+				targetValue: 100,
+				progress: this.progress,
+				startPoint: 0,
+				endPoint: 100
+			});
+
+			var motionValue2 = ANIUTIL.calRange({
+				targetValue: 70,
+				progress: this.progress,
+				startPoint: 0,
+				endPoint: 100
+			});
+
+			var motionValue3 = ANIUTIL.calRange({
+				targetValue: 50,
+				progress: this.progress,
+				startPoint: 0,
+				endPoint: 100
+			});
+
+			var motionValue4 = ANIUTIL.calRange({
+				targetValue: 100,
+				progress: this.progress,
+				startPoint: 0,
+				endPoint: 100
+			});
+
+			gsap.to(text8, {duration: 1, y: '-' + motionValue1 + '%', ease: "power3.out"});
+			gsap.to(imgbox1, {duration: 0.6, y: motionValue2 + '%', ease: "power3.out"});
+			gsap.to(imgbox2, {duration: 0.8, y: '-' + motionValue3 + '%', ease: "power3.out"});
+			gsap.to(imgbox3, {duration: 0.5, y: '-' + motionValue4 + '%', ease: "power3.out"});
+			gsap.to(text8, {duration: 1, y: '-' + motionValue1 + '%', ease: "power3.out"});
+		});
 	};
+	
 	// =============================================================================================================== animation 구현
 
 	// =============================================================================================================== addEvent
