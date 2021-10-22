@@ -5,9 +5,10 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Scroller</title>
-	<script src="./resouces/js/scroller.js"></script>
+	<script src="./dist/js/scroller.js"></script>
 	<link rel="stylesheet" href="https://meyerweb.com/eric/tools/css/reset/reset200802.css">
-	<link rel="stylesheet" href="./resouces/css/scroller.css">
+	<link rel="stylesheet" href="./dist/css/scroller.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.8.0/gsap.min.js"></script>
 </head>
 
 <body>
@@ -68,13 +69,22 @@
 		</section>
 		<section class="scene7">
 			<div class="controller">
-				<button onclick="seq2.play()">play</button>
-				<button onclick="seq2.pause()">pause</button>
-				<button onclick="seq2.reverse()">reverse</button>
+				<button class="play">play</button>
+				<button class="pause">pause</button>
+				<button class="reverse">reverse</button>
 			</div>
 			<div class="content-wrap">
 				<p class="text1">06 - Sequence Player : Auto Play + Time Controll</p>
 			</div>
+		</section>
+		<section class="scene8">
+			<p class="text1">07 - parallax</p>
+			<div class="imgbox box1"></div>
+			<div class="imgbox box2"></div>
+			<div class="imgbox box3"></div>
+			<div class="imgbox box4"></div>
+		</section>
+		<section class="scene9">
 		</section>
 	</div>
 </body>
@@ -83,12 +93,12 @@
 
 	// =============================================================================================================== SCENE 생성
 	// ============================================================== Key Visual (scene1)
-
+document.addEventListener('DOMContentLoaded', function(){
 	var seq1 = SEQUENCEPLAYER({
 		targetElement: document.querySelector('.scene6 .content-wrap'),
 		startNum: 0,
 		endNum: 170,
-		path: './resouces/img/seq/',
+		path: './img/seq/',
 		name: 'Earth_Zoom_In_preview',
 		extension: 'jpg',
 		width: 426,
@@ -102,12 +112,12 @@
 		targetElement: document.querySelector('.scene7 .content-wrap'),
 		startNum: 0,
 		endNum: 170,
-		path: './resouces/img/seq/',
+		path: './img/seq/',
 		name: 'Earth_Zoom_In_preview',
 		extension: 'jpg',
 		width: 426,
 		height: 240,
-		playTime: 5000
+		playTime: 3000
 	});
 
 	SCROLLER({
@@ -123,25 +133,24 @@
 		trackElement: trackElement1,
 		fixedElement: fixedElement1,
 		useFixed: true,
-		trackHeight: 2.2, //fixed scroll시 track element height값 보정(배율값)
-		resize: true, //resize 이벤트 실행
+		trackHeight: 2.2, //fixed scroll시 track element height값 보정(배율값), //resize 이벤트 실행
 		resizeTiming: 70
 	});
 
 	// ============================================================== scene2
 
-	var trackElement2 = document.querySelector('.scene2 .text1');
+	var trackElement2 = document.querySelector('.scene2'),
+		activeElement2 = trackElement2.querySelector('.scene2 .text1');
 
 	var scene2 = SCROLLER({
-		activeElement: trackElement2,
-		// correction: 0.4, //노출위치 보정 (배율값)
+		trackElement: trackElement2,
+		activeElement: activeElement2,
+		correction: 0.5, //노출위치 보정 (배율값)
 		activeVisibility: 'visible', //visible: element가 화면 중앙에 위치할 경우 노출, before: window scroll bottom이 element의 offset top과 맞닿을경우 노출
-		activePlay: 'reverse', //reverse: 역방향 재생, oneWay: 재생 완료 후 scrollTop이 0이될 경우 인터랙션 초기화
+		activeType: 'reverse', //reverse: 역방향 재생, oneWay: 재생 완료 후 scrollTop이 0이될 경우 인터랙션 초기화
 		activeClass: ['active'],
 		// activeCallbackClass: 'activeCallbackClass', //콜백함수 실행 완료 후 노출하는 class로 기본값은 callback-active로 설정되어있음
-		resize: true
 	});
-
 	// ============================================================== scene3
 
 	var trackElement3 = document.querySelector('.scene3'),
@@ -151,10 +160,11 @@
 	video1.muted = true;
 
 	var scene3 = SCROLLER({
+		trackElement: trackElement3,
 		activeElement: fixedElement3,
 		// correction: 0.4,
 		activeVisibility: 'before',
-		activePlay: 'reverse',
+		activeType: 'reverse',
 		activeCallback: function () {
 			if (video1.paused && video1.readyState >= 4) {
 				video1.play();
@@ -170,7 +180,6 @@
 				video1.currentTime = 0;
 			}
 		},
-		resize: true
 	});
 
 	var scene3_1 = SCROLLER({
@@ -178,9 +187,7 @@
 		fixedElement: fixedElement3,
 		useFixed: true,
 		trackHeight: 2,
-		resize: true
 	});
-
 	// ============================================================== scene4
 
 	var trackElement4 = document.querySelector('.scene4'),
@@ -193,7 +200,6 @@
 		fixedElement: fixedElement4,
 		useFixed: true,
 		trackHeight: 3,
-		resize: true
 	});
 
 	// ============================================================== scene5
@@ -207,7 +213,6 @@
 		fixedElement: fixedElement5,
 		useFixed: true,
 		trackHeight: 1.5,
-		resize: true
 	});
 
 	var trackElement6 = document.querySelector('.scene6'),
@@ -218,25 +223,36 @@
 		fixedElement: fixedElement6,
 		useFixed: true,
 		trackHeight: 3,
-		resize: true
 	});
 
 
 	var trackElement7 = document.querySelector('.scene7')
 
 	var scene7 = SCROLLER({
+		trackElement: trackElement7,
 		activeElement: trackElement7,
 		activeVisibility: 'before',
-		activePlay: 'reverse',
+		activeType: 'reverse',
 		activeCallback: function(){
 			seq2.play();
 		},
 		endCallback: function () {
 			seq2.stop();
 		},
-		resize: true
 	});
 
+
+	var trackElement8 = document.querySelector('.scene8'),
+		text8 = trackElement8.querySelector('.text1'),
+		imgbox1 = trackElement8.querySelector('.imgbox'),
+		imgbox2 = trackElement8.querySelector('.imgbox.box2'),
+		imgbox3 = trackElement8.querySelector('.imgbox.box3'),
+		imgbox4 = trackElement8.querySelector('.imgbox.box4');
+
+	var scene8 = SCROLLER({
+		trackElement: trackElement8,
+		useFixed: false,
+	});
 	// =============================================================================================================== SCENE 생성
 
 	// =============================================================================================================== animation 구현
@@ -251,14 +267,14 @@
 		onUpdate: function(){
 			console.log('onUpdate')
 		},
-		onComplate: function(){
-			console.log('onComplate')
+		onComplete: function(){
+			console.log('onComplete')
 		},
-		reverseStart: function(){
-			console.log('reverseStart')
+		onReverseStart: function(){
+			console.log('onReverseStart')
 		},
-		reverseComplate: function(){
-			console.log('reverseComplate')
+		onReverseComplete: function(){
+			console.log('onReverseComplete')
 		}
 	});
 
@@ -377,12 +393,48 @@
 				startPoint: 0,
 				endPoint: 100
 			});
-
-			seq1.play(parseInt(motionValue1));
+			seq1.play({index: parseInt(motionValue1)});
 		});
 
 		scene7.activeAnimation();
+
+		scene8.trackAnimation(function(){
+			var motionValue1 = ANIUTIL.calRange({
+				targetValue: 100,
+				progress: this.progress,
+				startPoint: 0,
+				endPoint: 100
+			});
+
+			var motionValue2 = ANIUTIL.calRange({
+				targetValue: 70,
+				progress: this.progress,
+				startPoint: 0,
+				endPoint: 100
+			});
+
+			var motionValue3 = ANIUTIL.calRange({
+				targetValue: 50,
+				progress: this.progress,
+				startPoint: 0,
+				endPoint: 100
+			});
+
+			var motionValue4 = ANIUTIL.calRange({
+				targetValue: 100,
+				progress: this.progress,
+				startPoint: 0,
+				endPoint: 100
+			});
+
+			gsap.to(text8, {duration: 1, y: '-' + motionValue1 + '%', ease: "power3.out"});
+			gsap.to(imgbox1, {duration: 0.6, y: motionValue2 + '%', ease: "power3.out"});
+			gsap.to(imgbox2, {duration: 0.8, y: '-' + motionValue3 + '%', ease: "power3.out"});
+			gsap.to(imgbox3, {duration: 0.5, y: '-' + motionValue4 + '%', ease: "power3.out"});
+			gsap.to(text8, {duration: 1, y: '-' + motionValue1 + '%', ease: "power3.out"});
+		});
 	};
+	
 	// =============================================================================================================== animation 구현
 
 	// =============================================================================================================== addEvent
@@ -390,6 +442,26 @@
 	window.addEventListener('scroll', function () {
 		animationHandler();
 	});
+
+	var btn = {
+		play: document.querySelector('.play'),
+		pause: document.querySelector('.pause'),
+		reverse: document.querySelector('.reverse'),
+	};
+
+	btn.play.addEventListener('click', function(){
+		seq2.play();
+	});
+
+	btn.pause.addEventListener('click', function(){
+		seq2.pause();
+	});
+
+	btn.reverse.addEventListener('click', function(){
+		seq2.reverse();
+	});
+});
+
 </script>
 
 </html>

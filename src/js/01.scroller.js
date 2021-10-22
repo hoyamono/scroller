@@ -9,63 +9,65 @@
 
 'use strict'
 
-var SCROLLER = (function(){
-	var init = function(opts){
+const SCROLLER = (function(){
+	const init = function(opts){
 		this.initialize = true;
 		this.opts = opts;
-		this.correction = (!!!opts.correction ? 0 : opts.correction);
-		this.removeCorrection =  (!!!opts.removeCorrection ? 0 : opts.removeCorrection);
+		this.correction = !!!opts.correction ? 0 : opts.correction;
+		this.removeCorrection = !!!opts.removeCorrection ? 0 : opts.removeCorrection;
 		this.trackHeight = !!!opts.trackHeight ? 0 : opts.trackHeight;
 		this.activeClass = opts.activeClass;
 		this.activeCallbackClass = !!!opts.activeCallbackClass ? 'callback-active' : opts.activeCallbackClass;
+		this.useStrictMode = opts.useStrictMode == undefined ? true : opts.useStrictMode;
 		this.useFixed = !!!opts.useFixed ? false : opts.useFixed;
+		this.useViewportOver = !!!opts.useViewportOver ? true : opts.useViewportOver;
 		this.activeVisibility = !!!opts.activeVisibility ? 'before' : opts.activeVisibility;
-		this.activePlay = !!!opts.activePlay ? 'reverse' : this.opts.activePlay;
+		this.activeType = !!!opts.activeType ? 'reverse' : this.opts.activeType;
 		this.offsetY = !!!opts.offsetY ? 0 : opts.offsetY;
-		this.resize = !!!opts.resize ? false : opts.resize;
+		this.resize = !!!opts.resize ? true : opts.resize;
 		this.resizeTiming = !!!opts.resizeTiming ? false : opts.resizeTiming;
 		this.windowHeight = window.innerHeight;
+		this.elementInformation = {};
 		this.elementEventList.setElement.call(this);
 		this.bindEvent();
 	};
 
-	var fn = init.prototype;
+	const fn = init.prototype;
 
 	fn.bindEvent = function(){
-		var self = this,
-			setTimeing = null;
+		const self = this;
+		let setTimeing = null;
 
 		this.elementHandler();
-		if (this.resize) {
+		
+		if (this.resize){
 			this.addEventList = function(){
-				if (!self.resizeTiming) {
+				if (!self.resizeTiming){
 					self.windowHeight = window.innerHeight;
 					self.elementHandler();
 				} else {
 					clearTimeout(setTimeing);
-
 					setTimeing = setTimeout(function(){
 						self.windowHeight = window.innerHeight;
 						self.elementHandler();
 					}, self.resizeTiming);
 				}
 			};
-			window.addEventListener('load', this.addEventList);
 			window.addEventListener('resize', this.addEventList);
 		}
-		if (this.opts.IEScroll) {
+		if (this.opts.IEScroll){
 			this.utilList.IEScrollHandler.call(this);
 		}
-
 	};
 
 	fn.elementHandler = function(){
 		this.elementEventList.setTrackStyle.call(this);
 
-		if (this.trackHeight > 1) {
+		if (this.trackHeight > 1){
 			this.elementEventList.setTrackHeigh.call(this);
 		}
-		if (this.useFixed) {
+
+		if (this.useFixed){
 			this.elementEventList.setFixedStyle.call(this);
 		}
 
@@ -74,105 +76,101 @@ var SCROLLER = (function(){
 
 	fn.utilList = {
 		IEScrollHandler: function(){
-			if(navigator.userAgent.match(/Trident\/7\./)) {
-				this.body.addEventListener('DOMMouseScroll mousewheel wheel', function (e) {
+			if (navigator.userAgent.match(/Trident\/7\./)){
+				this.body.addEventListener('mousewheel', function(e){
 					e.preventDefault();
-			
-					var wheelDelta = e.wheelDelta;
-	
-					var currentScrollPosition = window.pageYOffset;
+					let wheelDelta = e.wheelDelta,
+						currentScrollPosition = window.pageYOffset;
 					window.scrollTo(0, currentScrollPosition - wheelDelta);
 				});
-			
-				this.body.addEventListener('keydown', function (e) {
-					var currentScrollPosition = window.pageYOffset;
-			
-					switch (e.which) {
-			
+				this.body.addEventListener('keydown', function(e){
+					let currentScrollPosition = window.pageYOffset;
+
+					switch (e.which){
 						case 38:
 							e.preventDefault();
 							window.scrollTo(0, currentScrollPosition - 40);
 							break;
-			
+
 						case 40:
 							e.preventDefault();
 							window.scrollTo(0, currentScrollPosition + 40);
 							break;
-			
-						default: return;
-					} 
+
+						default:
+							return;
+					}
 				});
 			}
 		},
 		getScroll: function(){
-			var top = window.pageYOffset,
-				bottom =  top + this.windowHeight;
-	
+			let top = window.pageYOffset,
+				bottom = top + this.windowHeight;
 			return {
 				top: top,
 				bottom: bottom
-			}
+			};
 		},
 		getOffset: function(element){
-			var top = element.getBoundingClientRect().top + window.pageYOffset,
+			let top = element.getBoundingClientRect().top + window.pageYOffset,
 				bottom = element.getBoundingClientRect().bottom + window.pageYOffset;
-	
 			return {
 				top: top,
 				bottom: bottom
-			}
+			};
 		}
-	}
+	};
 
 	fn.elementEventList = {
 		setElement: function(){
 			this.body = document.querySelector('body');
-			
-			if (this.opts.trackElement !== undefined) {
+
+			if (this.opts.trackElement !== undefined){
 				this.trackElement = this.opts.trackElement.jquery ? this.opts.trackElement[0] : this.opts.trackElement;
 			}
-	
-			if (this.opts.fixedElement !== undefined) {
+
+			if (this.opts.fixedElement !== undefined){
 				this.fixedElement = this.opts.fixedElement.jquery ? this.opts.fixedElement[0] : this.opts.fixedElement;
 			}
-	
-			if (this.opts.activeElement !== undefined) {
+
+			if (this.opts.activeElement !== undefined){
 				this.activeElement = this.opts.activeElement.jquery ? this.opts.activeElement[0] : this.opts.activeElement;
 			}
 		},
 		setTrackHeigh: function(){
 			this.trackElement.style.height = '';
-			this.trackElement.style.paddingTop = '',
+			this.trackElement.style.paddingTop = '';
 			this.trackElement.style.paddingBottom = '';
+			let checkTrackHeight = this.trackElement.clientHeight == 0,
+				isTrackHeight = checkTrackHeight ? this.windowHeight : this.trackElement.clientHeight,
+				calTrackHeight = isTrackHeight * this.trackHeight - isTrackHeight;
 
-			var checkTrackHeight = this.trackElement.clientHeight == 0,
-				isTrackHeight =  checkTrackHeight ? this.windowHeight : this.trackElement.clientHeight,
-				calTrackHeight = (isTrackHeight * this.trackHeight) - isTrackHeight;
-
-			if (checkTrackHeight) {
-				this.trackElement.style.height = this.windowHeight +'px';
+			if (checkTrackHeight){
+				this.trackElement.style.height = this.windowHeight + 'px';
 			}
+
 			this.trackElement.style.boxSizing = 'content-box';
-			this.trackElement.style.paddingTop = (calTrackHeight / 2) +'px';
-			this.trackElement.style.paddingBottom = (calTrackHeight / 2) +'px';
+			this.trackElement.style.paddingTop = calTrackHeight / 2 + 'px';
+			this.trackElement.style.paddingBottom = calTrackHeight / 2 + 'px';
 		},
 		setTrackStyle: function(){
 			if (!!!this.trackElement) return;
-			if (window.getComputedStyle(this.trackElement).position == 'static') {
-				this.trackElement.style.position = 'relative'
+
+			if (window.getComputedStyle(this.trackElement).position == 'static'){
+				this.trackElement.style.position = 'relative';
 			}
 		},
 		setFixedStyle: function(){
 			this.fixedElement.style.height = '';
 			this.fixedElement.style.top = '';
 			this.fixedElement.style.position = 'absolute';
-	
-			if (this.fixedElement.clientWidth == 0) {
+
+			if (this.fixedElement.clientWidth == 0){
 				this.fixedElement.style.width = '100%';
 			}
-	
-			if (typeof(this.offsetY) == 'string') {
-				this.fixedElement.style.height = 'calc('+ this.windowHeight +'px - '+ this.offsetY +')';
+
+			if (typeof this.offsetY == 'string'){
+				this.fixedElement.style.height = 'calc(' + this.windowHeight + 'px - ' + this.offsetY + ')';
 				this.fixedElement.style.top = this.offsetY;
 			} else {
 				this.fixedElement.style.height = (this.windowHeight - this.offsetY) + 'px';
@@ -183,41 +181,49 @@ var SCROLLER = (function(){
 			this.diffHeight = this.windowHeight - this.fixedElement.clientHeight;
 			this.trackTopOffset = this.utilList.getOffset.call(this, this.trackElement).top;
 			this.trackBottomOffset = this.utilList.getOffset.call(this, this.trackElement).bottom;
-	
-			if (this.winScrollTop <= this.trackTopOffset) {
+
+			if (this.winScrollTop <= this.trackTopOffset){
 				this.fixedElement.style.position = 'absolute';
-				if (typeof(this.offsetY) == 'string') {
+
+				if (typeof this.offsetY == 'string'){
 					this.fixedElement.style.top = this.offsetY;
 				} else {
 					this.fixedElement.style.top = this.offsetY + 'px';
 				}
+
 				this.fixedElement.style.bottom = '';
-			} else if(this.winScrollTop >= this.trackTopOffset && this.winScrollbottom <= this.trackBottomOffset) {
+			} else if (this.winScrollTop >= this.trackTopOffset && this.winScrollBottom <= this.trackBottomOffset){
 				this.fixedElement.style.position = 'fixed';
-			} else if (this.winScrollbottom >= this.trackBottomOffset) {
+			} else if (this.winScrollBottom >= this.trackBottomOffset){
 				this.fixedElement.style.position = 'absolute';
 				this.fixedElement.style.top = 'auto';
 				this.fixedElement.style.bottom = '0px';
-			}
-		}
+			};
+		},
 	};
 
 	fn.getWheelDirection = function(){
-		if (this.winScrollTop > this.oldWinScrollTop) {
+		if (this.winScrollTop > this.oldWinScrollTop){
 			this.wheelDirection = 'down';
 		} else {
 			this.wheelDirection = 'up';
 		}
 
 		this.oldWinScrollTop = this.winScrollTop;
-	}
+	};
 
 	fn.getProgress = function(){
-		var trackTopOffset = this.utilList.getOffset.call(this, this.trackElement).top - (this.windowHeight * this.correction),
-			trackHeight = this.trackElement.clientHeight - this.windowHeight,
-			scrollTop = this.winScrollTop - trackTopOffset;
-		
-		this.progress = (scrollTop / trackHeight) * 100;
+		var trackTopOffset = this.utilList.getOffset.call(this, this.trackElement).top - this.windowHeight * this.correction,
+			trackHeight = this.useFixed ? Math.abs(this.trackElement.clientHeight - this.windowHeight) : this.useViewportOver ? this.trackElement.clientHeight + this.windowHeight : this.trackElement.clientHeight,
+			scrollTop = this.winScrollTop - trackTopOffset,
+			scrollBottom = this.winScrollBottom - trackTopOffset,
+			calProgress = this.useFixed ? scrollTop / trackHeight * 100 : scrollBottom / trackHeight * 100;
+
+		if (this.useStrictMode){
+			this.progress = Math.floor(calProgress) < 0 ? 0 : Math.floor(calProgress) > 100 ? 100 : Math.floor(calProgress);
+		} else {
+			this.progress = calProgress;
+		};
 
 		this.getWheelDirection();
 
@@ -226,82 +232,81 @@ var SCROLLER = (function(){
 
 	fn.trackAnimation = function(callback){
 		if (!this.initialize) return;
-
 		this.winScrollTop = this.utilList.getScroll.call(this).top;
-		this.winScrollbottom = this.utilList.getScroll.call(this).bottom;
+		this.winScrollBottom = this.utilList.getScroll.call(this).bottom;
 
-		if (this.useFixed) {
+		if (this.useFixed){
 			this.elementEventList.setFixedElement.call(this);
-		}
-		
+		};
+
 		this.getProgress();
-		if (callback) {
-			callback.call(this);
-		}
+
+		if (callback){
+			if (this.oldPregress !== this.progress){
+				callback.call(this);
+			};
+			this.oldPregress = this.progress;
+		};
 	};
 
 	fn.activeAnimation = function(){
 		if (!this.initialize) return;
-
 		this.winScrollTop = this.utilList.getScroll.call(this).top;
 		this.winScrollBottom = this.utilList.getScroll.call(this).bottom;
-		this.activeElementHeight = this.activeElement.clientHeight;
-		this.correctionValue = this.activeElementHeight * this.correction;
-		this.removeCorrectionValue = this.activeElementHeight * this.removeCorrection
-		this.elementOffsetTop = this.utilList.getOffset.call(this, this.activeElement).top;
-		this.elementOffsetBottom = this.utilList.getOffset.call(this, this.activeElement).bottom;
-
-		this.downScrollTop = this.winScrollTop - this.correctionValue
+		this.trackElementHeight = this.trackElement.clientHeight;
+		this.correctionValue = this.trackElementHeight * this.correction;
+		this.removeCorrectionValue = this.trackElementHeight * this.removeCorrection;
+		this.elementOffsetTop = this.utilList.getOffset.call(this, this.trackElement).top;
+		this.elementOffsetBottom = this.utilList.getOffset.call(this, this.trackElement).bottom;
+		this.downScrollTop = this.winScrollTop - this.correctionValue;
 		this.downScrollBottom = this.winScrollBottom - this.correctionValue;
 		this.upScrollTop = this.winScrollTop + this.correctionValue;
 		this.upScrollBottom = this.winScrollBottom + this.correctionValue;
-
-		var self = this,
-			visibleTyle = this.activeVisibility,
-			removeType = this.activePlay,
+		const self = this;
+		let visibleType = this.activeVisibility,
+			removeType = this.activeType,
 			corrHeight = this.windowHeight / 2;
 
 		var addActiveClass = function(){
 			if (!!!self.activeClass) return;
-			
-			if (typeof(self.activeClass) == 'object') {
-				var classLength = self.activeClass.length;
 
-				for (var i = 0; i < classLength; i++) {
-					if (!self.activeElement.classList.contains(self.activeClass[i])) {
+			if (typeof self.activeClass == 'object'){
+				let classLength = self.activeClass.length;
+
+				for (var i = 0; i < classLength; i++){
+					if (!self.activeElement.classList.contains(self.activeClass[i])){
 						self.activeElement.classList.add(self.activeClass[i]);
 					}
-				};
+				}
 			} else {
-				if (!self.activeElement.classList.contains(self.activeClass)) {
+				if (!self.activeElement.classList.contains(self.activeClass)){
 					self.activeElement.classList.add(self.activeClass);
 				}
 			}
-			
 		};
 
 		var removeActiveClass = function(){
-			if (typeof(self.activeClass) == 'object') {
-				var classLength = self.activeClass.length;
+			if (typeof self.activeClass == 'object'){
+				let classLength = self.activeClass.length;
 
-				for (var i = 0; i < classLength; i++) {
-					if (self.activeElement.classList.contains(self.activeClass[i])) {
+				for (var i = 0; i < classLength; i++){
+					if (self.activeElement.classList.contains(self.activeClass[i])){
 						self.activeElement.classList.remove(self.activeClass[i]);
 					}
-				};
+				}
 			} else {
-				if (self.activeElement.classList.contains(self.activeClass)) {
+				if (self.activeElement.classList.contains(self.activeClass)){
 					self.activeElement.classList.remove(self.activeClass);
 				}
 			}
 
-			if (self.activeElement.classList.contains(self.activeCallbackClass)) {
+			if (self.activeElement.classList.contains(self.activeCallbackClass)){
 				self.activeElement.classList.remove(self.activeCallbackClass);
 			}
 		};
 
 		var activeCallback = function(){
-			if (!self.activeElement.classList.contains(self.activeCallbackClass)) {
+			if (!self.activeElement.classList.contains(self.activeCallbackClass)){
 				if (!!!self.opts.activeCallback) return;
 				self.opts.activeCallback.call(self);
 				self.activeElement.classList.add(self.activeCallbackClass);
@@ -309,7 +314,7 @@ var SCROLLER = (function(){
 		};
 
 		var endCallback = function(){
-			if (self.activeElement.classList.contains(self.activeCallbackClass)) {
+			if (self.activeElement.classList.contains(self.activeCallbackClass)){
 				if (!!!self.opts.endCallback) return;
 				self.opts.endCallback.call(self);
 			}
@@ -327,92 +332,116 @@ var SCROLLER = (function(){
 
 		this.getWheelDirection();
 
-		switch (visibleTyle) {
+		switch (visibleType){
 			case 'before':
-				if (this.downScrollBottom >= this.elementOffsetTop && this.downScrollTop <= this.elementOffsetTop  ||
-					this.upScrollTop <= this.elementOffsetBottom && this.upScrollBottom >= this.elementOffsetBottom ||
-					this.activePlay == 'oneWay' && this.downScrollBottom >= this.elementOffsetTop) {
+				if (this.wheelDirection == 'down' && this.downScrollBottom >= this.elementOffsetTop && this.downScrollTop <= this.elementOffsetTop ||
+					this.wheelDirection == 'up' && this.upScrollTop <= this.elementOffsetBottom && this.upScrollBottom >= this.elementOffsetBottom ||
+					this.activeType == 'oneWay' && this.downScrollBottom >= this.elementOffsetTop){
 					activeHandler();
 					this.activeStatus = true;
 				}
-			break;
+
+				break;
 
 			case 'visible':
 				if (this.wheelDirection == 'down' && this.downScrollBottom >= this.elementOffsetTop + corrHeight && this.downScrollTop <= this.elementOffsetTop ||
 					this.wheelDirection == 'up' && this.upScrollTop <= this.elementOffsetBottom - corrHeight && this.upScrollBottom >= this.elementOffsetBottom ||
-					this.activePlay == 'oneWay' && this.winScrollBottom >= this.elementOffsetTop + corrHeight) {
+					this.activeType == 'oneWay' && this.downScrollBottom >= this.elementOffsetTop + corrHeight){
 					activeHandler();
 					this.activeStatus = true;
 				}
-			break;
+
+				break;
 		}
 
-		switch (removeType) {
+		switch (removeType){
 			case 'reverse':
-				if (visibleTyle == 'visible') {
+				if (visibleType == 'visible'){
 					if (this.activeStatus && this.wheelDirection == 'down' && this.winScrollTop > this.elementOffsetBottom ||
-						this.activeStatus && this.wheelDirection == 'up' && this.winScrollBottom < this.elementOffsetTop) {
+						this.activeStatus && this.wheelDirection == 'up' && this.winScrollBottom < this.elementOffsetTop){
 						removeHandler();
 						this.activeStatus = false;
 					}
 				} else {
 					if (this.activeStatus && this.winScrollTop < this.elementOffsetTop && this.winScrollBottom < this.elementOffsetTop ||
-						this.activeStatus && this.winScrollTop > this.elementOffsetBottom && this.winScrollBottom > this.elementOffsetBottom) {
+						this.activeStatus && this.winScrollTop > this.elementOffsetBottom && this.winScrollBottom > this.elementOffsetBottom){
 						removeHandler();
 						this.activeStatus = false;
 					}
 				}
-			break;
+
+				break;
 
 			case 'oneWay':
-				if (visibleTyle == 'visible') {
-					if (this.activeStatus && this.winScrollBottom < this.elementOffsetTop) {
+				if (visibleType == 'visible'){
+					if (this.activeStatus && this.winScrollBottom < this.elementOffsetTop){
 						removeHandler();
 						this.activeStatus = false;
 					}
 				} else {
-					if (this.activeStatus && this.winScrollTop < this.elementOffsetTop && this.winScrollBottom < this.elementOffsetTop) {
+					if (this.activeStatus && this.winScrollTop < this.elementOffsetTop && this.winScrollBottom < this.elementOffsetTop){
 						removeHandler();
 						this.activeStatus = false;
 					}
 				}
 
-
-			break;
+				break;
 		}
 	};
+	//TO-DO: 네이밍 변경
+	fn.getElementInformation = function(){
+		if (this.trackElement){
+			this.elementInformation.trackElement = {
+				element: this.trackElement,
+				width: this.trackElement.clientWidth,
+				height: this.trackElement.clientHeight,
+				topOffset: this.utilList.getOffset.call(this, this.trackElement).top,
+				bottomOffset: this.utilList.getOffset.call(this, this.trackElement).bottom
+			}
+		};
+
+		if (this.activeElement){
+			this.elementInformation.activeElement = {
+				element: this.activeElement,
+				width: this.activeElement.clientWidth,
+				height: this.activeElement.clientHeight,
+				topOffset: this.utilList.getOffset.call(this, this.activeElement).top,
+				bottomOffset: this.utilList.getOffset.call(this, this.activeElement).bottom
+			}
+		};
+
+		return this.elementInformation;
+	}
 
 	fn.destroy = function(e){
-		this.trackElement.style.position = '';
-		this.trackElement.style.height = '',
-		this.trackElement.style.paddingTop = '',
-		this.trackElement.style.paddingBottom = '';
-
-		this.fixedElement.style.position = '';
-		this.fixedElement.style.top = '';
-		this.fixedElement.style.height = '';
-
+		if (!!this.trackElement){
+			this.trackElement.style.position = '';
+			this.trackElement.style.height = '', this.trackElement.style.paddingTop = '', this.trackElement.style.paddingBottom = '';
+		}
+		if (!!this.fixedElement){
+			this.fixedElement.style.position = '';
+			this.fixedElement.style.top = '';
+			this.fixedElement.style.height = '';
+		}
 		this.trackElement = '';
 		this.fixedElement = '';
 		this.activeElement = '';
-
 		this.correction = '';
 		this.trackHeight = '';
 		this.activeCallbackClass = '';
 		this.useFixed = '';
 		this.activeVisibility = '';
-		this.activePlay = '';
+		this.activeType = '';
 		this.offsetY = '';
 		this.resize = '';
 		this.windowHeight = '';
-
+		this.elementInformation = '';
 		window.removeEventListener('load', this.addEventList);
 		window.removeEventListener('resize', this.addEventList);
-
 		this.initialize = false;
 	};
 
 	return function(opts){
 		return new init(opts);
-	}
+	};
 })();

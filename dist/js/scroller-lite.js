@@ -1,5 +1,5 @@
 /*!
- * Scrolle JavaScript Library v1.0.3
+ * Scrolle JavaScript Library v1.0.4
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
@@ -8,8 +8,8 @@
  */
 'use strict';
 
-var SCROLLER = function () {
-  var init = function (opts) {
+const SCROLLER = function () {
+  const init = function (opts) {
     this.initialize = true;
     this.opts = opts;
     this.correction = !!!opts.correction ? 0 : opts.correction;
@@ -17,22 +17,25 @@ var SCROLLER = function () {
     this.trackHeight = !!!opts.trackHeight ? 0 : opts.trackHeight;
     this.activeClass = opts.activeClass;
     this.activeCallbackClass = !!!opts.activeCallbackClass ? 'callback-active' : opts.activeCallbackClass;
+    this.useStrictMode = opts.useStrictMode == undefined ? true : opts.useStrictMode;
     this.useFixed = !!!opts.useFixed ? false : opts.useFixed;
+    this.useViewportOver = !!!opts.useViewportOver ? true : opts.useViewportOver;
     this.activeVisibility = !!!opts.activeVisibility ? 'before' : opts.activeVisibility;
-    this.activePlay = !!!opts.activePlay ? 'reverse' : this.opts.activePlay;
+    this.activeType = !!!opts.activeType ? 'reverse' : this.opts.activeType;
     this.offsetY = !!!opts.offsetY ? 0 : opts.offsetY;
-    this.resize = !!!opts.resize ? false : opts.resize;
+    this.resize = !!!opts.resize ? true : opts.resize;
     this.resizeTiming = !!!opts.resizeTiming ? false : opts.resizeTiming;
     this.windowHeight = window.innerHeight;
+    this.elementInformation = {};
     this.elementEventList.setElement.call(this);
     this.bindEvent();
   };
 
-  var fn = init.prototype;
+  const fn = init.prototype;
 
   fn.bindEvent = function () {
-    var self = this,
-        setTimeing = null;
+    const self = this;
+    let setTimeing = null;
     this.elementHandler();
 
     if (this.resize) {
@@ -49,7 +52,6 @@ var SCROLLER = function () {
         }
       };
 
-      window.addEventListener('load', this.addEventList);
       window.addEventListener('resize', this.addEventList);
     }
 
@@ -75,14 +77,14 @@ var SCROLLER = function () {
   fn.utilList = {
     IEScrollHandler: function () {
       if (navigator.userAgent.match(/Trident\/7\./)) {
-        this.body.addEventListener('DOMMouseScroll mousewheel wheel', function (e) {
+        this.body.addEventListener('mousewheel', function (e) {
           e.preventDefault();
-          var wheelDelta = e.wheelDelta;
-          var currentScrollPosition = window.pageYOffset;
+          let wheelDelta = e.wheelDelta,
+              currentScrollPosition = window.pageYOffset;
           window.scrollTo(0, currentScrollPosition - wheelDelta);
         });
         this.body.addEventListener('keydown', function (e) {
-          var currentScrollPosition = window.pageYOffset;
+          let currentScrollPosition = window.pageYOffset;
 
           switch (e.which) {
             case 38:
@@ -102,7 +104,7 @@ var SCROLLER = function () {
       }
     },
     getScroll: function () {
-      var top = window.pageYOffset,
+      let top = window.pageYOffset,
           bottom = top + this.windowHeight;
       return {
         top: top,
@@ -110,7 +112,7 @@ var SCROLLER = function () {
       };
     },
     getOffset: function (element) {
-      var top = element.getBoundingClientRect().top + window.pageYOffset,
+      let top = element.getBoundingClientRect().top + window.pageYOffset,
           bottom = element.getBoundingClientRect().bottom + window.pageYOffset;
       return {
         top: top,
@@ -136,8 +138,9 @@ var SCROLLER = function () {
     },
     setTrackHeigh: function () {
       this.trackElement.style.height = '';
-      this.trackElement.style.paddingTop = '', this.trackElement.style.paddingBottom = '';
-      var checkTrackHeight = this.trackElement.clientHeight == 0,
+      this.trackElement.style.paddingTop = '';
+      this.trackElement.style.paddingBottom = '';
+      let checkTrackHeight = this.trackElement.clientHeight == 0,
           isTrackHeight = checkTrackHeight ? this.windowHeight : this.trackElement.clientHeight,
           calTrackHeight = isTrackHeight * this.trackHeight - isTrackHeight;
 
@@ -188,13 +191,15 @@ var SCROLLER = function () {
         }
 
         this.fixedElement.style.bottom = '';
-      } else if (this.winScrollTop >= this.trackTopOffset && this.winScrollbottom <= this.trackBottomOffset) {
+      } else if (this.winScrollTop >= this.trackTopOffset && this.winScrollBottom <= this.trackBottomOffset) {
         this.fixedElement.style.position = 'fixed';
-      } else if (this.winScrollbottom >= this.trackBottomOffset) {
+      } else if (this.winScrollBottom >= this.trackBottomOffset) {
         this.fixedElement.style.position = 'absolute';
         this.fixedElement.style.top = 'auto';
         this.fixedElement.style.bottom = '0px';
       }
+
+      ;
     }
   };
 
@@ -210,9 +215,18 @@ var SCROLLER = function () {
 
   fn.getProgress = function () {
     var trackTopOffset = this.utilList.getOffset.call(this, this.trackElement).top - this.windowHeight * this.correction,
-        trackHeight = this.trackElement.clientHeight - this.windowHeight,
-        scrollTop = this.winScrollTop - trackTopOffset;
-    this.progress = scrollTop / trackHeight * 100;
+        trackHeight = this.useFixed ? Math.abs(this.trackElement.clientHeight - this.windowHeight) : this.useViewportOver ? this.trackElement.clientHeight + this.windowHeight : this.trackElement.clientHeight,
+        scrollTop = this.winScrollTop - trackTopOffset,
+        scrollBottom = this.winScrollBottom - trackTopOffset,
+        calProgress = this.useFixed ? scrollTop / trackHeight * 100 : scrollBottom / trackHeight * 100;
+
+    if (this.useStrictMode) {
+      this.progress = Math.floor(calProgress) < 0 ? 0 : Math.floor(calProgress) > 100 ? 100 : Math.floor(calProgress);
+    } else {
+      this.progress = calProgress;
+    }
+
+    ;
     this.getWheelDirection();
     return this.progress;
   };
@@ -220,50 +234,56 @@ var SCROLLER = function () {
   fn.trackAnimation = function (callback) {
     if (!this.initialize) return;
     this.winScrollTop = this.utilList.getScroll.call(this).top;
-    this.winScrollbottom = this.utilList.getScroll.call(this).bottom;
+    this.winScrollBottom = this.utilList.getScroll.call(this).bottom;
 
     if (this.useFixed) {
       this.elementEventList.setFixedElement.call(this);
     }
 
+    ;
     this.getProgress();
 
     if (callback) {
-      callback.call(this);
+      if (this.oldPregress !== this.progress) {
+        callback.call(this);
+      }
+
+      ;
+      this.oldPregress = this.progress;
     }
+
+    ;
   };
 
   fn.activeAnimation = function () {
     if (!this.initialize) return;
     this.winScrollTop = this.utilList.getScroll.call(this).top;
     this.winScrollBottom = this.utilList.getScroll.call(this).bottom;
-    this.activeElementHeight = this.activeElement.clientHeight;
-    this.correctionValue = this.activeElementHeight * this.correction;
-    this.removeCorrectionValue = this.activeElementHeight * this.removeCorrection;
-    this.elementOffsetTop = this.utilList.getOffset.call(this, this.activeElement).top;
-    this.elementOffsetBottom = this.utilList.getOffset.call(this, this.activeElement).bottom;
+    this.trackElementHeight = this.trackElement.clientHeight;
+    this.correctionValue = this.trackElementHeight * this.correction;
+    this.removeCorrectionValue = this.trackElementHeight * this.removeCorrection;
+    this.elementOffsetTop = this.utilList.getOffset.call(this, this.trackElement).top;
+    this.elementOffsetBottom = this.utilList.getOffset.call(this, this.trackElement).bottom;
     this.downScrollTop = this.winScrollTop - this.correctionValue;
     this.downScrollBottom = this.winScrollBottom - this.correctionValue;
     this.upScrollTop = this.winScrollTop + this.correctionValue;
     this.upScrollBottom = this.winScrollBottom + this.correctionValue;
-    var self = this,
-        visibleTyle = this.activeVisibility,
-        removeType = this.activePlay,
+    const self = this;
+    let visibleType = this.activeVisibility,
+        removeType = this.activeType,
         corrHeight = this.windowHeight / 2;
 
     var addActiveClass = function () {
       if (!!!self.activeClass) return;
 
       if (typeof self.activeClass == 'object') {
-        var classLength = self.activeClass.length;
+        let classLength = self.activeClass.length;
 
         for (var i = 0; i < classLength; i++) {
           if (!self.activeElement.classList.contains(self.activeClass[i])) {
             self.activeElement.classList.add(self.activeClass[i]);
           }
         }
-
-        ;
       } else {
         if (!self.activeElement.classList.contains(self.activeClass)) {
           self.activeElement.classList.add(self.activeClass);
@@ -273,15 +293,13 @@ var SCROLLER = function () {
 
     var removeActiveClass = function () {
       if (typeof self.activeClass == 'object') {
-        var classLength = self.activeClass.length;
+        let classLength = self.activeClass.length;
 
         for (var i = 0; i < classLength; i++) {
           if (self.activeElement.classList.contains(self.activeClass[i])) {
             self.activeElement.classList.remove(self.activeClass[i]);
           }
         }
-
-        ;
       } else {
         if (self.activeElement.classList.contains(self.activeClass)) {
           self.activeElement.classList.remove(self.activeClass);
@@ -320,9 +338,9 @@ var SCROLLER = function () {
 
     this.getWheelDirection();
 
-    switch (visibleTyle) {
+    switch (visibleType) {
       case 'before':
-        if (this.downScrollBottom >= this.elementOffsetTop && this.downScrollTop <= this.elementOffsetTop || this.upScrollTop <= this.elementOffsetBottom && this.upScrollBottom >= this.elementOffsetBottom || this.activePlay == 'oneWay' && this.downScrollBottom >= this.elementOffsetTop) {
+        if (this.wheelDirection == 'down' && this.downScrollBottom >= this.elementOffsetTop && this.downScrollTop <= this.elementOffsetTop || this.wheelDirection == 'up' && this.upScrollTop <= this.elementOffsetBottom && this.upScrollBottom >= this.elementOffsetBottom || this.activeType == 'oneWay' && this.downScrollBottom >= this.elementOffsetTop) {
           activeHandler();
           this.activeStatus = true;
         }
@@ -330,7 +348,7 @@ var SCROLLER = function () {
         break;
 
       case 'visible':
-        if (this.wheelDirection == 'down' && this.downScrollBottom >= this.elementOffsetTop + corrHeight && this.downScrollTop <= this.elementOffsetTop || this.wheelDirection == 'up' && this.upScrollTop <= this.elementOffsetBottom - corrHeight && this.upScrollBottom >= this.elementOffsetBottom || this.activePlay == 'oneWay' && this.winScrollBottom >= this.elementOffsetTop + corrHeight) {
+        if (this.wheelDirection == 'down' && this.downScrollBottom >= this.elementOffsetTop + corrHeight && this.downScrollTop <= this.elementOffsetTop || this.wheelDirection == 'up' && this.upScrollTop <= this.elementOffsetBottom - corrHeight && this.upScrollBottom >= this.elementOffsetBottom || this.activeType == 'oneWay' && this.downScrollBottom >= this.elementOffsetTop + corrHeight) {
           activeHandler();
           this.activeStatus = true;
         }
@@ -340,7 +358,7 @@ var SCROLLER = function () {
 
     switch (removeType) {
       case 'reverse':
-        if (visibleTyle == 'visible') {
+        if (visibleType == 'visible') {
           if (this.activeStatus && this.wheelDirection == 'down' && this.winScrollTop > this.elementOffsetBottom || this.activeStatus && this.wheelDirection == 'up' && this.winScrollBottom < this.elementOffsetTop) {
             removeHandler();
             this.activeStatus = false;
@@ -355,7 +373,7 @@ var SCROLLER = function () {
         break;
 
       case 'oneWay':
-        if (visibleTyle == 'visible') {
+        if (visibleType == 'visible') {
           if (this.activeStatus && this.winScrollBottom < this.elementOffsetTop) {
             removeHandler();
             this.activeStatus = false;
@@ -369,14 +387,48 @@ var SCROLLER = function () {
 
         break;
     }
+  }; //TO-DO: 네이밍 변경
+
+
+  fn.getElementInformation = function () {
+    if (this.trackElement) {
+      this.elementInformation.trackElement = {
+        element: this.trackElement,
+        width: this.trackElement.clientWidth,
+        height: this.trackElement.clientHeight,
+        topOffset: this.utilList.getOffset.call(this, this.trackElement).top,
+        bottomOffset: this.utilList.getOffset.call(this, this.trackElement).bottom
+      };
+    }
+
+    ;
+
+    if (this.activeElement) {
+      this.elementInformation.activeElement = {
+        element: this.activeElement,
+        width: this.activeElement.clientWidth,
+        height: this.activeElement.clientHeight,
+        topOffset: this.utilList.getOffset.call(this, this.activeElement).top,
+        bottomOffset: this.utilList.getOffset.call(this, this.activeElement).bottom
+      };
+    }
+
+    ;
+    return this.elementInformation;
   };
 
   fn.destroy = function (e) {
-    this.trackElement.style.position = '';
-    this.trackElement.style.height = '', this.trackElement.style.paddingTop = '', this.trackElement.style.paddingBottom = '';
-    this.fixedElement.style.position = '';
-    this.fixedElement.style.top = '';
-    this.fixedElement.style.height = '';
+    if (!!this.trackElement) {
+      this.trackElement.style.position = '';
+      this.trackElement.style.height = '', this.trackElement.style.paddingTop = '', this.trackElement.style.paddingBottom = '';
+    }
+
+    if (!!this.fixedElement) {
+      this.fixedElement.style.position = '';
+      this.fixedElement.style.top = '';
+      this.fixedElement.style.height = '';
+    }
+
     this.trackElement = '';
     this.fixedElement = '';
     this.activeElement = '';
@@ -385,463 +437,14 @@ var SCROLLER = function () {
     this.activeCallbackClass = '';
     this.useFixed = '';
     this.activeVisibility = '';
-    this.activePlay = '';
+    this.activeType = '';
     this.offsetY = '';
     this.resize = '';
     this.windowHeight = '';
+    this.elementInformation = '';
     window.removeEventListener('load', this.addEventList);
     window.removeEventListener('resize', this.addEventList);
     this.initialize = false;
-  };
-
-  return function (opts) {
-    return new init(opts);
-  };
-}();
-/*!
- * Range-Handler JavaScript Library v1.0
- *
- * Copyright 2021. Yoon jae-ho
- * Released under the MIT license
- *
- * Date: 2021-02-10
- */
-var RANGEHANDLER = function () {
-  var init = function (opts) {
-    this.opts = opts;
-    this.targetValue = opts.targetValue;
-    this.startPoint = !!!opts.startPoint ? 0 : opts.startPoint;
-    this.endPoint = !!!opts.endPoint ? 100 : opts.endPoint;
-    this.activeStartPoint = this.startPoint + 1;
-    this.activeEndPoint = this.endPoint - 1;
-    this.onStart = opts.onStart;
-    this.onUpdate = opts.onUpdate;
-    this.onComplate = opts.onComplate;
-    this.reverseStart = opts.reverseStart;
-    this.reverseComplate = opts.reverseComplate;
-    this.oldScroll = 0;
-    this.activeOnStart = false;
-    this.activeOnComplate = false;
-    this.complateOnCallback = false;
-    this.activeReverseStart = false;
-    this.activeReverseComplate = false;
-    this.complateReverseCallback = false;
-    return this;
-  };
-
-  var fn = init.prototype;
-
-  fn.calValue = function (progress) {
-    if (this.startPoint > 0) {
-      this.endPoint = this.endPoint - this.startPoint > 0 ? this.endPoint - this.startPoint : this.endPoint;
-    }
-
-    var returnValue = this.targetValue * (progress - this.startPoint) / this.endPoint;
-
-    if (returnValue > this.targetValue) {
-      returnValue = this.targetValue;
-    }
-
-    if (returnValue < 0) {
-      returnValue = 0;
-    }
-
-    return returnValue;
-  };
-
-  fn.checkWheelDirection = function () {
-    this.windowScroll = window.pageYOffset;
-
-    if (this.oldScroll < this.windowScroll) {
-      this.oldScroll = this.windowScroll;
-      return 'down';
-    } else {
-      this.oldScroll = this.windowScroll;
-      return 'up';
-    }
-  };
-
-  fn.callBackList = {
-    onStart: function () {
-      if (this.onStart) {
-        this.onStart();
-      }
-
-      this.activeOnStart = true;
-    },
-    onComplate: function () {
-      if (this.onComplate) {
-        this.onComplate();
-      }
-
-      this.activeOnComplate = true;
-      this.complateOnCallback = true;
-      this.activeReverseStart = false;
-      this.activeReverseComplate = false;
-      this.complateReverseCallback = false;
-    },
-    reverseStart: function () {
-      if (this.reverseStart) {
-        this.reverseStart();
-      }
-
-      this.activeReverseStart = true;
-    },
-    reverseComplate: function () {
-      if (this.reverseComplate) {
-        this.reverseComplate();
-      }
-
-      this.activeReverseComplate = true;
-      this.complateReverseCallback = true;
-      this.activeOnStart = false;
-      this.activeOnComplate = false;
-      this.complateOnCallback = false;
-    },
-    onUpdate: function () {
-      if (this.onUpdate) {
-        this.onUpdate();
-      }
-    }
-  };
-
-  fn.checkScrollType = function (progress) {
-    if (progress > this.activeStartPoint && progress < this.activeEndPoint && !this.complateOnCallback && !this.activeOnStart && this.isDirection == 'down') {
-      return 'onStart';
-    } else if (progress > this.activeEndPoint && !this.complateOnCallback && !this.activeOnComplate && this.isDirection == 'down') {
-      return 'onComplate';
-    } else if (progress < this.activeEndPoint && this.complateOnCallback && !this.activeReverseStart && this.isDirection == 'up') {
-      return 'reverseStart';
-    } else if (progress < this.activeStartPoint && this.complateOnCallback && !this.activeReverseComplate && this.isDirection == 'up') {
-      return 'reverseComplate';
-    } else if (this.activeOnStart && !this.activeOnComplate && this.isDirection == 'down' || this.activeOnStart && !this.activeOnComplate && this.isDirection == 'up' || this.activeReverseStart && !this.activeReverseComplate && this.isDirection == 'down' || this.activeReverseStart && !this.activeReverseComplate && this.isDirection == 'up') {
-      return 'onUpdate';
-    }
-  };
-
-  fn.activeAnimation = function (progress) {
-    this.isValue = this.calValue(progress);
-    this.isDirection = this.checkWheelDirection();
-
-    switch (this.checkScrollType(progress)) {
-      case 'onUpdate':
-        if (this.activeReverseStart && progress > this.activeEndPoint && this.isDirection == 'down') {
-          this.callBackList.onComplate.call(this);
-        } else if (this.activeOnStart && progress < this.activeStartPoint && this.isDirection == 'up') {
-          this.callBackList.reverseComplate.call(this);
-        } else {
-          this.callBackList.onUpdate.call(this);
-        }
-
-        break;
-
-      case 'onStart':
-        this.callBackList.onStart.call(this);
-        break;
-
-      case 'onComplate':
-        if (progress > this.activeStartPoint && !this.activeReverseStart && !this.activeReverseComplate && !this.complateReverseCallback && !this.activeOnStart && !this.activeOnComplate && !this.complateOnCallback) {
-          this.callBackList.onStart.call(this);
-          this.callBackList.onUpdate.call(this);
-        }
-
-        this.callBackList.onComplate.call(this);
-        break;
-
-      case 'reverseStart':
-        this.callBackList.reverseStart.call(this);
-        break;
-
-      case 'reverseComplate':
-        this.callBackList.reverseComplate.call(this);
-        break;
-    }
-  };
-
-  return function (opts) {
-    return new init(opts);
-  };
-}();
-/*!
- * Sequence Player JavaScript Library v1.0
- *
- * Copyright 2021. Yoon jae-ho
- * Released under the MIT license
- *
- * Date: 2021-02-24
- */
-var SEQUENCEPLAYER = function () {
-  var init = function (opts) {
-    this.opts = opts;
-    this.targetElement = opts.targetElement;
-    this.imageList = [];
-    this.loadCount = 0;
-    this.playIndex = null;
-    this.playingTime = 0;
-    this.pausePlayingTime = 0;
-    this.usePlay = false;
-    this.useReverse = false;
-    this.setCanvas();
-    this.loadImages();
-    return this;
-  };
-
-  var fn = init.prototype;
-
-  fn.setCanvas = function () {
-    var _checkElement = function (element) {
-      if (element.tagName == 'CANVAS') {
-        this.canvas = element;
-      } else {
-        this.canvas = document.createElement('CANVAS');
-
-        if (this.opts.addType == 'append') {
-          this.targetElement.appendChild(this.canvas);
-        } else {
-          var firstChild = this.targetElement.firstElementChild;
-
-          if (!!!firstChild) {
-            this.targetElement.appendChild(this.canvas);
-          } else {
-            firstChild.parentNode.insertBefore(this.canvas, firstChild);
-          }
-        }
-      }
-    };
-
-    if (this.targetElement.jquery) {
-      _checkElement.call(this, this.targetElement[0]);
-    } else {
-      _checkElement.call(this, this.targetElement);
-    }
-
-    this.context = this.canvas.getContext('2d');
-    this.canvas.width = this.opts.width;
-    this.canvas.height = this.opts.height;
-  };
-
-  fn.loadImages = function () {
-    var self = this;
-
-    for (var i = this.opts.startNum; i <= this.opts.endNum; i++) {
-      var isImage = new Image();
-      isImage.src = this.opts.path + this.opts.name + i + '.' + this.opts.extension;
-
-      (function (idx) {
-        isImage.addEventListener('load', function () {
-          self.imageList[idx] = this;
-
-          if (self.loadCount < self.opts.endNum) {
-            self.loadCount++;
-          } else if (self.opts.autoPlay && self.loadCount == self.opts.endNum) {
-            self.play();
-            return;
-          }
-        });
-      })(i);
-    }
-  };
-
-  fn.sequenceLoadCheck = function (type) {
-    var self = this,
-        intervalTimer = null;
-    intervalTimer = setInterval(function () {
-      if (self.loadCount == self.opts.endNum) {
-        self.activeSequence(type);
-        clearInterval(intervalTimer);
-        intervalTimer = null;
-      }
-    }, 100);
-  };
-
-  fn.play = function (index) {
-    if (this.isPlay) return;
-    var idx = index > this.opts.endNum ? this.opts.endNum : index;
-
-    if (index == undefined) {
-      if (this.loadCount !== this.opts.endNum) {
-        this.sequenceLoadCheck();
-      } else {
-        this.activeSequence();
-      }
-    } else {
-      if (this.loadCount == this.opts.endNum) {
-        this.drawCanvas(idx);
-      }
-    }
-  };
-
-  fn.reverse = function () {
-    if (this.isPlay) return;
-
-    if (this.loadCount !== this.opts.endNum) {
-      this.sequenceLoadCheck('reverse');
-    } else {
-      this.activeSequence('reverse');
-    }
-  };
-
-  fn.pause = function () {
-    if (!this.isPlay) return;
-
-    if (this.useReverse && this.usePlayIng) {
-      this.useReverse = false;
-    }
-
-    window.cancelAnimationFrame(this.playAnimation);
-    this.isPlay = false;
-    this.pausePlayingTime = this.playingTime;
-  };
-
-  fn.stop = function () {
-    this.pause();
-    this.playIndex = null;
-    this.playingTime = 0;
-    this.pausePlayingTime = 0;
-    this.usePlay = false;
-    this.usePlayIng = false;
-    this.useReverse = false;
-    this.useReverseIng = false;
-    this.drawCanvas(this.opts.startNum);
-  };
-
-  fn.drawCanvas = function (index) {
-    if (!!!index && this.oldPlayIndex == this.playIndex) return;
-    this.context.clearRect(0, 0, this.opts.width, this.opts.height);
-    this.context.drawImage(this.imageList[index >= 0 ? index : this.playIndex], 0, 0, this.opts.width, this.opts.height);
-    this.oldPlayIndex = this.playIndex;
-
-    if (index) {
-      this.playIndex = index;
-    }
-  };
-
-  fn.activeSequence = function (type) {
-    var self = this,
-        playInterval = this.opts.endNum / this.opts.playTime,
-        startTime = null,
-        progress;
-    this.isPlay = true;
-
-    var _setIndex = function (timestemp) {
-      if (timestemp && startTime == null) {
-        startTime = Math.ceil(timestemp);
-      }
-
-      if (self.playIndex == null && type !== 'reverse') {
-        self.playIndex = self.opts.startNum;
-      } else if (self.playIndex == null && type == 'reverse') {
-        self.playIndex = self.opts.endNum;
-      }
-    };
-
-    var _resetStatus = function () {
-      self.playingTime = 0;
-      self.pausePlayingTime = 0;
-      self.playIndex = null;
-      self.pause();
-      self.isPlay = false;
-      self.usePlay = false;
-      self.usePlayIng = false;
-      self.useReverse = false;
-      self.useReverseIng = false;
-    };
-
-    var _animation = {
-      default: function () {
-        _setIndex();
-
-        if (type == 'reverse' && self.playIndex >= self.opts.startNum || !!!type && self.playIndex <= self.opts.endNum) {
-          self.drawCanvas();
-
-          if (!!!type) {
-            self.playIndex++;
-          } else {
-            self.playIndex--;
-          }
-
-          self.playAnimation = window.requestAnimationFrame(_animation.default);
-        } else {
-          self.playIndex = null;
-          self.isPlay = false;
-          self.pause();
-        }
-      },
-      timeControll: function (timestemp) {
-        _setIndex(timestemp);
-
-        progress = Math.ceil(timestemp) - startTime;
-
-        if (self.playIndex <= self.opts.endNum || type == 'reverse' && self.playIndex >= self.opts.startNum) {
-          self.drawCanvas();
-        }
-
-        switch (type) {
-          case undefined:
-            if (self.useReverse && !self.useReverseIng) {
-              self.usePlayIng = true;
-              var corrTime = self.opts.playTime - self.pausePlayingTime;
-              self.playIndex = Math.ceil((progress + corrTime) * playInterval);
-              self.playingTime = progress + corrTime;
-
-              if (self.playingTime > self.opts.playTime) {
-                _resetStatus();
-
-                return;
-              }
-
-              ;
-            } else {
-              self.usePlay = true;
-              self.playIndex = Math.ceil((progress + self.pausePlayingTime) * playInterval);
-              self.playingTime = progress + self.pausePlayingTime;
-
-              if (self.playingTime > self.opts.playTime) {
-                _resetStatus();
-
-                return;
-              }
-
-              ;
-            }
-
-            break;
-
-          case 'reverse':
-            if (self.usePlay || self.usePlayIng && self.useReverse) {
-              self.useReverseIng = true;
-              var corrTime = self.pausePlayingTime - self.opts.playTime;
-              self.playIndex = Math.floor((self.opts.playTime + corrTime - progress) * playInterval);
-              self.playingTime = self.opts.playTime + corrTime - progress;
-
-              if (self.playingTime < 0) {
-                _resetStatus();
-
-                return;
-              }
-
-              ;
-            } else {
-              self.useReverse = true;
-              self.playIndex = Math.floor((self.opts.playTime - (progress + self.pausePlayingTime)) * playInterval);
-              self.playingTime = progress + self.pausePlayingTime;
-
-              if (self.playingTime > self.opts.playTime) {
-                _resetStatus();
-
-                return;
-              }
-
-              ;
-            }
-
-            break;
-        }
-
-        self.playAnimation = window.requestAnimationFrame(_animation.timeControll);
-      }
-    };
-    this.playAnimation = window.requestAnimationFrame(this.opts.playTime ? _animation.timeControll : _animation.default);
   };
 
   return function (opts) {
@@ -980,18 +583,18 @@ var ANIUTIL = function () {
         }
       };
 
-      window.addEventListener('DOMContentLoaded', function () {
-        if (self.useDefaultImg) {
-          self.setDefaultImage();
-        }
+      if (self.useDefaultImg) {
+        self.setDefaultImage();
+      }
 
-        if (responsiveCheck) {
-          self.responsiveHandler();
-        }
+      if (responsiveCheck) {
+        self.responsiveHandler();
+      }
 
-        self.setLazyImage();
+      window.addEventListener('load', function () {
+        self.lazyEvent();
       });
-      window.addEventListener('scroll', this.lazyEvent);
+      window.addEventListener('scroll', self.lazyEvent);
 
       if (responsiveCheck) {
         window.addEventListener('resize', function () {
@@ -1023,10 +626,14 @@ var ANIUTIL = function () {
     };
 
     fn.getLazyImage = function () {
-      var lazyImageList = document.querySelectorAll(this.lazyClass),
-          lazyCompleteList = document.querySelectorAll('.' + this.lazyComplateClass);
+      var lazyImageList = document.querySelectorAll(this.lazyClass);
       this.lazyImages = lazyImageList;
-      this.lazyLength = lazyImageList.length, this.lazyCompleteLength = lazyCompleteList.length;
+      this.lazyLength = lazyImageList.length;
+    };
+
+    fn.checkCompleteImage = function () {
+      var lazyCompleteList = document.querySelectorAll('.' + this.lazyComplateClass);
+      this.lazyCompleteLength = lazyCompleteList.length;
     };
 
     fn.getResponsiveImage = function () {
@@ -1151,7 +758,7 @@ var ANIUTIL = function () {
           }
 
           targetElement.classList.add('load-complete');
-          this.getLazyImage();
+          this.checkCompleteImage();
         }
       }
     };
