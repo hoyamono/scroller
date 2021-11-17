@@ -341,6 +341,112 @@ var ANIUTIL = (function(){
 		};
 	};
 
+	var smoothScroll = function (speed) {
+		var agent = navigator.userAgent.toLowerCase(),
+			targetElement = document.scrollingElement || document.documentElement || document.body.parentNode || document.body,
+			speed = speed ? speed : 120,
+			moving = false,
+			scrollSize = targetElement.scrollTop,
+			maxScrollSize,
+			frameElement = targetElement === document.body && document.documentElement ? document.documentElement : targetElement, // safari is the new IE
+			moveState = false,
+			scrollTiming = null;
+	
+		var init = function(){
+			if (agent.indexOf("chrome") == -1 && agent.indexOf("safari") != -1) return;
+	
+			bindEvent.wheel();
+			bindEvent.scroll();
+		};
+	
+		var bindEvent = {
+			wheel: function(){
+				if ((navigator.appName == 'Netscape' && navigator.userAgent.search('Trident') != -1) || (agent.indexOf("msie") != -1) ) {
+					document.addEventListener('mousewheel', function (e) {
+						eventList.scrollEvent(e);
+					}, {
+						passive: false
+					});
+				} else {
+					document.addEventListener('wheel', function (e) {
+						eventList.scrollEvent(e);
+					}, {
+						passive: false
+					});
+				};
+	
+	
+			},
+			scroll: function(){
+				window.addEventListener('scroll', function () {
+					if (!moveState) {
+						scrollSize = targetElement.scrollTop;
+					}
+	
+				});
+			}
+		};
+	
+		var eventList = {
+			scrollEvent : function (e) {
+				e.preventDefault(); 
+				var delta = this.normalizeWheelDelta(e);
+	
+				scrollSize = scrollSize + (-delta * speed); //현재까지 스크롤한 사이즈
+				maxScrollSize = Math.max(0, Math.min(scrollSize, targetElement.scrollHeight - frameElement.clientHeight)); //최대 스크롤 사이즈
+	
+				this.update();
+			},
+			normalizeWheelDelta : function (e) {
+				if (e.detail) {
+					if (e.wheelDelta) {
+						return e.wheelDelta / e.detail / 40 * (e.detail > 0 ? 1 : -1) // Opera
+					} else {
+						return -e.detail / 3 // Firefox
+					}
+				} else {
+					return e.wheelDelta / 120 // IE,Safari,Chrome
+				}
+			},
+			update : function () {
+				var moveRange = (maxScrollSize - targetElement.scrollTop),
+					moveSize = 0 >= Math.ceil(targetElement.scrollTop + moveRange) ? 0 : scrollSize > maxScrollSize ? maxScrollSize : Math.ceil(targetElement.scrollTop + moveRange); //한번 스크롤시 이동할 거리
+	
+				moveState = true;
+				TweenMax.to(targetElement, 1, { ease: "power1.out", scrollTop: moveSize, onComplete: function(){
+					clearTimeout(scrollTiming);
+						scrollTiming = null;
+						scrollTiming = setTimeout(function(){
+							moveState = false;
+							scrollSize = targetElement.scrollTop;
+						}, 500)
+					} 
+				});
+				
+				if (scrollSize <= 0) {
+					scrollSize = 0;
+				} else if (scrollSize >= maxScrollSize) {
+					scrollSize = maxScrollSize;
+				}
+			}
+		}
+	
+		var requestAnimationFrame = (function () { // requestAnimationFrame cross browser
+			return (
+				window.requestAnimationFrame ||
+				window.webkitRequestAnimationFrame ||
+				window.mozRequestAnimationFrame ||
+				window.oRequestAnimationFrame ||
+				window.msRequestAnimationFrame ||
+				function (func) {
+					window.setTimeout(func, 1000 / 50);
+				}
+			);
+		})();
+		
+		return init();
+	};
+	
 	return {
 		calRange: function(values){
 			return calRange(values);
@@ -356,6 +462,9 @@ var ANIUTIL = (function(){
 		},
 		removeClass: function(opts) {
 			removeClass(opts);
+		},
+		smoothScroll : function(speed) {
+			smoothScroll(speed);
 		}
 	}
 })();

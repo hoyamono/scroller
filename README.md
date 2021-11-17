@@ -271,3 +271,8 @@ progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함�
 	|------|---|-----|
 	|wrapElement|DOM|video가 노출될 video의 상위구조|
 	|targetVideo|DOM|video Element|
+- ANIUTIL.smoothScroll : 사파리를 제외한 브라우저 스크롤을 smooth하게 제어하는 기능
+	``` javascript
+	ANIUTIL.smoothScroll(speed);
+	//1스크롤당 움직이는 거리 입력하지 않으면 기본 120으로 설정되어있음
+	```
