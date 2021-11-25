@@ -27,6 +27,8 @@ const SCROLLER = function () {
     this.resizeTiming = !!!opts.resizeTiming ? false : opts.resizeTiming;
     this.windowHeight = window.innerHeight;
     this.elementInformation = {};
+    this.fixedElementOffset = {};
+    this.isFixedArea = false;
     this.elementEventList.setElement.call(this);
     this.bindEvent();
   };
@@ -62,6 +64,7 @@ const SCROLLER = function () {
 
   fn.elementHandler = function () {
     this.elementEventList.setTrackStyle.call(this);
+    this.getFixedState();
 
     if (this.trackHeight > 1) {
       this.elementEventList.setTrackHeigh.call(this);
@@ -160,9 +163,11 @@ const SCROLLER = function () {
       }
     },
     setFixedStyle: function () {
-      this.fixedElement.style.height = '';
-      this.fixedElement.style.top = '';
-      this.fixedElement.style.position = 'absolute';
+      if (!this.isFixedArea) {
+        this.fixedElement.style.height = '';
+        this.fixedElement.style.top = '';
+        this.fixedElement.style.position = 'absolute';
+      }
 
       if (this.fixedElement.clientWidth == 0) {
         this.fixedElement.style.width = '100%';
@@ -231,6 +236,14 @@ const SCROLLER = function () {
     return this.progress;
   };
 
+  fn.getFixedState = function () {
+    if (this.progress > 0 && this.progress < 100) {
+      this.isFixedArea = true;
+    } else {
+      this.isFixedArea = false;
+    }
+  };
+
   fn.trackAnimation = function (callback) {
     if (!this.initialize) return;
     this.winScrollTop = this.utilList.getScroll.call(this).top;
@@ -242,6 +255,7 @@ const SCROLLER = function () {
 
     ;
     this.getProgress();
+    this.getFixedState();
 
     if (callback) {
       if (this.oldPregress !== this.progress) {
@@ -396,12 +410,21 @@ const SCROLLER = function () {
         element: this.trackElement,
         width: this.trackElement.clientWidth,
         height: this.trackElement.clientHeight,
-        topOffset: this.utilList.getOffset.call(this, this.trackElement).top,
-        bottomOffset: this.utilList.getOffset.call(this, this.trackElement).bottom
+        offsetTop: this.utilList.getOffset.call(this, this.trackElement).top,
+        offsetBottom: this.utilList.getOffset.call(this, this.trackElement).bottom
       };
-    }
+    };
 
-    ;
+    if (this.fixedElement) {
+      this.elementInformation.fixedElement = {
+        element: this.fixedElement,
+        width: this.fixedElement.clientWidth,
+        height: this.fixedElement.clientHeight,
+        offsetTop: this.utilList.getOffset.call(this, this.fixedElement).top,
+        offsetBottom: this.utilList.getOffset.call(this, this.fixedElement).top + this.windowHeight,
+        offsetMiddle: this.utilList.getOffset.call(this, this.fixedElement).top + (this.windowHeight / 2)
+      }
+    }
 
     if (this.activeElement) {
       this.elementInformation.activeElement = {
