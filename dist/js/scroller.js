@@ -27,7 +27,6 @@ const SCROLLER = function () {
     this.resizeTiming = !!!opts.resizeTiming ? false : opts.resizeTiming;
     this.windowHeight = window.innerHeight;
     this.elementInformation = {};
-    this.fixedElementOffset = {};
     this.isFixedArea = false;
     this.elementEventList.setElement.call(this);
     this.bindEvent();
@@ -410,21 +409,12 @@ const SCROLLER = function () {
         element: this.trackElement,
         width: this.trackElement.clientWidth,
         height: this.trackElement.clientHeight,
-        offsetTop: this.utilList.getOffset.call(this, this.trackElement).top,
-        offsetBottom: this.utilList.getOffset.call(this, this.trackElement).bottom
+        topOffset: this.utilList.getOffset.call(this, this.trackElement).top,
+        bottomOffset: this.utilList.getOffset.call(this, this.trackElement).bottom
       };
-    };
-
-    if (this.fixedElement) {
-      this.elementInformation.fixedElement = {
-        element: this.fixedElement,
-        width: this.fixedElement.clientWidth,
-        height: this.fixedElement.clientHeight,
-        offsetTop: this.utilList.getOffset.call(this, this.fixedElement).top,
-        offsetBottom: this.utilList.getOffset.call(this, this.fixedElement).top + this.windowHeight,
-        offsetMiddle: this.utilList.getOffset.call(this, this.fixedElement).top + (this.windowHeight / 2)
-      }
     }
+
+    ;
 
     if (this.activeElement) {
       this.elementInformation.activeElement = {
@@ -1266,11 +1256,12 @@ var ANIUTIL = function () {
     ;
   };
 
-  var smoothScroll = function (speed) {
-    var agent = navigator.userAgent.toLowerCase(),
+  var scrollController = function (opt) {
+    var opt = opt ? opt : {},
+        agent = navigator.userAgent.toLowerCase(),
         targetElement = document.scrollingElement || document.documentElement || document.body.parentNode || document.body,
-        speed = speed ? speed : 120,
-        moving = false,
+        speed = !!!opt.speed ? 120 : opt.speed,
+        duration = opt.duration >= 0 ? opt.duration : 1,
         scrollSize = targetElement.scrollTop,
         maxScrollSize,
         frameElement = targetElement === document.body && document.documentElement ? document.documentElement : targetElement,
@@ -1313,8 +1304,10 @@ var ANIUTIL = function () {
     var eventList = {
       scrollEvent: function (e) {
         e.preventDefault();
-        var delta = this.normalizeWheelDelta(e);
-        scrollSize = scrollSize + -delta * speed; //현재까지 스크롤한 사이즈
+        var fixedMoveSpeed = document.body.getAttribute('data-scroll-speed');
+        var delta = this.normalizeWheelDelta(e),
+            moveSpeed = opt.currDelta && fixedMoveSpeed ? fixedMoveSpeed : !!!fixedMoveSpeed && !!!speed ? 120 : speed;
+        scrollSize = scrollSize + -delta * moveSpeed; //현재까지 스크롤한 사이즈
 
         maxScrollSize = Math.max(0, Math.min(scrollSize, targetElement.scrollHeight - frameElement.clientHeight)); //최대 스크롤 사이즈
 
@@ -1336,7 +1329,7 @@ var ANIUTIL = function () {
             moveSize = 0 >= Math.ceil(targetElement.scrollTop + moveRange) ? 0 : scrollSize > maxScrollSize ? maxScrollSize : Math.ceil(targetElement.scrollTop + moveRange); //한번 스크롤시 이동할 거리
 
         moveState = true;
-        TweenMax.to(targetElement, 1, {
+        TweenMax.to(targetElement, duration, {
           ease: "power1.out",
           scrollTop: moveSize,
           onComplete: function () {
@@ -1367,6 +1360,47 @@ var ANIUTIL = function () {
     return init();
   };
 
+  var resizeScrollOffset = function (opt) {
+    var scrollProgress = null,
+        correctionTiming = null,
+        resizeTiming = !!!opt ? 200 : opt + 200;
+    var scrollElement, scrollElementHeight, winScrollTop, scrollProgress;
+
+    var init = function () {
+      bindEvent();
+    };
+
+    var getScrollProgerss = function () {
+      if (scrollProgress == null) {
+        scrollElement = document.scrollingElement || document.documentElement || document.body.parentNode || document.body;
+        scrollElementHeight = document.body.clientHeight;
+        winScrollTop = window.pageYOffset + scrollElement.clientHeight;
+        scrollProgress = winScrollTop / scrollElementHeight;
+      } else {
+        scrollElementHeight = document.body.clientHeight;
+      }
+
+      ;
+    };
+
+    var setCorrScroll = function () {
+      clearTimeout(correctionTiming);
+      correctionTiming = setTimeout(function () {
+        window.scrollTo(0, scrollElementHeight * scrollProgress - window.innerHeight);
+        scrollProgress = null;
+      }, resizeTiming);
+    };
+
+    var bindEvent = function () {
+      window.addEventListener('resize', function () {
+        getScrollProgerss();
+        setCorrScroll();
+      });
+    };
+
+    return init();
+  };
+
   return {
     calRange: function (values) {
       return calRange(values);
@@ -1383,8 +1417,11 @@ var ANIUTIL = function () {
     removeClass: function (opts) {
       removeClass(opts);
     },
-    smoothScroll: function (speed) {
-      smoothScroll(speed);
+    scrollController: function (opt) {
+      scrollController(opt);
+    },
+    resizeScrollOffset: function (opt) {
+      resizeScrollOffset(opt);
     }
   };
 }();

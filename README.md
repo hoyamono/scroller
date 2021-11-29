@@ -271,8 +271,20 @@ progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함�
 	|------|---|-----|
 	|wrapElement|DOM|video가 노출될 video의 상위구조|
 	|targetVideo|DOM|video Element|
-- ANIUTIL.smoothScroll : 사파리를 제외한 브라우저 스크롤을 smooth하게 제어하는 기능
+- ANIUTIL.scrollController : 스크롤 동작을 컨트롤하는 옵션(scroll delta, easing 등을 조절할 수 있음)
 	``` javascript
-	ANIUTIL.smoothScroll(speed);
-	//1스크롤당 움직이는 거리 입력하지 않으면 기본 120으로 설정되어있음
+	ANIUTIL.scrollController({
+		currDelta: true,
+		speed: 120,
+		duration: 0
+	});
+
 	```
+	|Option|Type|Description|
+	|------|---|-----|
+	|currDelta|boolean|특정 구간에서만 body의 data-scroll-speed 값을 받아 delta값을 보정한다,|
+	|speed|number|1휠당 스크롤될 사이즈(currDelta 구간을 제외한 구간에 적용)|
+	|duration|number(s)|스크롤 타이밍(IE는 사용하지 않는것을 권장함)|
+- ANIUTIL.resizeScrollOffset : 리사이즈시 이전 스크롤 위치를 기억하여 스크롤위치를 보정해주는 기능
+	``` javascript
+	ANIUTIL.resizeScrollOffset();
