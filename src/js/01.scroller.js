@@ -27,6 +27,7 @@ const SCROLLER = (function(){
 		this.resize = !!!opts.resize ? true : opts.resize;
 		this.resizeTiming = !!!opts.resizeTiming ? false : opts.resizeTiming;
 		this.windowHeight = window.innerHeight;
+		this.oldWinScrollTop = 0;
 		this.elementInformation = {};
 		this.isFixedArea = false;
 		this.elementEventList.setElement.call(this);
@@ -207,7 +208,7 @@ const SCROLLER = (function(){
 	};
 
 	fn.getWheelDirection = function(){
-		if (this.winScrollTop > this.oldWinScrollTop){
+		if (this.winScrollTop >= this.oldWinScrollTop){
 			this.wheelDirection = 'down';
 		} else {
 			this.wheelDirection = 'up';
