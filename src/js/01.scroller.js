@@ -23,9 +23,10 @@ const SCROLLER = (function(){
 		this.useViewportOver = !!!opts.useViewportOver ? true : opts.useViewportOver;
 		this.activeVisibility = !!!opts.activeVisibility ? 'before' : opts.activeVisibility;
 		this.activeType = !!!opts.activeType ? 'reverse' : this.opts.activeType;
+		this.autoHeight = opts == undefined ? true : opts.autoHeight;
 		this.offsetY = !!!opts.offsetY ? 0 : opts.offsetY;
-		this.resize = !!!opts.resize ? true : opts.resize;
-		this.resizeTiming = !!!opts.resizeTiming ? false : opts.resizeTiming;
+		this.resize = opts.resize == undefined ? true : opts.resize;
+		this.resizeTiming = opts.resizeTiming == undefined ? false : opts.resizeTiming;
 		this.windowHeight = window.innerHeight;
 		this.oldWinScrollTop = 0;
 		this.elementInformation = {};
@@ -174,12 +175,14 @@ const SCROLLER = (function(){
 				this.fixedElement.style.width = '100%';
 			}
 
-			if (typeof this.offsetY == 'string'){
-				this.fixedElement.style.height = 'calc(' + this.windowHeight + 'px - ' + this.offsetY + ')';
-				this.fixedElement.style.top = this.offsetY;
-			} else {
-				this.fixedElement.style.height = (this.windowHeight - this.offsetY) + 'px';
-				this.fixedElement.style.top = this.offsetY + 'px';
+			if (this.autoHeight) {
+				if (typeof this.offsetY == 'string'){
+					this.fixedElement.style.height = 'calc(' + this.windowHeight + 'px - ' + this.offsetY + ')';
+					this.fixedElement.style.top = this.offsetY;
+				} else {
+					this.fixedElement.style.height = (this.windowHeight - this.offsetY) + 'px';
+					this.fixedElement.style.top = this.offsetY + 'px';
+				}
 			}
 		},
 		setFixedElement: function(){
