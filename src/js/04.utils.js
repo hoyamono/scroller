@@ -106,10 +106,10 @@ var ANIUTIL = (function(){
 		return new init(opts);
 	}
 
-	var imageLoader = function(opts){
-		var init = function(){
+	var imageLoader = function (opts) {
+		var init = function () {
 			this.opts = opts;
-			this.lazyComplateClass = 'load-complete';
+			this.lazyCompleteClass = 'load-complete';
 			this.lazyClass = opts.lazyClass;
 			this.responsiveClass = opts.responsiveClass;
 			this.loadOption = opts.loadOption;
@@ -120,107 +120,102 @@ var ANIUTIL = (function(){
 			this.getResponsiveImage();
 			this.bindEvent();
 		};
-	
+
 		var fn = init.prototype;
-	
-		fn.bindEvent = function(){
+
+		fn.bindEvent = function () {
 			var self = this,
 				resizeTiming = null,
 				responsiveCheck = this.loadOption;
-	
-			this.lazyEvent = function(){
+
+			var lazyEvent = function () {
 				self.setLazyImage();
-				if (self.lazyCompleteLength == self.lazyLength) {
-					window.removeEventListener('scroll', self.lazyEvent);
+
+				if (self.lazyLength == self.lazyCompleteLength) {
+					window.removeEventListener('scroll', lazyEvent);
 				}
+			};
+
+			if (this.useDefaultImg) {
+				this.setDefaultImage();
 			}
-	
-			if (self.useDefaultImg) {
-				self.setDefaultImage();
-			}
-			if (responsiveCheck) {
+
+			window.addEventListener('load', function() {
 				self.responsiveHandler();
-			}
-
-			window.addEventListener('load', function(){
-				self.lazyEvent();
+				lazyEvent();
 			});
-			
-			window.addEventListener('scroll', self.lazyEvent);
+			window.addEventListener('scroll', lazyEvent);
 
 			if (responsiveCheck) {
-				window.addEventListener('resize', function(){
+				window.addEventListener('resize', function () {
 					clearTimeout(resizeTiming);
-	
-					resizeTiming = setTimeout(function(){
+					resizeTiming = setTimeout(function () {
 						self.responsiveHandler();
+						lazyEvent();
 					}, 80);
-				});	
+				});
 			}
 		};
-	
+
 		fn.utilList = {
-			getOffset: function(element){
+			getOffset: function (element) {
 				var top = element.getBoundingClientRect().top + window.pageYOffset,
 					bottom = element.getBoundingClientRect().bottom + window.pageYOffset;
-		
 				return {
 					top: top,
 					bottom: bottom
-				}
+				};
 			},
-			getScroll: function(){
+			getScroll: function () {
 				var top = window.pageYOffset,
-					bottom =  top + this.windowHeight;
-		
+					bottom = top + this.windowHeight;
 				return {
 					top: top,
 					bottom: bottom
-				}
+				};
 			}
-		}
-	
-		fn.getLazyImage = function(){
+		};
+
+		fn.getLazyImage = function () {
 			var lazyImageList = document.querySelectorAll(this.lazyClass);
-	
+
 			this.lazyImages = lazyImageList;
 			this.lazyLength = lazyImageList.length;
 		};
-	
+
 		fn.checkCompleteImage = function(){
-			var lazyCompleteList = document.querySelectorAll('.' + this.lazyComplateClass);
-			
+			var lazyCompleteList = document.querySelectorAll('.' + this.lazyCompleteClass);
+
 			this.lazyCompleteLength = lazyCompleteList.length;
 		};
-	
-		fn.getResponsiveImage = function(){
+
+		fn.getResponsiveImage = function () {
 			var responsiveImageList = document.querySelectorAll(this.responsiveClass);
-	
 			this.responsiveImages = responsiveImageList;
 			this.responsiveLength = responsiveImageList.length;
 		};
-	
-		fn.setDefaultImage = function(){
+
+		fn.setDefaultImage = function () {
 			for (var i = 0; i < this.lazyLength; i++) {
-				this.lazyImages[i].setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH/C1hNUCBEYXRhWE1QAz94cAAh+QQFAAAAACwAAAAAAQABAAACAkQBADs=')
-			};
+				this.lazyImages[i].setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH/C1hNUCBEYXRhWE1QAz94cAAh+QQFAAAAACwAAAAAAQABAAACAkQBADs=');
+			}
 		};
-	
-		fn.responsiveHandler = function(){
+
+		fn.responsiveHandler = function () {
 			this.windowWidth = window.innerWidth;
-	
 			var resolutionLength = this.loadOption.length;
-	
+
 			for (var i = 0; i < resolutionLength; i++) {
 				var nextIndex = i + 1,
 					nextPoint = nextIndex == resolutionLength ? 0 : this.loadOption[nextIndex].resolution,
 					checkPoint = false;
-	
+
 				if (i == 0) {
 					checkPoint = this.windowWidth > nextPoint;
 				} else {
 					checkPoint = this.windowWidth <= this.loadOption[i].resolution && this.windowWidth > nextPoint;
 				}
+
 				if (checkPoint) {
 					if (this.loadOption[i].attribute !== this.oldAttr) {
 						this.targetAttr = this.loadOption[i].attribute;
@@ -231,67 +226,65 @@ var ANIUTIL = (function(){
 				}
 			}
 		};
-	
-		fn.setResponsiveImage = function(){
+
+		fn.setResponsiveImage = function () {
 			for (var i = 0; i < this.responsiveLength; i++) {
 				var targetImage = this.responsiveImages[i],
 					imgSrc = targetImage.getAttribute(this.targetAttr);
-	
+
 				if (!!!imgSrc) {
 					imgSrc = this.findImageHandler(targetImage);
 				}
-	
-				if (targetImage.classList.contains(this.lazyComplateClass)) {
+
+				if (targetImage.classList.contains(this.lazyCompleteClass)) {
 					targetImage.setAttribute('src', imgSrc);
 				}
 			}
-	
-	
 		};
-	
-		fn.findRemainingImageAttr = function(element){
+
+		fn.findRemainingImageAttr = function (element) {
 			var attrLength = this.loadOption.length;
-	
+
 			for (var i = 0; i < attrLength; i++) {
 				var getAttr = element.getAttribute(this.loadOption[i].attribute);
+
 				if (getAttr) {
 					return getAttr;
 					break;
 				}
 			}
 		};
-	
-		fn.findNextImageAttr = function(element){
+
+		fn.findNextImageAttr = function (element) {
 			var isIndex = this.attrIndex;
-	
+
 			for (var i = isIndex; i >= 0; i--) {
 				var getAttr = element.getAttribute(this.loadOption[i].attribute);
-	
+
 				if (getAttr) {
 					return getAttr;
 					break;
 				}
-	
+
 				if (i == 0 && getAttr == undefined) {
-					return this.findRemainingImageAttr(element)
+					return this.findRemainingImageAttr(element);
 				}
-			};
+			}
 		};
-	
-		fn.findImageHandler = function(element){
-			if (this.attrIndex !==0) {
+
+		fn.findImageHandler = function (element) {
+			if (this.attrIndex !== 0) {
 				return this.findNextImageAttr(element);
 			} else {
-				return this.findRemainingImageAttr(element)
+				return this.findRemainingImageAttr(element);
 			}
-			
-		}
-	
-		fn.setLazyImage = function(){
-			this.windowHeight = window.innerHeight;			
-	
+		};
+
+		fn.setLazyImage = function () {
+			var self = this;
+			this.windowHeight = window.innerHeight;
+
 			for (var i = 0; i < this.lazyLength; i++) {
-	
 				var targetElement = this.lazyImages[i],
 					corrHeight = this.windowHeight * this.visiblePoint,
 					scrollTop = this.utilList.getScroll.call(this).top - corrHeight,
@@ -299,29 +292,33 @@ var ANIUTIL = (function(){
 					targetOffsetTop = this.utilList.getOffset.call(this, targetElement).top,
 					targetOffsetBottom = this.utilList.getOffset.call(this, targetElement).bottom,
 					lazyClass = this.lazyClass.split('.'),
-					removeClass = lazyClass[lazyClass.length-1];
-	
-				if (scrollBottom > targetOffsetTop && scrollTop <= targetOffsetTop ||
-					scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom||
-					scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom ||
-					scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) {
-	
+					removeClass = lazyClass[lazyClass.length - 1];
+
+				if ((scrollBottom > targetOffsetTop && scrollTop <= targetOffsetTop || scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom || scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom || scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) && targetElement.offsetParent != null) {
 					var imgSrc = targetElement.getAttribute(this.targetAttr);
-	
+
 					if (!!!imgSrc) {
 						imgSrc = this.findImageHandler(targetElement);
 					}
-	
-					targetElement.setAttribute('src', imgSrc);
-					if (this.opts.lazyClass.split(' ').length == 1) {
-						targetElement.classList.remove(removeClass);
+
+					if (!targetElement.classList.contains(this.lazyCompleteClass)) {
+						targetElement.setAttribute('src', imgSrc);
+
+						(function (imgElement) {
+							var imageLoadEvent = function() {
+								if (self.opts.lazyClass.split(' ').length == 1) imgElement.classList.remove(removeClass);
+								imgElement.classList.add(self.lazyCompleteClass);
+								self.checkCompleteImage();
+								imgElement.removeEventListener('load', imageLoadEvent);
+							};
+
+							imgElement.addEventListener('load', imageLoadEvent);
+						})(targetElement);
 					}
-					targetElement.classList.add('load-complete')
-					this.checkCompleteImage();
 				}
 			}
 		};
-	
+
 		return new init(opts);
 	};
 
