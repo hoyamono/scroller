@@ -23,11 +23,14 @@ const SCROLLER = (function(){
 		this.useViewportOver = !!!opts.useViewportOver ? true : opts.useViewportOver;
 		this.activeVisibility = !!!opts.activeVisibility ? 'before' : opts.activeVisibility;
 		this.activeType = !!!opts.activeType ? 'reverse' : this.opts.activeType;
+		this.autoHeight = opts == undefined ? true : opts.autoHeight;
 		this.offsetY = !!!opts.offsetY ? 0 : opts.offsetY;
-		this.resize = !!!opts.resize ? true : opts.resize;
-		this.resizeTiming = !!!opts.resizeTiming ? false : opts.resizeTiming;
+		this.resize = opts.resize == undefined ? true : opts.resize;
+		this.resizeTiming = opts.resizeTiming == undefined ? false : opts.resizeTiming;
 		this.windowHeight = window.innerHeight;
+		this.oldWinScrollTop = 0;
 		this.elementInformation = {};
+		this.isFixedArea = false;
 		this.elementEventList.setElement.call(this);
 		this.bindEvent();
 	};
@@ -62,6 +65,7 @@ const SCROLLER = (function(){
 
 	fn.elementHandler = function(){
 		this.elementEventList.setTrackStyle.call(this);
+		this.getFixedState();
 
 		if (this.trackHeight > 1){
 			this.elementEventList.setTrackHeigh.call(this);
@@ -161,20 +165,24 @@ const SCROLLER = (function(){
 			}
 		},
 		setFixedStyle: function(){
-			this.fixedElement.style.height = '';
-			this.fixedElement.style.top = '';
-			this.fixedElement.style.position = 'absolute';
+			if (!this.isFixedArea) {
+				this.fixedElement.style.height = '';
+				this.fixedElement.style.top = '';
+				this.fixedElement.style.position = 'absolute';
+			}
 
 			if (this.fixedElement.clientWidth == 0){
 				this.fixedElement.style.width = '100%';
 			}
 
-			if (typeof this.offsetY == 'string'){
-				this.fixedElement.style.height = 'calc(' + this.windowHeight + 'px - ' + this.offsetY + ')';
-				this.fixedElement.style.top = this.offsetY;
-			} else {
-				this.fixedElement.style.height = (this.windowHeight - this.offsetY) + 'px';
-				this.fixedElement.style.top = this.offsetY + 'px';
+			if (this.autoHeight) {
+				if (typeof this.offsetY == 'string'){
+					this.fixedElement.style.height = 'calc(' + this.windowHeight + 'px - ' + this.offsetY + ')';
+					this.fixedElement.style.top = this.offsetY;
+				} else {
+					this.fixedElement.style.height = (this.windowHeight - this.offsetY) + 'px';
+					this.fixedElement.style.top = this.offsetY + 'px';
+				}
 			}
 		},
 		setFixedElement: function(){
@@ -203,7 +211,7 @@ const SCROLLER = (function(){
 	};
 
 	fn.getWheelDirection = function(){
-		if (this.winScrollTop > this.oldWinScrollTop){
+		if (this.winScrollTop >= this.oldWinScrollTop){
 			this.wheelDirection = 'down';
 		} else {
 			this.wheelDirection = 'up';
@@ -230,6 +238,14 @@ const SCROLLER = (function(){
 		return this.progress;
 	};
 
+	fn.getFixedState = function(){
+		if(this.progress > 0 && this.progress < 100) {
+			this.isFixedArea = true;
+		} else {
+			this.isFixedArea = false;
+		}
+	};
+
 	fn.trackAnimation = function(callback){
 		if (!this.initialize) return;
 		this.winScrollTop = this.utilList.getScroll.call(this).top;
@@ -240,6 +256,7 @@ const SCROLLER = (function(){
 		};
 
 		this.getProgress();
+		this.getFixedState();
 
 		if (callback){
 			if (this.oldPregress !== this.progress){

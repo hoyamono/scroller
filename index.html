@@ -223,6 +223,7 @@ document.addEventListener('DOMContentLoaded', function(){
 		fixedElement: fixedElement6,
 		useFixed: true,
 		trackHeight: 3,
+		corrOffset: false
 	});
 
 
@@ -330,6 +331,12 @@ document.addEventListener('DOMContentLoaded', function(){
 				progress: this.progress,
 			});
 
+			if (this.progress < 100 && this.progress > 0 ) {
+				document.body.setAttribute('data-scroll-speed', 400);
+			} else {
+				document.body.removeAttribute('data-scroll-speed');
+			}
+
 			if (motionValue1 >= 0 && motionValue1 <= maxMoveSize) {
 				if (motionValue1 >= maxMoveSize) {
 					aniTarget4.style.transform = 'translateX(-' + motionValue1 + 'px)';
@@ -393,6 +400,11 @@ document.addEventListener('DOMContentLoaded', function(){
 				startPoint: 0,
 				endPoint: 100
 			});
+			if (this.progress < 100 && this.progress > 0 ) {
+				document.body.setAttribute('data-scroll-speed', 240);
+			} else {
+				document.body.removeAttribute('data-scroll-speed');
+			}
 			seq1.play({index: parseInt(motionValue1)});
 		});
 
@@ -427,11 +439,11 @@ document.addEventListener('DOMContentLoaded', function(){
 				endPoint: 100
 			});
 
-			gsap.to(text8, {duration: 1, y: '-' + motionValue1 + '%', ease: "power3.out"});
-			gsap.to(imgbox1, {duration: 0.6, y: motionValue2 + '%', ease: "power3.out"});
-			gsap.to(imgbox2, {duration: 0.8, y: '-' + motionValue3 + '%', ease: "power3.out"});
-			gsap.to(imgbox3, {duration: 0.5, y: '-' + motionValue4 + '%', ease: "power3.out"});
-			gsap.to(text8, {duration: 1, y: '-' + motionValue1 + '%', ease: "power3.out"});
+			gsap.to(text8, {duration: 2, y: '-' + motionValue1 + '%', ease: "power3.out"});
+			gsap.to(imgbox1, {duration: 1.6, y: motionValue2 + '%', ease: "power3.out"});
+			gsap.to(imgbox2, {duration: 1.8, y: '-' + motionValue3 + '%', ease: "power3.out"});
+			gsap.to(imgbox3, {duration: 1.5, y: '-' + motionValue4 + '%', ease: "power3.out"});
+			gsap.to(text8, {duration: 2, y: '-' + motionValue1 + '%', ease: "power3.out"});
 		});
 	};
 	
@@ -460,8 +472,13 @@ document.addEventListener('DOMContentLoaded', function(){
 	btn.reverse.addEventListener('click', function(){
 		seq2.reverse();
 	});
+	
+	ANIUTIL.scrollController({
+		currDelta: true,
+		speed: 120,
+		duration: 0
+	});
 });
-
 </script>
 
 </html>

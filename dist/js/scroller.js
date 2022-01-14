@@ -27,6 +27,7 @@ const SCROLLER = function () {
     this.resizeTiming = !!!opts.resizeTiming ? false : opts.resizeTiming;
     this.windowHeight = window.innerHeight;
     this.elementInformation = {};
+    this.isFixedArea = false;
     this.elementEventList.setElement.call(this);
     this.bindEvent();
   };
@@ -62,6 +63,7 @@ const SCROLLER = function () {
 
   fn.elementHandler = function () {
     this.elementEventList.setTrackStyle.call(this);
+    this.getFixedState();
 
     if (this.trackHeight > 1) {
       this.elementEventList.setTrackHeigh.call(this);
@@ -160,9 +162,11 @@ const SCROLLER = function () {
       }
     },
     setFixedStyle: function () {
-      this.fixedElement.style.height = '';
-      this.fixedElement.style.top = '';
-      this.fixedElement.style.position = 'absolute';
+      if (!this.isFixedArea) {
+        this.fixedElement.style.height = '';
+        this.fixedElement.style.top = '';
+        this.fixedElement.style.position = 'absolute';
+      }
 
       if (this.fixedElement.clientWidth == 0) {
         this.fixedElement.style.width = '100%';
@@ -231,6 +235,14 @@ const SCROLLER = function () {
     return this.progress;
   };
 
+  fn.getFixedState = function () {
+    if (this.progress > 0 && this.progress < 100) {
+      this.isFixedArea = true;
+    } else {
+      this.isFixedArea = false;
+    }
+  };
+
   fn.trackAnimation = function (callback) {
     if (!this.initialize) return;
     this.winScrollTop = this.utilList.getScroll.call(this).top;
@@ -242,6 +254,7 @@ const SCROLLER = function () {
 
     ;
     this.getProgress();
+    this.getFixedState();
 
     if (callback) {
       if (this.oldPregress !== this.progress) {
@@ -1243,6 +1256,151 @@ var ANIUTIL = function () {
     ;
   };
 
+  var scrollController = function (opt) {
+    var opt = opt ? opt : {},
+        agent = navigator.userAgent.toLowerCase(),
+        targetElement = document.scrollingElement || document.documentElement || document.body.parentNode || document.body,
+        speed = !!!opt.speed ? 120 : opt.speed,
+        duration = opt.duration >= 0 ? opt.duration : 1,
+        scrollSize = targetElement.scrollTop,
+        maxScrollSize,
+        frameElement = targetElement === document.body && document.documentElement ? document.documentElement : targetElement,
+        // safari is the new IE
+    moveState = false,
+        scrollTiming = null;
+
+    var init = function () {
+      if (agent.indexOf("chrome") == -1 && agent.indexOf("safari") != -1) return;
+      bindEvent.wheel();
+      bindEvent.scroll();
+    };
+
+    var bindEvent = {
+      wheel: function () {
+        if (navigator.appName == 'Netscape' && navigator.userAgent.search('Trident') != -1 || agent.indexOf("msie") != -1) {
+          document.addEventListener('mousewheel', function (e) {
+            eventList.scrollEvent(e);
+          }, {
+            passive: false
+          });
+        } else {
+          document.addEventListener('wheel', function (e) {
+            eventList.scrollEvent(e);
+          }, {
+            passive: false
+          });
+        }
+
+        ;
+      },
+      scroll: function () {
+        window.addEventListener('scroll', function () {
+          if (!moveState) {
+            scrollSize = targetElement.scrollTop;
+          }
+        });
+      }
+    };
+    var eventList = {
+      scrollEvent: function (e) {
+        e.preventDefault();
+        var fixedMoveSpeed = document.body.getAttribute('data-scroll-speed');
+        var delta = this.normalizeWheelDelta(e),
+            moveSpeed = opt.currDelta && fixedMoveSpeed ? fixedMoveSpeed : !!!fixedMoveSpeed && !!!speed ? 120 : speed;
+        scrollSize = scrollSize + -delta * moveSpeed; //현재까지 스크롤한 사이즈
+
+        maxScrollSize = Math.max(0, Math.min(scrollSize, targetElement.scrollHeight - frameElement.clientHeight)); //최대 스크롤 사이즈
+
+        this.update();
+      },
+      normalizeWheelDelta: function (e) {
+        if (e.detail) {
+          if (e.wheelDelta) {
+            return e.wheelDelta / e.detail / 40 * (e.detail > 0 ? 1 : -1); // Opera
+          } else {
+            return -e.detail / 3; // Firefox
+          }
+        } else {
+          return e.wheelDelta / 120; // IE,Safari,Chrome
+        }
+      },
+      update: function () {
+        var moveRange = maxScrollSize - targetElement.scrollTop,
+            moveSize = 0 >= Math.ceil(targetElement.scrollTop + moveRange) ? 0 : scrollSize > maxScrollSize ? maxScrollSize : Math.ceil(targetElement.scrollTop + moveRange); //한번 스크롤시 이동할 거리
+
+        moveState = true;
+        TweenMax.to(targetElement, duration, {
+          ease: "power1.out",
+          scrollTop: moveSize,
+          onComplete: function () {
+            clearTimeout(scrollTiming);
+            scrollTiming = null;
+            scrollTiming = setTimeout(function () {
+              moveState = false;
+              scrollSize = targetElement.scrollTop;
+            }, 500);
+          }
+        });
+
+        if (scrollSize <= 0) {
+          scrollSize = 0;
+        } else if (scrollSize >= maxScrollSize) {
+          scrollSize = maxScrollSize;
+        }
+      }
+    };
+
+    var requestAnimationFrame = function () {
+      // requestAnimationFrame cross browser
+      return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (func) {
+        window.setTimeout(func, 1000 / 50);
+      };
+    }();
+
+    return init();
+  };
+
+  var resizeScrollOffset = function (opt) {
+    var scrollProgress = null,
+        correctionTiming = null,
+        resizeTiming = !!!opt ? 200 : opt + 200;
+    var scrollElement, scrollElementHeight, winScrollTop, scrollProgress;
+
+    var init = function () {
+      bindEvent();
+    };
+
+    var getScrollProgerss = function () {
+      if (scrollProgress == null) {
+        scrollElement = document.scrollingElement || document.documentElement || document.body.parentNode || document.body;
+        scrollElementHeight = document.body.clientHeight;
+        winScrollTop = window.pageYOffset + scrollElement.clientHeight;
+        scrollProgress = winScrollTop / scrollElementHeight;
+      } else {
+        scrollElementHeight = document.body.clientHeight;
+      }
+
+      ;
+    };
+
+    var setCorrScroll = function () {
+      clearTimeout(correctionTiming);
+      correctionTiming = setTimeout(function () {
+        window.scrollTo(0, scrollElementHeight * scrollProgress - window.innerHeight);
+        scrollProgress = null;
+      }, resizeTiming);
+    };
+
+    var bindEvent = function () {
+      window.addEventListener('resize', function () {
+        getScrollProgerss();
+        setCorrScroll();
+      });
+    };
+
+    return init();
+  };
+
   return {
     calRange: function (values) {
       return calRange(values);
@@ -1258,6 +1416,12 @@ var ANIUTIL = function () {
     },
     removeClass: function (opts) {
       removeClass(opts);
+    },
+    scrollController: function (opt) {
+      scrollController(opt);
+    },
+    resizeScrollOffset: function (opt) {
+      resizeScrollOffset(opt);
     }
   };
 }();

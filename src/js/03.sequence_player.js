@@ -196,6 +196,9 @@ var SEQUENCEPLAYER = (function () {
             self.usePlayIng = false;
             self.useReverse = false;
             self.useReverseIng = false;
+            if (self.opts.loop) {
+                self.play();
+            }
         };
 
         var _animation = {
