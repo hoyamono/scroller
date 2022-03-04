@@ -53,7 +53,7 @@ p { font-size: 70px; color: #fff; }
 
 .scene6 .controller, .scene7 .controller, .scene8 .controller, .scene9 .controller { position: absolute; right: 0; bottom: 0; z-index: 100; }
 
-.scene6 canvas, .scene7 canvas, .scene8 canvas, .scene9 canvas { width: 100%; min-width: 100%; min-height: 100%; }
+.scene6 canvas, .scene7 canvas, .scene8 canvas, .scene9 canvas { min-width: 100%; min-height: 100%; }
 
 .scene8 { height: 140vh; }
 

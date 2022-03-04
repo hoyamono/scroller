@@ -23,7 +23,7 @@ var SCROLLER = (function(){
 		this.useViewportOver = !!!opts.useViewportOver ? true : opts.useViewportOver;
 		this.activeVisibility = !!!opts.activeVisibility ? 'before' : opts.activeVisibility;
 		this.activeType = !!!opts.activeType ? 'reverse' : this.opts.activeType;
-		this.autoHeight = opts == undefined ? true : opts.autoHeight;
+		this.autoHeight = opts.autoHeight == undefined ? true : opts.autoHeight;
 		this.offsetY = !!!opts.offsetY ? 0 : opts.offsetY;
 		this.resize = opts.resize == undefined ? true : opts.resize;
 		this.resizeTiming = opts.resizeTiming == undefined ? false : opts.resizeTiming;
