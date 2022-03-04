@@ -154,6 +154,8 @@ var SCROLLER = (function(){
 			}
 		},
 		setTrackHeigh: function(){
+			if (this.trackHeight <= 1) return;
+
 			this.trackElement.style.height = '';
 
 			var checkTrackHeight = this.trackElement.clientHeight == 0;
@@ -165,7 +167,6 @@ var SCROLLER = (function(){
 				this.trackElement.style.height = this.windowHeight + 'px';
 			}
 
-			this.trackElement.style.boxSizing = 'content-box';
 			this.trackElement.style.height = calTrackHeight + 'px';
 		},
 		setTrackStyle: function(){
