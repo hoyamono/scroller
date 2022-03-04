@@ -33,6 +33,13 @@ var ANIUTIL = (function(){
 		return returnValue;
 	}
 
+	var percentToPixel = function(opts){
+		var targetValue = opts.targetValue,
+			progress = opts.progress;
+
+		return targetValue * (progress/100);
+	}
+
 	var videoObjectFit = function(opts){
 		var init = function(opts){
 			this.opts = opts;
@@ -119,6 +126,8 @@ var ANIUTIL = (function(){
 			this.getLazyImage();
 			this.getResponsiveImage();
 			this.bindEvent();
+
+			return window.imageLoader = this;
 		};
 
 		var fn = init.prototype;
@@ -227,17 +236,29 @@ var ANIUTIL = (function(){
 			}
 		};
 
-		fn.setResponsiveImage = function () {
-			for (var i = 0; i < this.responsiveLength; i++) {
-				var targetImage = this.responsiveImages[i],
-					imgSrc = targetImage.getAttribute(this.targetAttr);
+		fn.setResponsiveImage = function (imageTarget) {
+			if (imageTarget) {
+				for (var i = 0; i < imageTarget.length; i++) {
+					var targetImage = imageTarget[i],
+						imgSrc = imageTarget[i].getAttribute(this.targetAttr);
 
-				if (!!!imgSrc) {
-					imgSrc = this.findImageHandler(targetImage);
+					if (!imageTarget[i].classList.contains(this.lazyCompleteClass)) {
+						imageTarget[i].setAttribute('src', imgSrc);
+						imageTarget[i].classList.add(this.lazyCompleteClass);
+					}
 				}
-
-				if (targetImage.classList.contains(this.lazyCompleteClass)) {
-					targetImage.setAttribute('src', imgSrc);
+			} else {
+				for (var i = 0; i < this.responsiveLength; i++) {
+					var targetImage = this.responsiveImages[i],
+						imgSrc = targetImage.getAttribute(this.targetAttr);
+	
+					if (!!!imgSrc) {
+						imgSrc = this.findImageHandler(targetImage);
+					}
+	
+					if (targetImage.classList.contains(this.lazyCompleteClass)) {
+						targetImage.setAttribute('src', imgSrc);
+					}
 				}
 			}
 		};
@@ -361,6 +382,7 @@ var ANIUTIL = (function(){
 			wheel: function(){
 				if ((navigator.appName == 'Netscape' && navigator.userAgent.search('Trident') != -1) || (agent.indexOf("msie") != -1) ) {
 					document.addEventListener('mousewheel', function (e) {
+						if (document.documentElement.style.overflow == 'hidden') return;
 						eventList.scrollEvent(e);
 					}, {
 						passive: false
@@ -372,11 +394,11 @@ var ANIUTIL = (function(){
 						passive: false
 					});
 				};
-	
-	
 			},
 			scroll: function(){
 				window.addEventListener('scroll', function () {
+					if (document.documentElement.style.overflow == 'hidden') return;
+
 					if (!moveState) {
 						scrollSize = targetElement.scrollTop;
 					}
@@ -491,6 +513,60 @@ var ANIUTIL = (function(){
 
 	};
 
+	var checkTouchDevice = function(){
+		if (navigator.userAgent.indexOf('Windows') > -1 || navigator.userAgent.indexOf('Macintosh') > -1) {
+			return false;
+		} else if ('ontouchstart' in window || (window.DocumentTouch && document instanceof window.DocumentTouch)) {
+			return true;
+		}
+	};
+
+	var checkFold = function() {
+		var foldState;
+		var screenRatio = screen.width / screen.height;
+		var isFold = checkTouchDevice() && screenRatio > 0.7137 && screenRatio < 0.80 && document.getElementsByName('viewport')[0].content == 'width=768';
+		var isFoldLatest = checkTouchDevice() && screenRatio > 0.80 && screenRatio < 0.95 && document.getElementsByName('viewport')[0].content == 'width=768';
+		if (isFold) {
+			foldState = 'isFold';
+		} else if (isFoldLatest) {
+			foldState = 'isFoldLatest';
+		}
+
+		return foldState;
+	};
+
+	var deviceConsole = function(value, visible){
+		var consoleElement,
+			consoleValueElement;
+
+		if (!document.querySelector('.console-layer')) {
+			consoleElement = document.createElement('div');
+
+			consoleElement.classList.add('console-layer');
+			consoleElement.setAttribute('style', 'position: fixed; left: 0; top: 0; padding: 20px; z-index:1000000000; background: #fff;')
+			document.querySelector('body').append(consoleElement);
+		}
+		if (visible == 'multi') {
+			consoleElement = document.querySelector('.console-layer');
+			consoleValueElement = document.createElement('div');
+			consoleValueElement.classList.add('console-value');
+			consoleValueElement.setAttribute('style', 'border: 1px #ddd solid; float: left; padding: 10px;');
+			consoleElement.append(consoleValueElement);
+		} else {
+			if (!document.querySelector('.console-value')) {
+				consoleValueElement = document.createElement('div');
+				consoleValueElement.classList.add('console-value');
+				consoleValueElement.setAttribute('style', 'border: 1px #ddd solid; float: left; padding: 10px;');
+				consoleElement.append(consoleValueElement);
+				consoleValueElement = document.querySelector('.console-value');
+			} else {
+				consoleValueElement = document.querySelector('.console-value');
+			}
+		}
+		
+		consoleValueElement.innerHTML = value;
+	}
+
 	return {
 		calRange: function(values){
 			return calRange(values);
@@ -512,6 +588,10 @@ var ANIUTIL = (function(){
 		},
 		resizeScrollOffset: function(opt){
 			resizeScrollOffset(opt);
-		}
+		},
+		checkTouchDevice: checkTouchDevice,
+		checkFold: checkFold,
+		deviceConsole: deviceConsole,
+		percentToPixel: percentToPixel
 	}
 })();
