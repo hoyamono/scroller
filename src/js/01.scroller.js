@@ -28,9 +28,11 @@ const SCROLLER = (function(){
 		this.resize = opts.resize == undefined ? true : opts.resize;
 		this.resizeTiming = opts.resizeTiming == undefined ? false : opts.resizeTiming;
 		this.windowHeight = window.innerHeight;
+		this.oldPregress = 0;
 		this.oldWinScrollTop = 0;
 		this.elementInformation = {};
 		this.isFixedArea = false;
+		this.checkTouchDevice = false;
 		this.elementEventList.setElement.call(this);
 		this.bindEvent();
 	};
@@ -42,7 +44,7 @@ const SCROLLER = (function(){
 		let setTimeing = null;
 
 		this.elementHandler();
-		
+
 		if (this.resize){
 			this.addEventList = function(){
 				if (!self.resizeTiming){
@@ -79,6 +81,13 @@ const SCROLLER = (function(){
 	};
 
 	fn.utilList = {
+		checkTouchDevice: function() {
+			if (navigator.userAgent.indexOf('Windows') > -1 || navigator.userAgent.indexOf('Macintosh') > -1) {
+				return this.checkTouchDevice = false;
+			} else if ('ontouchstart' in window || (window.DocumentTouch && document instanceof window.DocumentTouch)) {
+				return this.checkTouchDevice = true;
+			}
+		},
 		IEScrollHandler: function(){
 			if (navigator.userAgent.match(/Trident\/7\./)){
 				this.body.addEventListener('mousewheel', function(e){
@@ -122,6 +131,9 @@ const SCROLLER = (function(){
 				top: top,
 				bottom: bottom
 			};
+		},
+		getUserAgent: function(){
+			return navigator.userAgent;
 		}
 	};
 
@@ -143,24 +155,23 @@ const SCROLLER = (function(){
 		},
 		setTrackHeigh: function(){
 			this.trackElement.style.height = '';
-			this.trackElement.style.paddingTop = '';
-			this.trackElement.style.paddingBottom = '';
-			let checkTrackHeight = this.trackElement.clientHeight == 0,
-				isTrackHeight = checkTrackHeight ? this.windowHeight : this.trackElement.clientHeight,
-				calTrackHeight = isTrackHeight * this.trackHeight - isTrackHeight;
+
+			let checkTrackHeight = this.trackElement.clientHeight == 0;
+			let isTrackHeight = this.windowHeight;
+
+			let calTrackHeight = isTrackHeight * this.trackHeight;
 
 			if (checkTrackHeight){
 				this.trackElement.style.height = this.windowHeight + 'px';
 			}
 
 			this.trackElement.style.boxSizing = 'content-box';
-			this.trackElement.style.paddingTop = calTrackHeight / 2 + 'px';
-			this.trackElement.style.paddingBottom = calTrackHeight / 2 + 'px';
+			this.trackElement.style.height = calTrackHeight + 'px';
 		},
 		setTrackStyle: function(){
 			if (!!!this.trackElement) return;
 
-			if (window.getComputedStyle(this.trackElement).position == 'static'){
+			if (this.useFixed && window.getComputedStyle(this.trackElement).position == 'static'){
 				this.trackElement.style.position = 'relative';
 			}
 		},
@@ -202,10 +213,10 @@ const SCROLLER = (function(){
 				this.fixedElement.style.bottom = '';
 			} else if (this.winScrollTop >= this.trackTopOffset && this.winScrollBottom <= this.trackBottomOffset){
 				this.fixedElement.style.position = 'fixed';
+				this.fixedElement.style.top = '0'
 			} else if (this.winScrollBottom >= this.trackBottomOffset){
 				this.fixedElement.style.position = 'absolute';
-				this.fixedElement.style.top = 'auto';
-				this.fixedElement.style.bottom = '0px';
+				this.fixedElement.style.top = this.trackElement.clientHeight - this.fixedElement.clientHeight + 'px';
 			};
 		},
 	};
@@ -433,7 +444,7 @@ const SCROLLER = (function(){
 	fn.destroy = function(e){
 		if (!!this.trackElement){
 			this.trackElement.style.position = '';
-			this.trackElement.style.height = '', this.trackElement.style.paddingTop = '', this.trackElement.style.paddingBottom = '';
+			this.trackElement.style.height = '';
 		}
 		if (!!this.fixedElement){
 			this.fixedElement.style.position = '';
