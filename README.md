@@ -30,6 +30,7 @@ var scene2 = SCROLLER({
 |trackElement|DOM|-|scroller를 실행할 대상 요소를 감싸는 Dom요소로 fixed사용시 trackElement의 height값에따라 animation의 duration 값이 달라진다.(trackHeight을 통해 height값 조절 가능)| trackElement는 필수요소로 객체 생성시 무조건 지정해야한다.
 |fixedElement|DOM|-|trackElement 내 스크롤시 fixed될 DOM요소|
 |useFixed|boolean|false|fixed 기능 on/off|
+|useFixedStyle|boolean|true|fixed style 기능 on/off(sticky 속성으로 마크업한 경우 사용)|
 |trackHeight|number|0|trackHeight의 height값을 보정하는 옵션으로 배율로 입력한다 ex) 2 = 높이값의 2배|
 |offsetY|string, number|0|화면 내 fixedElement의 top offset 보정값(보정값에 맞춰 height 값도 보정됨)|
 |useViewportOver|boolean|true|윈도우 bottom 엘리먼트 top에서 progress시작, 윈도우 top과 엘리먼트 bottom이 닿으면 progress 끝(usefixed 사용시 미적용)|

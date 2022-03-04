@@ -11,7 +11,7 @@ p { font-size: 70px; color: #fff; }
 
 .kv .text1 { opacity: 1; }
 
-.content-wrap { width: 100%; position: relative; }
+.content-wrap { width: 100%; height: 100vh; position: sticky; }
 
 .scene2, .scene3, .scene4 { position: relative; height: 100vh; }
 

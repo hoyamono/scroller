@@ -38,7 +38,8 @@ p {
 
 .content-wrap {
 	width: 100%;
-	position: relative;
+	height: 100vh;
+	position: sticky;
 }
 
 .scene2,
