@@ -208,12 +208,14 @@ var SCROLLER = function () {
         }
 
         this.fixedElement.style.bottom = '';
-      } else if (this.winScrollTop >= this.trackTopOffset && this.winScrollBottom <= this.trackBottomOffset) {
-        this.fixedElement.style.position = 'fixed';
-        this.fixedElement.style.top = '0';
       } else if (this.winScrollBottom >= this.trackBottomOffset) {
         this.fixedElement.style.position = 'absolute';
         this.fixedElement.style.top = this.trackElement.clientHeight - this.fixedElement.clientHeight + 'px';
+      } else {
+        if (!this.isFixedArea) {
+          this.fixedElement.style.position = 'fixed';
+          this.fixedElement.style.top = '0';
+        }
       }
 
       ;
