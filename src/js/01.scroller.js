@@ -9,8 +9,8 @@
 
 'use strict'
 
-const SCROLLER = (function(){
-	const init = function(opts){
+var SCROLLER = (function(){
+	var init = function(opts){
 		this.initialize = true;
 		this.opts = opts;
 		this.correction = !!!opts.correction ? 0 : opts.correction;
@@ -37,11 +37,11 @@ const SCROLLER = (function(){
 		this.bindEvent();
 	};
 
-	const fn = init.prototype;
+	var fn = init.prototype;
 
 	fn.bindEvent = function(){
-		const self = this;
-		let setTimeing = null;
+		var self = this;
+		var setTimeing = null;
 
 		this.elementHandler();
 
@@ -92,12 +92,12 @@ const SCROLLER = (function(){
 			if (navigator.userAgent.match(/Trident\/7\./)){
 				this.body.addEventListener('mousewheel', function(e){
 					e.preventDefault();
-					let wheelDelta = e.wheelDelta,
+					var wheelDelta = e.wheelDelta,
 						currentScrollPosition = window.pageYOffset;
 					window.scrollTo(0, currentScrollPosition - wheelDelta);
 				});
 				this.body.addEventListener('keydown', function(e){
-					let currentScrollPosition = window.pageYOffset;
+					var currentScrollPosition = window.pageYOffset;
 
 					switch (e.which){
 						case 38:
@@ -117,7 +117,7 @@ const SCROLLER = (function(){
 			}
 		},
 		getScroll: function(){
-			let top = window.pageYOffset,
+			var top = window.pageYOffset,
 				bottom = top + this.windowHeight;
 			return {
 				top: top,
@@ -125,7 +125,7 @@ const SCROLLER = (function(){
 			};
 		},
 		getOffset: function(element){
-			let top = element.getBoundingClientRect().top + window.pageYOffset,
+			var top = element.getBoundingClientRect().top + window.pageYOffset,
 				bottom = element.getBoundingClientRect().bottom + window.pageYOffset;
 			return {
 				top: top,
@@ -156,10 +156,10 @@ const SCROLLER = (function(){
 		setTrackHeigh: function(){
 			this.trackElement.style.height = '';
 
-			let checkTrackHeight = this.trackElement.clientHeight == 0;
-			let isTrackHeight = this.windowHeight;
+			var checkTrackHeight = this.trackElement.clientHeight == 0;
+			var isTrackHeight = this.windowHeight;
 
-			let calTrackHeight = isTrackHeight * this.trackHeight;
+			var calTrackHeight = isTrackHeight * this.trackHeight;
 
 			if (checkTrackHeight){
 				this.trackElement.style.height = this.windowHeight + 'px';
@@ -290,8 +290,8 @@ const SCROLLER = (function(){
 		this.downScrollBottom = this.winScrollBottom - this.correctionValue;
 		this.upScrollTop = this.winScrollTop + this.correctionValue;
 		this.upScrollBottom = this.winScrollBottom + this.correctionValue;
-		const self = this;
-		let visibleType = this.activeVisibility,
+		var self = this;
+		var visibleType = this.activeVisibility,
 			removeType = this.activeType,
 			corrHeight = this.windowHeight / 2;
 
@@ -299,7 +299,7 @@ const SCROLLER = (function(){
 			if (!!!self.activeClass) return;
 
 			if (typeof self.activeClass == 'object'){
-				let classLength = self.activeClass.length;
+				var classLength = self.activeClass.length;
 
 				for (var i = 0; i < classLength; i++){
 					if (!self.activeElement.classList.contains(self.activeClass[i])){
@@ -315,7 +315,7 @@ const SCROLLER = (function(){
 
 		var removeActiveClass = function(){
 			if (typeof self.activeClass == 'object'){
-				let classLength = self.activeClass.length;
+				var classLength = self.activeClass.length;
 
 				for (var i = 0; i < classLength; i++){
 					if (self.activeElement.classList.contains(self.activeClass[i])){
