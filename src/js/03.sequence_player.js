@@ -18,6 +18,7 @@ var SEQUENCEPLAYER = (function () {
         this.pausePlayingTime = 0;
         this.usePlay = false;
         this.useReverse = false;
+        this.imageLoadOffset = !!!this.opts.imageLoadOffset ? 0 : this.opts.imageLoadOffset;
         this.setCanvas();
         this.loadImages();
         return this;
@@ -59,30 +60,56 @@ var SEQUENCEPLAYER = (function () {
 
     fn.loadImages = function () {
         var self = this,
-            isImage;
+            isImage,
+            windowBottomOffset,
+            targetTopOffset;
 
-        for (var i = this.opts.startNum; i <= this.opts.endNum; i++) {
-            isImage = new Image();
-            isImage.src = this.opts.path + this.opts.name + i + '.' + this.opts.extension;
+        var bindEvent = function(){
+            scrollHandler();
+            window.addEventListener('scroll', scrollHandler);
+        };
 
-            (function (idx, imgElement) {
-                var imageLoadEvent = function () {
-                    self.imageList[idx] = this;
+        var scrollHandler = function(){
+            windowBottomOffset = window.pageYOffset + window.innerHeight + (window.innerHeight*self.imageLoadOffset);
+            getCanvasOffset();
 
-                    if (self.loadCount < self.opts.endNum) {
-                        self.loadCount++;
-                        this.removeEventListener('load', imageLoadEvent);
-                    } else if (self.opts.autoPlay && self.loadCount == self.opts.endNum) {
-                        self.play();
-                        return;
-                    }
-                };
+            if (targetTopOffset <= windowBottomOffset) {
+                startLoadImages();
 
-                imgElement.addEventListener('load', imageLoadEvent);
-            })(i, isImage);
+                window.removeEventListener('scroll', scrollHandler);
+            }
+        };
 
-            isImage = null;
-        }
+        var getCanvasOffset = function(){
+            targetTopOffset = self.targetElement.getBoundingClientRect().top + window.pageYOffset;
+        };
+
+        var startLoadImages = function(){
+            for (var i = self.opts.startNum; i <= self.opts.endNum; i++) {
+                isImage = new Image();
+                isImage.src = self.opts.path + self.opts.name + i + '.' + self.opts.extension;
+    
+                (function (idx, imgElement) {
+                    var imageLoadEvent = function () {
+                        self.imageList[idx] = this;
+    
+                        if (self.loadCount < self.opts.endNum) {
+                            self.loadCount++;
+                            this.removeEventListener('load', imageLoadEvent);
+                        } else if (self.opts.autoPlay && self.loadCount == self.opts.endNum) {
+                            self.play();
+                            return;
+                        }
+                    };
+    
+                    imgElement.addEventListener('load', imageLoadEvent);
+                })(i, isImage);
+    
+                isImage = null;
+            }  
+        };
+
+        return bindEvent();
     };
 
     fn.sequenceLoadCheck = function (type) {
