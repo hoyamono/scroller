@@ -242,6 +242,11 @@ var ANIUTIL = (function(){
 					var targetImage = imageTarget[i],
 						imgSrc = imageTarget[i].getAttribute(this.targetAttr);
 
+					if (!!!imgSrc) {
+						imgSrc = this.findImageHandler(targetImage);
+					}
+	
+
 					if (!imageTarget[i].classList.contains(this.lazyCompleteClass)) {
 						imageTarget[i].setAttribute('src', imgSrc);
 						imageTarget[i].classList.add(this.lazyCompleteClass);
