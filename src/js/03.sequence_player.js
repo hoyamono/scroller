@@ -97,7 +97,9 @@ var SEQUENCEPLAYER = (function () {
                             self.loadCount++;
                             this.removeEventListener('load', imageLoadEvent);
                         } else if (self.opts.autoPlay && self.loadCount == self.opts.endNum) {
-                            self.play();
+                            setTimeout(function() {
+                                self.play();
+                            }, 100);
                             return;
                         }
                     };
@@ -131,6 +133,7 @@ var SEQUENCEPLAYER = (function () {
 
         var idx = opts.index > this.opts.endNum ? this.opts.endNum : opts.index;
 
+        this.activeCallback = opts.activeCallback || function () { };
         this.endCallback = opts.endCallback || function () { };
         this.beforeTime = opts.beforeTime || 0;
 
@@ -185,7 +188,9 @@ var SEQUENCEPLAYER = (function () {
         if (!!!index && this.oldPlayIndex == this.playIndex) return;
 
         this.context.clearRect(0, 0, this.opts.width, this.opts.height);
-        this.context.drawImage(this.imageList[index >= 0 ? index : this.playIndex], 0, 0, this.opts.width, this.opts.height);
+        if (this.imageList[index >= 0 ? index : this.playIndex] && this.imageList[index >= 0 ? index : this.playIndex].complete) {
+            this.context.drawImage(this.imageList[index >= 0 ? index : this.playIndex], 0, 0, this.opts.width, this.opts.height);
+        }
         this.oldPlayIndex = this.playIndex;
 
         if (index) {
@@ -199,6 +204,7 @@ var SEQUENCEPLAYER = (function () {
             startTime = null,
             progress;
 
+        this.activeCallback();
         this.isPlay = true;
 
         var _setIndex = function (timestemp) {
