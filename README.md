@@ -179,7 +179,8 @@ progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함�
 		width: 426,
 		height: 240,
 		autoPlay: true,
-		playTime: 3000
+		playTime: 3000,
+		imageLoadOffset: 2
 	});
 
 	seq1.play()//재생
@@ -204,6 +205,7 @@ progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함�
 |height|number|이미지 높이|
 |autoPlay|boolean|오토플레이|
 |playTime|number|시간 지정시 지정한 시간 내 시퀀스 재생(미지정시 모니터 프레임에 맞워 시퀀스 재생)|
+|imageLoadOffset|number|이미지 로드시점 제어|
 |addType|string|'append'시 targetElement 마지막 요소로 canvas 추가(기본 'prepend')|
 ---
 ### 3. Methods
