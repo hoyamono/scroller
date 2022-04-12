@@ -663,6 +663,7 @@ var SEQUENCEPLAYER = function () {
     this.pausePlayingTime = 0;
     this.usePlay = false;
     this.useReverse = false;
+    this.imageLoadOffset = !!!this.opts.imageLoadOffset ? 0 : this.opts.imageLoadOffset;
     this.setCanvas();
     this.loadImages();
     return this;
@@ -704,30 +705,61 @@ var SEQUENCEPLAYER = function () {
 
   fn.loadImages = function () {
     var self = this,
-        isImage;
+        isImage,
+        windowTopOffset,
+        windowBottomOffset,
+        targetTopOffset,
+        targetBottomOffset;
 
-    for (var i = this.opts.startNum; i <= this.opts.endNum; i++) {
-      isImage = new Image();
-      isImage.src = this.opts.path + this.opts.name + i + '.' + this.opts.extension;
+    var bindEvent = function () {
+      scrollHandler();
+      window.addEventListener('scroll', scrollHandler);
+    };
 
-      (function (idx, imgElement) {
-        var imageLoadEvent = function () {
-          self.imageList[idx] = this;
+    var scrollHandler = function () {
+      windowTopOffset = window.pageYOffset - window.innerHeight * self.imageLoadOffset;
+      windowBottomOffset = window.pageYOffset + window.innerHeight + window.innerHeight * self.imageLoadOffset;
+      getCanvasOffset();
 
-          if (self.loadCount < self.opts.endNum) {
-            self.loadCount++;
-            this.removeEventListener('load', imageLoadEvent);
-          } else if (self.opts.autoPlay && self.loadCount == self.opts.endNum) {
-            self.play();
-            return;
-          }
-        };
+      if (windowBottomOffset > targetTopOffset && windowTopOffset < targetTopOffset || windowTopOffset < targetBottomOffset && windowBottomOffset > targetBottomOffset || windowTopOffset < targetTopOffset && windowBottomOffset > targetBottomOffset || windowTopOffset > targetTopOffset && windowBottomOffset < targetBottomOffset) {
+        startLoadImages();
+        window.removeEventListener('scroll', scrollHandler);
+      }
+    };
 
-        imgElement.addEventListener('load', imageLoadEvent);
-      })(i, isImage);
+    var getCanvasOffset = function () {
+      targetTopOffset = self.targetElement.getBoundingClientRect().top + window.pageYOffset;
+      targetBottomOffset = self.targetElement.getBoundingClientRect().bottom + window.pageYOffset;
+    };
 
-      isImage = null;
-    }
+    var startLoadImages = function () {
+      for (var i = self.opts.startNum; i <= self.opts.endNum; i++) {
+        isImage = new Image();
+        isImage.src = self.opts.path + self.opts.name + i + '.' + self.opts.extension;
+
+        (function (idx, imgElement) {
+          var imageLoadEvent = function () {
+            self.imageList[idx] = this;
+
+            if (self.loadCount < self.opts.endNum) {
+              self.loadCount++;
+              this.removeEventListener('load', imageLoadEvent);
+            } else if (self.opts.autoPlay && self.loadCount == self.opts.endNum) {
+              setTimeout(function () {
+                self.play();
+              }, 100);
+              return;
+            }
+          };
+
+          imgElement.addEventListener('load', imageLoadEvent);
+        })(i, isImage);
+
+        isImage = null;
+      }
+    };
+
+    return bindEvent();
   };
 
   fn.sequenceLoadCheck = function (type) {
@@ -746,6 +778,8 @@ var SEQUENCEPLAYER = function () {
     opts = opts || {};
     if (this.isPlay) return;
     var idx = opts.index > this.opts.endNum ? this.opts.endNum : opts.index;
+
+    this.activeCallback = opts.activeCallback || function () {};
 
     this.endCallback = opts.endCallback || function () {};
 
@@ -801,7 +835,11 @@ var SEQUENCEPLAYER = function () {
   fn.drawCanvas = function (index) {
     if (!!!index && this.oldPlayIndex == this.playIndex) return;
     this.context.clearRect(0, 0, this.opts.width, this.opts.height);
-    this.context.drawImage(this.imageList[index >= 0 ? index : this.playIndex], 0, 0, this.opts.width, this.opts.height);
+
+    if (this.imageList[index >= 0 ? index : this.playIndex] && this.imageList[index >= 0 ? index : this.playIndex].complete) {
+      this.context.drawImage(this.imageList[index >= 0 ? index : this.playIndex], 0, 0, this.opts.width, this.opts.height);
+    }
+
     this.oldPlayIndex = this.playIndex;
 
     if (index) {
@@ -814,6 +852,7 @@ var SEQUENCEPLAYER = function () {
         playInterval = this.opts.endNum / this.opts.playTime,
         startTime = null,
         progress;
+    this.activeCallback();
     this.isPlay = true;
 
     var _setIndex = function (timestemp) {
@@ -1174,6 +1213,10 @@ var ANIUTIL = function () {
         for (var i = 0; i < imageTarget.length; i++) {
           var targetImage = imageTarget[i],
               imgSrc = imageTarget[i].getAttribute(this.targetAttr);
+
+          if (!!!imgSrc) {
+            imgSrc = this.findImageHandler(targetImage);
+          }
 
           if (!imageTarget[i].classList.contains(this.lazyCompleteClass)) {
             imageTarget[i].setAttribute('src', imgSrc);

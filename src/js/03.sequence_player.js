@@ -61,8 +61,10 @@ var SEQUENCEPLAYER = (function () {
     fn.loadImages = function () {
         var self = this,
             isImage,
+            windowTopOffset,
             windowBottomOffset,
-            targetTopOffset;
+            targetTopOffset,
+            targetBottomOffset;
 
         var bindEvent = function(){
             scrollHandler();
@@ -70,10 +72,14 @@ var SEQUENCEPLAYER = (function () {
         };
 
         var scrollHandler = function(){
+            windowTopOffset = window.pageYOffset - (window.innerHeight*self.imageLoadOffset);
             windowBottomOffset = window.pageYOffset + window.innerHeight + (window.innerHeight*self.imageLoadOffset);
             getCanvasOffset();
 
-            if (targetTopOffset <= windowBottomOffset) {
+            if (windowBottomOffset > targetTopOffset && windowTopOffset < targetTopOffset ||
+                windowTopOffset < targetBottomOffset && windowBottomOffset > targetBottomOffset ||
+                windowTopOffset < targetTopOffset && windowBottomOffset > targetBottomOffset ||
+                windowTopOffset > targetTopOffset && windowBottomOffset < targetBottomOffset) {
                 startLoadImages();
 
                 window.removeEventListener('scroll', scrollHandler);
@@ -82,6 +88,7 @@ var SEQUENCEPLAYER = (function () {
 
         var getCanvasOffset = function(){
             targetTopOffset = self.targetElement.getBoundingClientRect().top + window.pageYOffset;
+            targetBottomOffset = self.targetElement.getBoundingClientRect().bottom + window.pageYOffset;
         };
 
         var startLoadImages = function(){
