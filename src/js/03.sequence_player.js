@@ -27,6 +27,8 @@ var SEQUENCEPLAYER = (function () {
     var fn = init.prototype;
 
     fn.setCanvas = function () {
+        var self = this;
+
         var _checkElement = function (element) {
             if (element.tagName == 'CANVAS') {
                 this.canvas = element;
@@ -54,8 +56,21 @@ var SEQUENCEPLAYER = (function () {
         }
 
         this.context = this.canvas.getContext('2d');
-        this.canvas.width = this.opts.width;
-        this.canvas.height = this.opts.height;
+
+        var firstImage = new Image();
+            
+        firstImage.src = this.opts.path + this.opts.name + 0 + '.' + this.opts.extension;
+        if (!!!self.opts.width || !!!self.opts.height) {
+            firstImage.addEventListener('load', function(){
+                self.canvas.width = firstImage.naturalWidth;
+                self.canvas.height = firstImage.naturalHeight;
+                self.opts.width = self.canvas.width;
+                self.opts.height = self.canvas.height;
+            });    
+        } else {
+            self.canvas.width = self.opts.width;
+            self.canvas.height = self.opts.height;
+        }
     };
 
     fn.loadImages = function () {
