@@ -261,7 +261,7 @@ progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함�
 	|------|---|-----|
 	|lazyClass|string|lazy-load를 적용할 대상 class|
 	|responsiveClass|string|responsive image적용할 대상 class|
-	|loadOption|array(object)|resolution : responsive image 분기점,높은해상도(lazy-load만 사용시 resolution 표기 제외) => 낮은해상로 순으로 표기 / attribute : 해당 분기점에서 치환할 이미지 경로를 담고있는 attribute 표기|
+	|loadOption|array(object)|resolution : responsive image 분기점,높은해상도(lazy-load만 사용시 resolution 표기 제외) => 낮은해상도 순으로 표기 / attribute : 해당 분기점에서 치환할 이미지 경로를 담고있는 attribute 표기|
 	|visiblePoint|number|이미지 로드시점 설정 ex) 1 = 한화면 전|
 	|useDefaultImg|boolean|이미지 로드 전 src에 더미이미지 할당|
 - ANIUTIL.videoObjectFit : wrap 요소에 맞춰 video를 full size로 유지하도록 제어하는 함수
@@ -304,3 +304,19 @@ progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함�
 	|------|---|-----|
 	|targetElement|Element|클래스 제거 타겟 엘리먼트|
 	|classList|array|제거할 대상 클래스|
+- ANIUTIL.responsiveHandler : responsive구간 체크 및 callback 제어용 함수
+	``` javascript
+	ANIUTIL.responsiveHandler({
+		resolution: [1920, 1440, 1024, 768, 360],
+		statusName: ['desktop-full', 'desktop', 'tablet','mobile', 'mobile-min'],
+		callback: [aaa, bbb, ccc, ddd],
+		activeTiming: 1000
+	});
+
+	```
+	|Option|Type|Description|
+	|------|---|-----|
+	|resolution|array|해상도 리스트 (낮은해상도 순으로 표기)|
+	|statusName|array|해상도별 클래스 리스트|
+	|callback|array|해상도별 실행한 callback 리스트|
+	|activeTiming|number|callback 실행 타이밍|
