@@ -570,7 +570,81 @@ var ANIUTIL = (function(){
 		}
 		
 		consoleValueElement.innerHTML = value;
-	}
+	};
+
+	var responsiveHandler = function(opts){
+		window.resolutionStatus = null;
+
+		var isResolution,
+			oldActiveIndex,
+			isActiveIndex,
+			callbackTiming = null;
+
+		var windowWidth = window.innerWidth;
+
+		var opts = {
+			resolution: opts.resolution,
+			statusName: opts.statusName || [],
+			callback: opts.callback || [],
+			activeTiming: !!!opts.activeTiming ? 100 : opts.activeTiming
+		}
+
+		var checkResolution = function(){
+			windowWidth = window.innerWidth;
+			for (var i = 0; i < opts.resolution.length; i++) {
+
+				var currentSize = opts.resolution[i],
+					nextSize = !!!opts.resolution[i+1]? 0 : opts.resolution[i+1];
+
+				if (windowWidth <= currentSize && windowWidth > nextSize && isResolution != opts.statusName[i] ||
+					windowWidth <= currentSize && windowWidth > nextSize && isActiveIndex != i) {
+					document.documentElement.classList.remove(isResolution);
+					isResolution = opts.statusName[i] || i;
+					isActiveIndex = i;
+					document.documentElement.classList.add(isResolution);
+				} else if (windowWidth >= opts.resolution[0] && isResolution != opts.statusName[0] || 
+					windowWidth >= opts.resolution[0] && !!!isActiveIndex) {
+					document.documentElement.classList.remove(isResolution);
+					isResolution = opts.statusName[0] || i;
+					isActiveIndex = i;
+					document.documentElement.classList.add(isResolution);
+				}
+			}
+		};
+
+		var activeCallbacks = function(){
+			clearTimeout(callbackTiming);
+			console.log(opts.activeTiming)
+			if (oldActiveIndex == isActiveIndex) return;
+			if (!!!opts.callback[isActiveIndex]) return;
+			callbackTiming = setTimeout(function(){
+				opts.callback[isActiveIndex]();
+				callbackTiming = null;
+				oldActiveIndex = isActiveIndex;
+			}, opts.activeTiming);
+		};
+
+		var bindEvent = function(){
+			window.addEventListener('DOMContentLoaded', function(){
+				checkResolution();
+				oldActiveIndex = isActiveIndex;
+
+			});
+
+			window.addEventListener('resize', function(){
+				checkResolution();
+				activeCallbacks();
+			});
+		};
+
+		var init = function(){
+			bindEvent();
+
+			return this;
+		};
+
+		return init(opts);
+	};
 
 	return {
 		calRange: function(values){
@@ -597,6 +671,7 @@ var ANIUTIL = (function(){
 		checkTouchDevice: checkTouchDevice,
 		checkFold: checkFold,
 		deviceConsole: deviceConsole,
-		percentToPixel: percentToPixel
+		percentToPixel: percentToPixel,
+		responsiveHandler: responsiveHandler,
 	}
 })();
