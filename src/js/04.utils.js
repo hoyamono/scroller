@@ -333,12 +333,13 @@ var ANIUTIL = (function(){
 						(function (imgElement) {
 							var imageLoadEvent = function() {
 								if (self.opts.lazyClass.split(' ').length == 1) imgElement.classList.remove(removeClass);
-								imgElement.classList.add(self.lazyCompleteClass);
+								// imgElement.classList.add(self.lazyCompleteClass);
 								self.checkCompleteImage();
 								imgElement.removeEventListener('load', imageLoadEvent);
 							};
-
+							
 							imgElement.addEventListener('load', imageLoadEvent);
+							imgElement.classList.add(self.lazyCompleteClass);
 						})(targetElement);
 					}
 				}
