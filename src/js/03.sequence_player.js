@@ -124,6 +124,11 @@ var SEQUENCEPLAYER = (function () {
                             }, 100);
                             return;
                         }
+
+                        if (idx == 0) {
+                            console.log('play')
+                            self.play({index: 0});
+                        }
                     };
     
                     imgElement.addEventListener('load', imageLoadEvent);
