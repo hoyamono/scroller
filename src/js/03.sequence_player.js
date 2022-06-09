@@ -107,27 +107,27 @@ var SEQUENCEPLAYER = (function () {
         };
 
         var startLoadImages = function(){
+            if (!self.opts.autoPlay && !self.defaultImage) {
+                self.setDefaultImage(0);
+            }
+
             for (var i = self.opts.startNum; i <= self.opts.endNum; i++) {
                 isImage = new Image();
                 isImage.src = self.opts.path + self.opts.name + i + '.' + self.opts.extension;
-    
+   
                 (function (idx, imgElement) {
                     var imageLoadEvent = function () {
                         self.imageList[idx] = this;
-    
+
                         if (self.loadCount < self.opts.endNum) {
                             self.loadCount++;
+
                             this.removeEventListener('load', imageLoadEvent);
                         } else if (self.opts.autoPlay && self.loadCount == self.opts.endNum) {
                             setTimeout(function() {
                                 self.play();
                             }, 100);
                             return;
-                        }
-
-                        if (idx == 0) {
-                            console.log('play')
-                            self.play({index: 0});
                         }
                     };
     
@@ -153,6 +153,19 @@ var SEQUENCEPLAYER = (function () {
         }, 100);
     };
 
+    fn.setDefaultImage = function(idx) {
+        var self = this;
+
+        this.defaultImage = new Image();
+        this.defaultImage.src = this.opts.path + this.opts.name + idx + '.' + this.opts.extension;
+
+        this.defaultImageEvent = function(){
+            self.context.drawImage(self.defaultImage, 0, 0, self.opts.width, self.opts.height);
+        };
+
+        this.defaultImage.addEventListener('load', this.defaultImageEvent);
+    };
+
     fn.play = function (opts) {
         opts = opts || {};
 
@@ -166,7 +179,17 @@ var SEQUENCEPLAYER = (function () {
 
         if (typeof opts.index == 'number') {
             if (this.loadCount == this.opts.endNum) {
+                if (this.defaultImage) {
+                    this.defaultImage.removeEventListener('load', this.defaultImageEvent);
+                }
+
                 this.drawCanvas(idx);
+            } else {
+                if (this.defaultImage) {
+                    this.defaultImage.removeEventListener('load', this.defaultImageEvent);
+                }
+
+                this.setDefaultImage(idx);
             }
         } else {
             if (this.loadCount !== this.opts.endNum) {
@@ -212,8 +235,7 @@ var SEQUENCEPLAYER = (function () {
     };
 
     fn.drawCanvas = function (index) {
-        if (!!!index && this.oldPlayIndex == this.playIndex) return;
-
+        if (this.playIndex != null && this.oldPlayIndex == index) return;
         this.context.clearRect(0, 0, this.opts.width, this.opts.height);
         if (this.imageList[index >= 0 ? index : this.playIndex] && this.imageList[index >= 0 ? index : this.playIndex].complete) {
             this.context.drawImage(this.imageList[index >= 0 ? index : this.playIndex], 0, 0, this.opts.width, this.opts.height);
