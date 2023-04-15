@@ -236,7 +236,7 @@ var SCROLLER = (function(){
 	};
 
 	fn.getProgress = function(){
-		var trackTopOffset = this.utilList.getOffset.call(this, this.trackElement).top - this.windowHeight * this.correction,
+		var trackTopOffset = this.utilList.getOffset.call(this, this.trackElement).top - (this.windowHeight * this.correction),
 			trackHeight = this.useFixed ? Math.abs(this.trackElement.clientHeight - this.windowHeight) : this.useViewportOver ? this.trackElement.clientHeight + this.windowHeight : this.trackElement.clientHeight,
 			scrollTop = this.winScrollTop - trackTopOffset,
 			scrollBottom = this.winScrollBottom - trackTopOffset,
@@ -263,7 +263,7 @@ var SCROLLER = (function(){
 
 	fn.trackAnimation = function(callback){
 		if (!this.initialize) return;
-		this.winScrollTop = this.utilList.getScroll.call(this).top;
+		this.winScrollTop = this.utilList.getScroll.call(this).top - (this.windowHeight * this.correction);
 		this.winScrollBottom = this.utilList.getScroll.call(this).bottom;
 
 		if (this.useFixed){
@@ -406,12 +406,12 @@ var SCROLLER = (function(){
 
 			case 'oneWay':
 				if (visibleType == 'visible'){
-					if (this.activeStatus && this.winScrollBottom < this.elementOffsetTop){
+					if ((this.activeStatus && this.winScrollBottom < this.elementOffsetTop + corrHeight)){
 						removeHandler();
 						this.activeStatus = false;
 					}
 				} else {
-					if (this.activeStatus && this.winScrollTop < this.elementOffsetTop && this.winScrollBottom < this.elementOffsetTop){
+					if ((this.activeStatus && this.winScrollTop < this.elementOffsetTop && this.winScrollBottom < this.elementOffsetTop)){
 						removeHandler();
 						this.activeStatus = false;
 					}

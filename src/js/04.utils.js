@@ -113,9 +113,10 @@ var ANIUTIL = (function(){
 		return new init(opts);
 	}
 	
-	var imageLoader = function (opts) {
+	var mediaLoader = function (opts) {
 		var init = function () {
 			this.opts = opts;
+			this.mediaType = !!!opts.type ? 'image' : opts.type ;
 			this.lazyCompleteClass = 'load-complete';
 			this.lazyClass = opts.lazyClass;
 			this.responsiveClass = opts.responsiveClass;
@@ -123,11 +124,17 @@ var ANIUTIL = (function(){
 			this.targetAttr = opts.loadOption[0].attribute;
 			this.visiblePoint = !!!opts.visiblePoint ? 0 : opts.visiblePoint;
 			this.useDefaultImg = opts.useDefaultImg;
-			this.getLazyImage();
-			this.getResponsiveImage();
+
+			this.getLazyMedia();
+			this.getResponsiveMedia();
+
 			this.bindEvent();
-			
-			return window.imageLoader = this;
+
+			if (this.mediaType === 'image') {
+				return window.imageLoader = this;	
+			} else {
+				return window.videoLoader = this;					
+			};			
 		};
 		
 		var fn = init.prototype;
@@ -138,7 +145,7 @@ var ANIUTIL = (function(){
 			responsiveCheck = this.loadOption;
 			
 			var lazyEvent = function () {
-				self.setLazyImage();
+				self.setLazyMedia();
 				
 				if (self.lazyLength == self.lazyCompleteLength) {
 					window.removeEventListener('scroll', lazyEvent);
@@ -185,28 +192,30 @@ var ANIUTIL = (function(){
 			}
 		};
 		
-		fn.getLazyImage = function () {
-			var lazyImageList = document.querySelectorAll(this.lazyClass);
+		fn.getLazyMedia = function () {
+			var lazyMediaList = document.querySelectorAll(this.lazyClass);
 			
-			this.lazyImages = lazyImageList;
-			this.lazyLength = lazyImageList.length;
+			this.lazyMedias = lazyMediaList;
+			this.lazyLength = lazyMediaList.length;
 		};
-		
-		fn.checkCompleteImage = function () {
+
+		fn.checkCompleteMedia = function () {
 			var lazyCompleteList = document.querySelectorAll('.' + this.lazyCompleteClass);
 			
 			this.lazyCompleteLength = lazyCompleteList.length;
 		};
 		
-		fn.getResponsiveImage = function () {
-			var responsiveImageList = document.querySelectorAll(this.responsiveClass);
-			this.responsiveImages = responsiveImageList;
-			this.responsiveLength = responsiveImageList.length;
+		fn.getResponsiveMedia = function () {
+			var responsiveMediaList = document.querySelectorAll(this.responsiveClass);
+			this.responsiveMedias = responsiveMediaList;
+			this.responsiveLength = responsiveMediaList.length;
 		};
 		
 		fn.setDefaultImage = function () {
+			if (this.mediaType === 'video') return;
+
 			for (var i = 0; i < this.lazyLength; i++) {
-				this.lazyImages[i].setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH/C1hNUCBEYXRhWE1QAz94cAAh+QQFAAAAACwAAAAAAQABAAACAkQBADs=');
+				this.lazyMedias[i].setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH/C1hNUCBEYXRhWE1QAz94cAAh+QQFAAAAACwAAAAAAQABAAACAkQBADs=');
 			}
 		};
 		
@@ -236,39 +245,53 @@ var ANIUTIL = (function(){
 			}
 		};
 		
-		fn.setResponsiveImage = function (imageTarget) {
-			if (imageTarget) {
-				for (var i = 0; i < imageTarget.length; i++) {
-					var targetImage = imageTarget[i],
-					imgSrc = imageTarget[i].getAttribute(this.targetAttr);
+		fn.setResponsiveImage = function (targetMedia) {
+			if (targetMedia) {
+				for (var i = 0; i < targetMedia.length; i++) {
+					var targetMedia = targetMedia[i],
+					mediaSrc = targetMedia[i].getAttribute(this.targetAttr);
 					
-					if (!!!imgSrc) {
-						imgSrc = this.findImageHandler(targetImage);
+					if (!!!mediaSrc) {
+						mediaSrc = this.findMediaHandler(targetMedia);
 					}
 					
 					
-					if (!imageTarget[i].classList.contains(this.lazyCompleteClass)) {
-						imageTarget[i].setAttribute('src', imgSrc);
-						imageTarget[i].classList.add(this.lazyCompleteClass);
+					if (!targetMedia[i].classList.contains(this.lazyCompleteClass)) {
+						targetMedia[i].setAttribute('src', mediaSrc);
+						targetMedia[i].classList.add(this.lazyCompleteClass);
 					}
 				}
 			} else {
 				for (var i = 0; i < this.responsiveLength; i++) {
-					var targetImage = this.responsiveImages[i],
-					imgSrc = targetImage.getAttribute(this.targetAttr);
-					
-					if (!!!imgSrc) {
-						imgSrc = this.findImageHandler(targetImage);
+					var targetMedia = this.responsiveMedias[i],
+					mediaSrc = targetMedia.getAttribute(this.targetAttr);
+			
+					if (!!!mediaSrc) {
+						mediaSrc = this.findMediaHandler(targetMedia);
 					}
 					
-					if (targetImage.classList.contains(this.lazyCompleteClass)) {
-						targetImage.setAttribute('src', imgSrc);
+					if (targetMedia.classList.contains(this.lazyCompleteClass)) {
+						if (this.mediaType === 'image') {
+							targetMedia.setAttribute('src', mediaSrc);
+						} else {
+							var isSource = targetMedia.querySelectorAll('source');
+
+							for (var j = 0; j < isSource.length; j++) {
+								if (isSource[j].type === 'video/webm') {
+									isSource[j].src = mediaSrc + '.webm';
+									targetMedia.load();
+								} else if (isSource[j].type === 'video/mp4') {
+									isSource[j].src = mediaSrc + '.mp4';
+									targetMedia.load();
+								}
+							}
+						}
 					}
 				}
 			}
 		};
 		
-		fn.findRemainingImageAttr = function (element) {
+		fn.findRemainingMediaAttr = function (element) {
 			var attrLength = this.loadOption.length;
 			
 			for (var i = 0; i < attrLength; i++) {
@@ -281,7 +304,7 @@ var ANIUTIL = (function(){
 			}
 		};
 		
-		fn.findNextImageAttr = function (element) {
+		fn.findNextMediaAttr = function (element) {
 			var isIndex = this.attrIndex;
 			
 			for (var i = isIndex; i >= 0; i--) {
@@ -293,53 +316,92 @@ var ANIUTIL = (function(){
 				}
 				
 				if (i == 0 && getAttr == undefined) {
-					return this.findRemainingImageAttr(element);
+					return this.findRemainingMediaAttr(element);
 				}
 			}
 		};
 		
-		fn.findImageHandler = function (element) {
+		fn.findMediaHandler = function (element) {
 			if (this.attrIndex !== 0) {
-				return this.findNextImageAttr(element);
+				return this.findNextMediaAttr(element);
 			} else {
-				return this.findRemainingImageAttr(element);
+				return this.findRemainingMediaAttr(element);
 			}
 		};
 		
-		fn.setLazyImage = function () {
+		fn.setLazyMedia = function () {
 			var self = this;
 			this.windowHeight = window.innerHeight;
 			
-			for (var i = 0; i < this.lazyLength; i++) {
-				var targetElement = this.lazyImages[i],
-				corrHeight = this.windowHeight * ((window.pageYOffset != 0) ? this.visiblePoint : 0),
-				scrollTop = this.utilList.getScroll.call(this).top - corrHeight,
-				scrollBottom = this.utilList.getScroll.call(this).bottom + corrHeight,
-				targetOffsetTop = this.utilList.getOffset.call(this, targetElement).top,
-				targetOffsetBottom = this.utilList.getOffset.call(this, targetElement).bottom,
-				lazyClass = this.lazyClass.split('.'),
-				removeClass = lazyClass[lazyClass.length - 1];
+			var _createSourceElement = function (src){
+				var sourceEl = [];
 				
-				if ((scrollBottom > targetOffsetTop && scrollTop <= targetOffsetTop || scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom || scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom || scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) && targetElement.offsetParent != null) {
-					var imgSrc = targetElement.getAttribute(this.targetAttr);
+				sourceEl.push(document.createElement('source'));
+				sourceEl.push(document.createElement('source'));
+	
+				sourceEl[0].type = 'video/webm';
+				sourceEl[0].src = src + '.webm';
+
+				sourceEl[1].type = 'video/mp4';			
+				sourceEl[1].src = src + '.mp4';
+
+				return sourceEl;
+
+			}
+
+			for (var i = 0; i < this.lazyLength; i++) {
+				var targetElement = this.lazyMedias[i],
+					corrHeight = this.windowHeight * ((window.pageYOffset != 0) ? this.visiblePoint : 0),
+					scrollTop = this.utilList.getScroll.call(this).top - corrHeight,
+					scrollBottom = this.utilList.getScroll.call(this).bottom + corrHeight,
+					targetOffsetTop = this.utilList.getOffset.call(this, targetElement).top,
+					targetOffsetBottom = this.utilList.getOffset.call(this, targetElement).bottom,
+					lazyClass = this.lazyClass.split('.'),
+					removeClass = lazyClass[lazyClass.length - 1];
+				
+				if ((scrollBottom > targetOffsetTop && scrollTop <= targetOffsetTop || 
+					scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom || 
+					scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom || 
+					scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) && targetElement.offsetParent != null) {
+					var mediaSrc = targetElement.getAttribute(this.targetAttr);
 					
-					if (!!!imgSrc) {
-						imgSrc = this.findImageHandler(targetElement);
+					if (!!!mediaSrc) {
+						mediaSrc = this.findMediaHandler(targetElement);
 					}
 					
 					if (!targetElement.classList.contains(this.lazyCompleteClass)) {
-						targetElement.setAttribute('src', imgSrc);
+						if (this.mediaType === 'image') {
+							targetElement.src = mediaSrc;
+						} else {
+							var isSource = _createSourceElement(mediaSrc);
+							targetElement.append(isSource[0]);
+							targetElement.append(isSource[1]);
+				
+							if (!targetElement.muted) {
+								targetElement.muted = true;
+							}
+						}						
 						
-						(function (imgElement) {
+						(function (mediaElement) {
 							var imageLoadEvent = function () {
-								if (self.opts.lazyClass.split(' ').length == 1) imgElement.classList.remove(removeClass);
-								// imgElement.classList.add(self.lazyCompleteClass);
-								self.checkCompleteImage();
-								imgElement.removeEventListener('load', imageLoadEvent);
+								if (self.opts.lazyClass.split(' ').length == 1) mediaElement.classList.remove(removeClass);
+
+								self.checkCompleteMedia();
+								if (self.mediaType === 'image') {
+									mediaElement.removeEventListener('load', imageLoadEvent);
+								} else {
+									mediaElement.removeEventListener('loadedmetadata', imageLoadEvent);
+								}		
 							};
 							
-							imgElement.addEventListener('load', imageLoadEvent);
-							imgElement.classList.add(self.lazyCompleteClass);
+							if (self.mediaType === 'image') {
+								mediaElement.addEventListener('load', imageLoadEvent);
+								mediaElement.classList.add(self.lazyCompleteClass);
+							} else {
+								mediaElement.addEventListener('loadedmetadata', imageLoadEvent);
+								mediaElement.classList.add(self.lazyCompleteClass);
+								// mediaElement.parentNode.classList.add('load-complete');//TO-DO
+							}		
 						})(targetElement);
 					}
 				}
@@ -369,7 +431,7 @@ var ANIUTIL = (function(){
 		var opt = opt ? opt : {},
 		agent = navigator.userAgent.toLowerCase(),
 		targetElement = document.scrollingElement || document.documentElement || document.body.parentNode || document.body,
-		speed = !!!opt.speed ? 120 : opt.speed ,
+		speed = !!!opt.speed ? 120 : opt.speed,
 		duration = opt.duration >= 0 ? opt.duration : 1,
 		scrollSize = targetElement.scrollTop,
 		maxScrollSize,
@@ -444,7 +506,7 @@ var ANIUTIL = (function(){
 				
 				moveState = true;
 				
-				TweenMax.to(targetElement, duration, { ease: "power1.out", scrollTop: moveSize, onComplete: function(){
+				TweenMax.to(targetElement, duration, { ease: "circ.out", scrollTop: moveSize, onComplete: function(){
 					clearTimeout(scrollTiming);
 					scrollTiming = null;
 					scrollTiming = setTimeout(function(){
@@ -527,20 +589,6 @@ var ANIUTIL = (function(){
 		}
 	};
 	
-	var checkFold = function() {
-		var foldState;
-		var screenRatio = screen.width / screen.height;
-		var isFold = checkTouchDevice() && screenRatio > 0.7137 && screenRatio < 0.80 && document.getElementsByName('viewport')[0].content == 'width=768';
-		var isFoldLatest = checkTouchDevice() && screenRatio > 0.80 && screenRatio < 0.95 && document.getElementsByName('viewport')[0].content == 'width=768';
-		if (isFold) {
-			foldState = 'isFold';
-		} else if (isFoldLatest) {
-			foldState = 'isFoldLatest';
-		}
-		
-		return foldState;
-	};
-	
 	var deviceConsole = function(value, visible){
 		var consoleElement,
 		consoleValueElement;
@@ -599,80 +647,140 @@ var ANIUTIL = (function(){
 				
 				if (windowWidth <= currentSize && windowWidth > nextSize && isResolution != opts.statusName[i] ||
 					windowWidth <= currentSize && windowWidth > nextSize && isActiveIndex != i) {
-						document.documentElement.classList.remove(isResolution);
-						isResolution = opts.statusName[i] || i;
-						isActiveIndex = i;
-						document.documentElement.classList.add(isResolution);
-					} else if (windowWidth >= opts.resolution[0] && isResolution != opts.statusName[0] || 
-						windowWidth >= opts.resolution[0] && !!!isActiveIndex) {
-							document.documentElement.classList.remove(isResolution);
-							isResolution = opts.statusName[0] || i;
-							isActiveIndex = i;
-							document.documentElement.classList.add(isResolution);
-						}
-					}
-				};
-				
-				var activeCallbacks = function(){
-					clearTimeout(callbackTiming);
-					console.log(opts.activeTiming)
-					if (oldActiveIndex == isActiveIndex) return;
-					if (!!!opts.callback[isActiveIndex]) return;
-					callbackTiming = setTimeout(function(){
-						opts.callback[isActiveIndex]();
-						callbackTiming = null;
-						oldActiveIndex = isActiveIndex;
-					}, opts.activeTiming);
-				};
-				
-				var bindEvent = function(){
-					window.addEventListener('DOMContentLoaded', function(){
-						checkResolution();
-						oldActiveIndex = isActiveIndex;
-						
-					});
-					
-					window.addEventListener('resize', function(){
-						checkResolution();
-						activeCallbacks();
-					});
-				};
-				
-				var init = function(){
-					bindEvent();
-					
-					return this;
-				};
-				
-				return init(opts);
-			};
-			
-			return {
-				calRange: function(values){
-					return calRange(values);
-				},
-				videoObjectFit: function(opts){
-					videoObjectFit(opts);
-				},
-				imageLoader: function(opts){
-					imageLoader(opts);
-				},
-				addClass: function(opts) {
-					addClass(opts);
-				},
-				removeClass: function(opts) {
-					removeClass(opts);
-				},
-				scrollController: function(opt) {
-					scrollController(opt);
-				},
-				resizeScrollOffset: function(opt){
-					resizeScrollOffset(opt);
-				},
-				checkTouchDevice: checkTouchDevice,
-				checkFold: checkFold,
-				deviceConsole: deviceConsole,
-				percentToPixel: percentToPixel,
-				responsiveHandler: responsiveHandler,
+					document.documentElement.classList.remove(isResolution);
+					isResolution = opts.statusName[i] || i;
+					isActiveIndex = i;
+					document.documentElement.classList.add(isResolution);
+				} else if (windowWidth >= opts.resolution[0] && isResolution != opts.statusName[0] || 
+					windowWidth >= opts.resolution[0] && !!!isActiveIndex) {
+					document.documentElement.classList.remove(isResolution);
+					isResolution = opts.statusName[0] || i;
+					isActiveIndex = i;
+					document.documentElement.classList.add(isResolution);
+				}
 			}
-		})();
+		};
+		
+		var activeCallbacks = function(){
+			clearTimeout(callbackTiming);
+			console.log(opts.activeTiming)
+			if (oldActiveIndex == isActiveIndex) return;
+			if (!!!opts.callback[isActiveIndex]) return;
+			callbackTiming = setTimeout(function(){
+				opts.callback[isActiveIndex]();
+				callbackTiming = null;
+				oldActiveIndex = isActiveIndex;
+			}, opts.activeTiming);
+		};
+		
+		var bindEvent = function(){
+			window.addEventListener('DOMContentLoaded', function(){
+				checkResolution();
+				oldActiveIndex = isActiveIndex;
+				
+			});
+			
+			window.addEventListener('resize', function(){
+				checkResolution();
+				activeCallbacks();
+			});
+		};
+		
+		var init = function(){
+			bindEvent();
+			
+			return this;
+		};
+		
+		return init(opts);
+	};
+	
+	var videoHandler = function(opts){
+		var target = opts.targetVideo,
+			parent = opts.parent,
+			progress = opts.progress,
+			playClass = !!!opts.playClass ? 'is-playing' : opts.playClass,
+			pauseClass = !!!opts.pauseClass ? 'is-paused' :opts.pauseClass,
+			endedClass = !!!opts.endedClass ? 'is-ended' : opts.endedClass,
+			resetCallback = opts.resetCallback,
+			startCallback = opts.startCallback,
+			endCallback = opts.endCallback;
+
+		if (progress > 0 && target.paused && !parent.classList.contains(endedClass)) {
+			if (target.readyState == 4 && target.paused) {
+				if (!!startCallback) startCallback()
+				parent.classList.remove(endedClass);
+				parent.classList.remove(pauseClass);
+				parent.classList.add(playClass);
+				target.play();
+			} else {
+				var endedEvent = function(){
+					if (!!endCallback) endCallback();
+					parent.classList.remove(playClass);
+					parent.classList.add(pauseClass)
+					parent.classList.add(endedClass)
+				}
+
+				var loadEvent = function(){
+					if (parent.classList.contains(endedClass)) {
+						parent.classList.remove(endedClass);
+					}
+					if (!!startCallback) startCallback()
+					parent.classList.remove(endedClass);
+					parent.classList.remove(pauseClass);
+					parent.classList.add(playClass);
+					target.play();
+					target.removeEventListener('loadeddata', loadEvent)
+					target.addEventListener('ended', endedEvent);
+				};
+				target.removeEventListener('ended', endedEvent);
+				target.addEventListener('loadeddata', loadEvent);
+			};
+		} else if (progress === 100 || progress === 0) {
+			if (!target.paused) {
+				if (!!resetCallback) resetCallback()
+				parent.classList.remove(playClass);
+				parent.classList.add(pauseClass);
+				target.pause();
+				target.currentTime = 0;
+			}
+			if (parent.classList.contains(endedClass)) {
+				parent.classList.remove(endedClass);
+			}
+		}
+	};
+
+	return {
+		calRange: function(values){
+			return calRange(values);
+		},
+		videoObjectFit: function(opts){
+			videoObjectFit(opts);
+		},
+		videoHandler: function(opts){
+			videoHandler(opts)
+		},
+		imageLoader: function(opts){
+			mediaLoader(opts);
+		},
+		mediaLoader: function(opts){
+			mediaLoader(opts);
+		},
+		addClass: function(opts) {
+			addClass(opts);
+		},
+		removeClass: function(opts) {
+			removeClass(opts);
+		},
+		scrollController: function(opt) {
+			scrollController(opt);
+		},
+		resizeScrollOffset: function(opt){
+			resizeScrollOffset(opt);
+		},
+		checkTouchDevice: checkTouchDevice,
+		deviceConsole: deviceConsole,
+		percentToPixel: percentToPixel,
+		responsiveHandler: responsiveHandler,
+	}
+})();
