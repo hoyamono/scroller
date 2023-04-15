@@ -4,7 +4,7 @@
 * Copyright 2021. Yoon jae-ho
 * Released under the MIT license
 *
-* Date: 2021-02-09
+* Date: 2023-04-15
 */
 
 var ANIUTIL = (function(){
@@ -117,7 +117,7 @@ var ANIUTIL = (function(){
 		var init = function () {
 			this.opts = opts;
 			this.mediaType = !!!opts.type ? 'image' : opts.type ;
-			this.lazyCompleteClass = 'load-complete';
+			this.lazyCompleteClass = this.mediaType === 'image' ? 'img-load-complete' : 'video-load-compaete';
 			this.lazyClass = opts.lazyClass;
 			this.responsiveClass = opts.responsiveClass;
 			this.loadOption = opts.loadOption;
@@ -368,7 +368,6 @@ var ANIUTIL = (function(){
 					if (!!!mediaSrc) {
 						mediaSrc = this.findMediaHandler(targetElement);
 					}
-					
 					if (!targetElement.classList.contains(this.lazyCompleteClass)) {
 						if (this.mediaType === 'image') {
 							targetElement.src = mediaSrc;
@@ -400,7 +399,7 @@ var ANIUTIL = (function(){
 							} else {
 								mediaElement.addEventListener('loadedmetadata', imageLoadEvent);
 								mediaElement.classList.add(self.lazyCompleteClass);
-								// mediaElement.parentNode.classList.add('load-complete');//TO-DO
+								// mediaElement.parentNode.classList.add('loaded');//TO-DO
 							}		
 						})(targetElement);
 					}
@@ -696,58 +695,100 @@ var ANIUTIL = (function(){
 	};
 	
 	var videoHandler = function(opts){
-		var target = opts.targetVideo,
-			parent = opts.parent,
-			progress = opts.progress,
-			playClass = !!!opts.playClass ? 'is-playing' : opts.playClass,
-			pauseClass = !!!opts.pauseClass ? 'is-paused' :opts.pauseClass,
-			endedClass = !!!opts.endedClass ? 'is-ended' : opts.endedClass,
-			resetCallback = opts.resetCallback,
-			startCallback = opts.startCallback,
-			endCallback = opts.endCallback;
+		var init = function(opts){
+			this.video = opts.video,
+			this.wrap = !!!opts.wrap ? video : opts.wrap,
+			this.playClass = !!!opts.playClass ? 'is-playing' : opts.playClass,
+			this.pauseClass = !!!opts.pauseClass ? 'is-paused' :opts.pauseClass,
+			this.endedClass = !!!opts.endedClass ? 'is-ended' : opts.endedClass,
+			this.resetCallback = opts.resetCallback,
+			this.playCallback = opts.playCallback,
+			this.pauseCallback = opts.pauseCallback,
+			this.endCallback = opts.endCallback;
 
-		if (progress > 0 && target.paused && !parent.classList.contains(endedClass)) {
-			if (target.readyState == 4 && target.paused) {
-				if (!!startCallback) startCallback()
-				parent.classList.remove(endedClass);
-				parent.classList.remove(pauseClass);
-				parent.classList.add(playClass);
-				target.play();
-			} else {
-				var endedEvent = function(){
-					if (!!endCallback) endCallback();
-					parent.classList.remove(playClass);
-					parent.classList.add(pauseClass)
-					parent.classList.add(endedClass)
+			this.bindEvents();
+
+			return this;
+		};
+		
+		var fn = init.prototype;
+
+
+		fn.eventList = {
+			play: function(){
+				if (!!this.playCallback) this.playCallback()
+				this.wrap.classList.remove(this.endedClass);
+				this.wrap.classList.remove(this.pauseClass);
+				this.wrap.classList.add(this.playClass);
+			},
+			ended: function(){
+				if (!!this.endCallback) this.endCallback();
+				this.wrap.classList.remove(this.playClass);
+				this.wrap.classList.add(this.pauseClass)
+				this.wrap.classList.add(this.endedClass)
+			},
+			pause: function(){
+				if (!!this.pauseCallback) this.pauseCallback();
+				this.wrap.classList.remove(this.playClass);
+				this.wrap.classList.add(this.pauseClass);
+			},
+			reset: function(){
+				if (!!this.resetCallback) this.resetCallback();
+	
+				this.video.pause();
+				this.video.currentTime = 0;
+	
+				var self = this;
+				
+				var _removeClass = function(){
+					self.wrap.classList.remove(self.playClass);
+					self.wrap.classList.remove(self.pauseClass);
+					self.wrap.classList.remove(self.endedClass);
 				}
+	
+				clearTimeout(_removeClass);
+				setTimeout(_removeClass, 50);
+				
+			}
+		};
 
-				var loadEvent = function(){
-					if (parent.classList.contains(endedClass)) {
-						parent.classList.remove(endedClass);
-					}
-					if (!!startCallback) startCallback()
-					parent.classList.remove(endedClass);
-					parent.classList.remove(pauseClass);
-					parent.classList.add(playClass);
-					target.play();
-					target.removeEventListener('loadeddata', loadEvent)
-					target.addEventListener('ended', endedEvent);
+		fn.bindEvents = function(){
+			var self = this;
+
+			this.video.addEventListener('play', function(){
+				self.eventList.play.call(self);
+			});
+
+			this.video.addEventListener('pause', function(){
+				self.eventList.pause.call(self)
+			});
+			
+			this.video.addEventListener('ended', function(){
+				self.eventList.ended.call(self);
+			});
+		};
+
+		fn.scrollActive = function(progress){
+			var self = this;
+
+			if (progress > 0 && 
+				progress < 100 && 
+				this.video.paused && 
+				!this.wrap.classList.contains(this.endedClass) && 
+				!this.wrap.classList.contains(this.pauseClass)) {
+				if (this.video.readyState == 4 && this.video.paused) {
+					this.video.play();
+				} else {
+					this.video.addEventListener('loadeddata', this.video.play);
 				};
-				target.removeEventListener('ended', endedEvent);
-				target.addEventListener('loadeddata', loadEvent);
-			};
-		} else if (progress === 100 || progress === 0) {
-			if (!target.paused) {
-				if (!!resetCallback) resetCallback()
-				parent.classList.remove(playClass);
-				parent.classList.add(pauseClass);
-				target.pause();
-				target.currentTime = 0;
+			} 
+			
+			if (this.video.readyState == 4 && progress === 100 || this.video.readyState == 4 && progress === 0) {
+				this.eventList.reset.call(this);
 			}
-			if (parent.classList.contains(endedClass)) {
-				parent.classList.remove(endedClass);
-			}
-		}
+		};
+
+		return new init(opts);
 	};
 
 	return {
@@ -758,7 +799,7 @@ var ANIUTIL = (function(){
 			videoObjectFit(opts);
 		},
 		videoHandler: function(opts){
-			videoHandler(opts)
+			return videoHandler(opts)
 		},
 		imageLoader: function(opts){
 			mediaLoader(opts);

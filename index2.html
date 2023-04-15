@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Scroller</title>
+	<script src="./dist/js/scroller.js"></script>
+	<link rel="stylesheet" href="https://meyerweb.com/eric/tools/css/reset/reset200802.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.8.0/gsap.min.js"></script>
+
+	<style>
+		body {
+			height: 10000px;
+		}
+		.flip_fixed_wrap {
+			position: sticky;
+			width: 100%;
+			height: 100vh;
+			left: 0;
+			right: 0;
+			top: 0;
+			bottom: 0;
+		}
+		.flip_kv {
+			position: relative;
+			/* left: 50%; */
+			width: 100%;
+			height: 100%;
+		}
+		.flip_kv .img {
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+		}
+		.iphone_fixed_track {
+			position: relative;
+		}
+		.iphone_fixed_wrap {
+			position: sticky;
+			left: 0;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			width: 100%;
+			height: 100vh;
+		}
+		.iphone_kv {
+			overflow: hidden;
+			position: relative;
+			width: 100%;
+			height: 100%;
+			background: #000;
+		}
+		/* .iphone_kv:before {
+			position: absolute;
+			display: block;
+			right: 438px;
+			height: 700px;
+			border: #fff 1px solid;
+			content: '';
+		}
+		.iphone_kv:after {
+			position: absolute;
+			display: block;
+			top: 25px;
+			width: 100%;
+			border: #fff 1px solid;
+			content: '';
+		} */
+		.iphone_kv .img_wrap {
+			overflow: visible;
+			position: relative;
+			top: 200px;
+			width: 1300px;
+			height: 650px;
+			transform: scale(1.1) rotate(-27deg);
+			transition: transform 0.5s ease-in-out;
+		}
+		.iphone_kv .img {
+			transition: transform 0.5s ease-in-out;
+		}
+		.iphone_kv .img:nth-child(1) {
+			position: absolute;
+			top: 126px;
+			left: -106px;
+			width: 532px;
+			height: 562px;
+			background: url('./img/hero_midnight.jpg') no-repeat;
+			-webkit-mask-image: url('./img/hero_midnight_mask.png');
+			transform: scale(0.6);
+		}
+		.iphone_kv .img:nth-child(2) {
+			position: absolute;
+    		top: -6px;
+			left: 22px;
+			width: 518px;
+			height: 582px;
+			background: url('./img/hero_starlight.jpg') no-repeat;
+			-webkit-mask-image: url('./img/hero_starlight_mask.png');
+			transform: scale(0.6);
+		}
+		.iphone_kv .img:nth-child(3) {
+			position: absolute;
+			top: -76px;
+    		left: 212px;
+			width: 450px;
+			height: 562px;
+			background: url('./img/hero_red.jpg') no-repeat;
+			-webkit-mask-image: url('./img/hero_red_mask.png');
+			transform: scale(0.62);
+		}.iphone_kv .img:nth-child(4) {
+			position: absolute;
+			top: -97px;
+    		left: 441px;
+			width: 366px;
+			height: 578px;
+			background: url('./img/hero_blue.jpg') no-repeat;
+			-webkit-mask-image: url('./img/hero_blue_mask.png');
+			transform: scale(0.65);
+		}
+		.iphone_kv .img:nth-child(5) {
+			position: absolute;
+			top: -76px;
+    		left: 681px;
+			width: 336px;
+			height: 620px;
+			background: url('./img/hero_purple.jpg') no-repeat;
+			-webkit-mask-image: url('./img/hero_purple_mask.png');
+			transform: scale(0.75);
+		}
+		.iphone_kv .img:nth-child(6) {
+			position: absolute;
+			top: 50px;
+			left: 884px;
+			width: 428px;
+			height: 616px;
+			background: url('./img/hero_yellow.jpg') no-repeat;
+			-webkit-mask-image: url('./img/hero_yellow_mask.png');
+			transform: scale(0.95);
+		}
+
+		.iphone_kv .img_wrap.step1 {
+			transform: scale(1.6) rotate(50deg) translate(356px, -112px);
+		}
+
+		.step1 .img:nth-child(1) {
+			transform: translate(-10px, -15px) scale(0.62);
+		}
+
+		.iphone_kv .img_wrap.step2 {
+			transform: scale(1.6) rotate(35deg) translate(324px, -84px);
+		}
+
+		.step2 .img:nth-child(2) {
+			transform: translate(-10px, -15px) scale(0.62);
+		}
+
+		.iphone_kv .img_wrap.step3 {
+			transform: scale(1.6) rotate(18deg) translate(221px, -14px);
+		}
+
+		.step3 .img:nth-child(3) {
+			transform: translate(-10px, -20px) scale(0.62);
+		}
+
+		.iphone_kv .img_wrap.step4 {
+			transform: scale(1.5) rotate(4deg) translate(176px, -4px);
+		}
+
+		.step4 .img:nth-child(4) {
+			transform: translate(-6px, -20px) scale(0.65);
+		}
+
+		.iphone_kv .img_wrap.step5 {
+			transform: scale(1.3) rotate(-10deg) translate(10px, -18px);
+		}
+
+		.step5 .img:nth-child(5) {
+			transform: translateY(-20px) scale(0.75);
+		}
+
+		.step6 .img:nth-child(6) {
+			transform: translateY(-40px) scale(0.95);
+		}
+	</style>
+
+</head>
+
+<body>
+
+	<div id="wrap">
+		<div class="flip_fixed_track">
+			<div class="flip_fixed_wrap">
+				<div class="flip_kv">
+					<div class="img">
+						<img src="./img/flip_01.jpg" alt="">
+					</div>
+					<div class="img">
+						<img src="./img/flip_02.jpg" alt="">
+					</div>
+					<div class="img">
+						<img src="./img/flip_03.jpg" alt="">
+					</div>
+					<div class="img">
+						<img src="./img/flip_04.jpg" alt="">
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="iphone_fixed_track">
+			<div class="iphone_fixed_wrap">
+				<div class="iphone_kv">
+					<div class="img_wrap">
+						<div class="img"></div>
+						<div class="img"></div>
+						<div class="img"></div>
+						<div class="img"></div>
+						<div class="img"></div>
+						<div class="img"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<style>
+			.range1, .range2 {
+				width: 100%;
+				height: 1000px;
+			}
+			.range1 video,
+			.range2 video {
+				position: relative;
+				left: 50%;
+				top: 50%;
+				width: 664px;
+				height: 374px;
+				transform: translate(-50%, -50%);
+			}
+		</style>
+		<figure class="range1">
+			<video class="js-video-src js-res-video" preload="auto" 
+			data-src-pc="https://images.samsung.com/sg/smartphones/galaxy-s23-ultra/videos/galaxy-s23-ultra-highlights-nightgraphy-video-rear"
+			data-src-tablet="//images.samsung.com/sg/smartphones/galaxy-s23-ultra/videos/galaxy-s23-ultra-highlights-nightgraphy-video-rear-m"
+			data-src-mobile="//images.samsung.com/sg/smartphones/galaxy-s23-ultra/videos/galaxy-s23-ultra-highlights-nightgraphy-video-rear-s">
+			</video>
+		</figure>
+		<figure class="range2">
+			<video class="js-video-src js-res-video" preload="auto" muted 
+			data-src-pc="https://images.samsung.com/sg/smartphones/galaxy-s23-ultra/videos/galaxy-s23-ultra-highlights-nightgraphy-video-rear"
+			data-src-tablet="//images.samsung.com/sg/smartphones/galaxy-s23-ultra/videos/galaxy-s23-ultra-highlights-nightgraphy-video-rear-m"
+			data-src-mobile="//images.samsung.com/sg/smartphones/galaxy-s23-ultra/videos/galaxy-s23-ultra-highlights-nightgraphy-video-rear-s">
+			</video>
+		</figure>
+	</div>
+
+</body>
+
+<script>
+	ANIUTIL.scrollController({
+		currDelta: true,
+		speed: 120,
+		duration: 0.5
+	});
+
+	if (!!ANIUTIL) {
+		ANIUTIL.imageLoader({
+			type: 'video',
+			lazyClass: '.js-video-src',
+			responsiveClass: '.js-res-video',
+			loadOption: [{
+				resolution: 1920,
+				attribute: 'data-src-pc'
+			}, {
+				resolution: 1023,
+				attribute: 'data-src-tablet'
+			}, {
+				resolution: 767,
+				attribute: 'data-src-mobile'
+			}],
+			visiblePoint: 1
+		});
+	}
+
+	var trackElement1 = document.querySelector('.flip_fixed_track'),
+		fixedElement1 = document.querySelector('.flip_fixed_wrap'),
+		flipWrap = document.querySelector('.flip_kv'),
+		flipImg = document.querySelectorAll('.img');
+
+	var scene1 = SCROLLER({
+		trackElement: trackElement1,
+		fixedElement: fixedElement1,
+		useFixed: false,
+		trackHeight: 2,
+		correction: -1
+	});
+
+	var trackElement2 = document.querySelector('.iphone_fixed_track'),
+		fixedElement2 = document.querySelector('.iphone_fixed_wrap'),
+		iphoneWrap = document.querySelector('.img_wrap');
+
+	var scene2 = SCROLLER({
+		trackElement: trackElement2,
+		fixedElement: fixedElement2,
+		useFixed: false,
+		trackHeight: 3,
+		correction: -0.8
+	});
+
+	var trackElement3 = document.querySelector('.range1'),
+		scrollVideo1 = document.querySelector('.range1 video');
+
+	var scene3 = SCROLLER({
+		trackElement: scrollVideo1,
+		useFixed: false,
+	});
+
+	var scrVideo01 = ANIUTIL.videoHandler({
+		wrap: trackElement3,
+		video: scrollVideo1,
+		resetCallback: function(){
+			console.log('reset1');
+		},
+		playCallback: function(){
+			console.log('start1');
+		},
+		pauseCallback: function(){
+			console.log('pause1');
+		},
+		endCallback: function(){
+			console.log('end1');
+		}
+	});
+
+	var trackElement4 = document.querySelector('.range2'),
+		scrollVideo2 = document.querySelector('.range2 video');
+
+	var scrVideo02 = ANIUTIL.videoHandler({
+		wrap: trackElement4,
+		video: scrollVideo2,
+		playClass: 'is-playing',
+		pauseClass: 'is-paused',
+		endedClass: 'is-ended',
+		resetCallback: function(){
+			console.log('reset2');
+		},
+		playCallback: function(){
+			console.log('start2');
+		},
+		pauseCallback: function(){
+			console.log('pause2');
+		},
+		endCallback: function(){
+			console.log('end2');
+		}
+	});
+	var scene4 = SCROLLER({
+		trackElement: scrollVideo2,
+		useFixed: false,
+	});
+
+	var animationHandler = function(){
+		scene1.trackAnimation(function(){
+			var progress = this.progress;
+			
+			var motionValue1 = ANIUTIL.calRange({
+				targetValue: 360,
+				progress: progress,
+				startPoint: 0,
+				endPoint: 20
+			});
+			
+			var motionValue2 = ANIUTIL.calRange({
+				targetValue: 100,
+				progress: progress,
+				startPoint: 30,
+				endPoint: 31
+			});
+
+			TweenMax.to(flipImg[0], .6, {rotate: motionValue1 + 'deg', delay: 0.06});
+			TweenMax.to(flipImg[1], .6, {rotate: motionValue1 + 'deg', delay: 0.04});
+			TweenMax.to(flipImg[2], .6, {rotate: motionValue1 + 'deg', delay: 0.02});
+			TweenMax.to(flipImg[3], .6, {rotate: motionValue1 + 'deg'});
+
+			// gsap.to(flipWrap, .6, {x: -(motionValue2 + 50) + '%'});
+		});
+
+		scene2.trackAnimation(function(){
+			if (this.progress <= 0) {
+				ANIUTIL.removeClass({
+					targetElement: iphoneWrap,
+					classList: ['step1','step2','step3','step4','step5','step6']
+				});
+			};
+
+			if (this.progress > 0 && this.progress < 10) {
+				if (iphoneWrap.classList.contains('step6')) return;
+				ANIUTIL.removeClass({
+					targetElement: iphoneWrap,
+					classList: ['step1','step2','step3','step4','step5']
+				});
+				iphoneWrap.classList.add('step6');
+			};
+
+			if (this.progress > 10 && this.progress < 20) {
+				if (iphoneWrap.classList.contains('step5')) return;
+				ANIUTIL.removeClass({
+					targetElement: iphoneWrap,
+					classList: ['step1','step2','step3','step4','step6']
+				});
+				iphoneWrap.classList.add('step5');
+			};
+
+			if (this.progress > 20 && this.progress < 30) {
+				if (iphoneWrap.classList.contains('step4')) return;
+				ANIUTIL.removeClass({
+					targetElement: iphoneWrap,
+					classList: ['step1','step2','step3','step5','step6']
+				});
+				iphoneWrap.classList.add('step4');
+			};
+
+			if (this.progress > 30 && this.progress < 40) {
+				if (iphoneWrap.classList.contains('step3')) return;
+				ANIUTIL.removeClass({
+					targetElement: iphoneWrap,
+					classList: ['step1','step2','step4','step5','step6']
+				});
+				iphoneWrap.classList.add('step3');
+			};
+
+			if (this.progress > 40 && this.progress < 50) {
+				if (iphoneWrap.classList.contains('step2')) return;
+				ANIUTIL.removeClass({
+					targetElement: iphoneWrap,
+					classList: ['step1','step3','step4','step5','step6']
+				});
+				iphoneWrap.classList.add('step2');
+			};
+
+			if (this.progress > 50) {
+				if (iphoneWrap.classList.contains('step1')) return;
+				ANIUTIL.removeClass({
+					targetElement: iphoneWrap,
+					classList: ['step2','step3','step4','step5','step6']
+				});
+				iphoneWrap.classList.add('step1');
+			};
+		});
+		
+
+		scene3.trackAnimation(function(){
+			scrVideo01.scrollActive(this.progress);
+		});
+		
+		scene4.trackAnimation(function(){
+			scrVideo02.scrollActive(this.progress);
+		});
+	}
+
+	window.addEventListener('scroll', function () {
+		animationHandler();
+	});
+</script>
+
+</html>
