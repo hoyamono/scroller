@@ -238,9 +238,11 @@ progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함�
 	|startPoint|number|0~100까지의 progress중 target value값 계산을 시작할 위치 지정|
 	|endPoint|number|0~100까지의 progress중 target value값 계산을 중단할 위치 지정|
 
-- ANIUTIL.imageLoader : Lazy-load 및 responsive image 제어 함수 (https://hoyamono.github.io/scroller/image-loader.html)
+- ANIUTIL.mediaLoader : Lazy-load 및 responsive 이미지/비디오 제어 함수
 	``` javascript
-	ANIUTIL.imageLoader({
+	// image & video
+	ANIUTIL.mediaLoader({
+		type: 'image'
 		lazyClass: '.img-box img',
 		responsiveClass: '.res-img',
 		loadOption: [{
@@ -254,11 +256,31 @@ progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함�
 			attribute: 'data-img-mo'
 		}],
 		visiblePoint: 1,
-		useDefaultImg: true,
+	});
+
+	//bgImage
+	/*
+		bgImage는 기본적으로 이미지 로드 클래스만 부여하지만
+		인라인 스타일로 bg를 지정하고싶다면 오셥값과 이미지URL을 세팅한다.
+		ex) attribute: 'data-img-pc',
+			bgOpts: 'no-repeat center/cover'
+		※ 인라인 스타일은 헌재 respponsive 미구현
+	*/
+	ANIUTIL.mediaLoader({
+		type: 'image'
+		lazyClass: '.img-box img',
+		responsiveClass: '.res-img',
+		loadOption: [{ //
+			resolution: 1920,
+			attribute: '', //클래스로 제어하려면 비워둔다
+			bgOpts: ''
+		}],
+		visiblePoint: 1,
 	});
 	```
 	|Option|Type|Description|
 	|------|---|-----|
+	|type|string|lazy-load를 적용할 대상 미디어 타입 (image, bgImage, video)|
 	|lazyClass|string|lazy-load를 적용할 대상 class|
 	|responsiveClass|string|responsive image적용할 대상 class|
 	|loadOption|array(object)|resolution : responsive image 분기점,높은해상도(lazy-load만 사용시 resolution 표기 제외) => 낮은해상도 순으로 표기 / attribute : 해당 분기점에서 치환할 이미지 경로를 담고있는 attribute 표기|
@@ -277,11 +299,18 @@ progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함�
 	|targetVideo|DOM|video Element|
 - ANIUTIL.scrollController : 스크롤 동작을 컨트롤하는 옵션(scroll delta, easing 등을 조절할 수 있음)
 	``` javascript
-	ANIUTIL.scrollController({
+	
+	//init
+	var scrollController = ANIUTIL.scrollController();
+
+	ANIUTIL.scrollController.init({
 		currDelta: true,
 		speed: 120,
 		duration: 0
 	});
+
+	//destroy
+	scrollController.destroy();
 
 	```
 	|Option|Type|Description|

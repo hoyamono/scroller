@@ -117,11 +117,12 @@ var ANIUTIL = (function(){
 		var init = function () {
 			this.opts = opts;
 			this.mediaType = !!!opts.type ? 'image' : opts.type ;
-			this.lazyCompleteClass = this.mediaType === 'image' ? 'img-load-complete' : 'video-load-compaete';
+			this.lazyCompleteClass = this.mediaType === 'image' ? 'img-load-complete' : this.mediaType === 'bgImage' ? 'bg-load-compaete' : 'video-load-compaete';
 			this.lazyClass = opts.lazyClass;
 			this.responsiveClass = opts.responsiveClass;
 			this.loadOption = opts.loadOption;
 			this.targetAttr = opts.loadOption[0].attribute;
+			this.bgOpts = opts.loadOption[0].bgOpts;
 			this.visiblePoint = !!!opts.visiblePoint ? 0 : opts.visiblePoint;
 			this.useDefaultImg = opts.useDefaultImg;
 
@@ -132,9 +133,11 @@ var ANIUTIL = (function(){
 
 			if (this.mediaType === 'image') {
 				return window.imageLoader = this;	
+			} else if (this.mediaType === 'bgImage'){
+				return window.bgImageLoader = this;
 			} else {
 				return window.videoLoader = this;					
-			};			
+			};	
 		};
 		
 		var fn = init.prototype;
@@ -236,6 +239,8 @@ var ANIUTIL = (function(){
 					if (this.loadOption[i].attribute !== this.oldAttr) {
 						this.targetAttr = this.loadOption[i].attribute;
 						this.oldAttr = this.targetAttr;
+						this.bgOpts = this.loadOption[i].bgOpts;
+						this.oldOpts = this.bgOpts;
 						this.attrIndex = i;
 						this.setResponsiveMedia();
 					}
@@ -247,7 +252,8 @@ var ANIUTIL = (function(){
 			if (targetMedia) {
 				for (var i = 0; i < targetMedia.length; i++) {
 					var targetMedia = targetMedia[i],
-					mediaSrc = targetMedia[i].getAttribute(this.targetAttr);
+						mediaSrc = targetMedia[i].getAttribute(this.targetAttr),
+						bgOpts = targetMedia[i].getAttribute(this.bgOpts);;
 					
 					if (!!!mediaSrc) {
 						mediaSrc = this.findMediaHandler(targetMedia);
@@ -361,7 +367,8 @@ var ANIUTIL = (function(){
 					scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom || 
 					scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom || 
 					scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) && targetElement.offsetParent != null) {
-					var mediaSrc = targetElement.getAttribute(this.targetAttr);
+					var mediaSrc = targetElement.getAttribute(this.targetAttr),
+						bgOpts = targetElement.getAttribute(this.targetAttr);
 					
 					if (!!!mediaSrc) {
 						mediaSrc = this.findMediaHandler(targetElement);
@@ -369,6 +376,12 @@ var ANIUTIL = (function(){
 					if (!targetElement.classList.contains(this.lazyCompleteClass)) {
 						if (this.mediaType === 'image') {
 							targetElement.src = mediaSrc;
+						} else if (this.mediaType === 'bgImage'){
+							targetElement.classList.add(this.lazyCompleteClass)
+							if (!!mediaSrc) {
+								console.log(this.bgOpts)
+								targetElement.style.background = this.bgOpts + ' url(' + mediaSrc + ')';
+							}
 						} else {
 							var isSource = _createSourceElement(mediaSrc);
 							targetElement.append(isSource[0]);
@@ -377,7 +390,7 @@ var ANIUTIL = (function(){
 							if (!targetElement.muted) {
 								targetElement.muted = true;
 							}
-						}						
+						}
 						
 						(function (mediaElement) {
 							var imageLoadEvent = function () {
@@ -386,7 +399,7 @@ var ANIUTIL = (function(){
 								self.checkCompleteMedia();
 								if (self.mediaType === 'image') {
 									mediaElement.removeEventListener('load', imageLoadEvent);
-								} else {
+								} else if(self.mediaType === 'video') {
 									mediaElement.removeEventListener('loadedmetadata', imageLoadEvent);
 								}		
 							};
@@ -394,11 +407,11 @@ var ANIUTIL = (function(){
 							if (self.mediaType === 'image') {
 								mediaElement.addEventListener('load', imageLoadEvent);
 								mediaElement.classList.add(self.lazyCompleteClass);
-							} else {
+							} else if (self.mediaType === 'video') {
 								mediaElement.addEventListener('loadedmetadata', imageLoadEvent);
 								mediaElement.classList.add(self.lazyCompleteClass);
 								// mediaElement.parentNode.classList.add('loaded');//TO-DO
-							}		
+							}	
 						})(targetElement);
 					}
 				}
@@ -812,7 +825,6 @@ var ANIUTIL = (function(){
 					// }
 					if (this.playCurrentTime < this.videoDuration) {
 						this.video.currentTime = this.playRange;
-						console.log(this.video.currentTime);
 					};
 
 				};
