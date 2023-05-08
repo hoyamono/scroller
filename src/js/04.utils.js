@@ -277,7 +277,7 @@ var ANIUTIL = (function(){
 					if (targetMedia.classList.contains(this.lazyCompleteClass)) {
 						if (this.mediaType === 'image') {
 							targetMedia.setAttribute('src', mediaSrc);
-						} else {
+						} else if (this.mediaType === 'video' || this.mediaType === 'mp4Video') {
 							var isSource = targetMedia.querySelectorAll('source');
 
 							for (var j = 0; j < isSource.length; j++) {
@@ -285,7 +285,12 @@ var ANIUTIL = (function(){
 									isSource[j].src = mediaSrc + '.webm';
 									targetMedia.load();
 								} else if (isSource[j].type === 'video/mp4') {
-									isSource[j].src = mediaSrc + '.mp4';
+									if (this.mediaType === 'mp4Video') {
+										isSource[j].src = mediaSrc + '.mp4?imbypass=true';
+									} else {
+										isSource[j].src = mediaSrc + '.mp4';
+									}
+									
 									targetMedia.load();
 								}
 							}
@@ -342,15 +347,19 @@ var ANIUTIL = (function(){
 				
 				sourceEl.push(document.createElement('source'));
 				sourceEl.push(document.createElement('source'));
-	
-				sourceEl[0].type = 'video/webm';
-				sourceEl[0].src = src + '.webm';
-
-				sourceEl[1].type = 'video/mp4';			
-				sourceEl[1].src = src + '.mp4';
-
+				
+				if (self.mediaType === 'mp4Video') {
+					sourceEl[0].type = 'video/mp4';
+					sourceEl[0].src = src + '.mp4?imbypass=true';
+				} else {
+					sourceEl[0].type = 'video/webm';
+					sourceEl[0].src = src + '.webm';
+					
+					sourceEl[1].type = 'video/mp4';
+					sourceEl[1].src = src + '.mp4';
+				}
+				
 				return sourceEl;
-
 			}
 
 			for (var i = 0; i < this.lazyLength; i++) {
@@ -407,7 +416,7 @@ var ANIUTIL = (function(){
 							if (self.mediaType === 'image') {
 								mediaElement.addEventListener('load', imageLoadEvent);
 								mediaElement.classList.add(self.lazyCompleteClass);
-							} else if (self.mediaType === 'video') {
+							} else if (self.mediaType === 'video' || self.mediaType === 'mp4Video') {
 								mediaElement.addEventListener('loadedmetadata', imageLoadEvent);
 								mediaElement.classList.add(self.lazyCompleteClass);
 								// mediaElement.parentNode.classList.add('loaded');//TO-DO
@@ -440,7 +449,9 @@ var ANIUTIL = (function(){
 	var scrollController = function () {
 		var opt = opt ? opt : {},
 			agent = navigator.userAgent.toLowerCase(),
+			macOs = agent.indexOf("mac os") > -1,
 			targetElement = document.scrollingElement || document.documentElement || document.body.parentNode || document.body,
+			defaultSpeed = macOs ? 60 : 120,
 			speed,
 			duration,
 			scrollSize,
@@ -449,10 +460,9 @@ var ANIUTIL = (function(){
 			moveState = false,
 			scrollTiming = null,
 			tweenObject = null;
-		
 		var init = function(opt){
 			// if (agent.indexOf("chrome") == -1 && agent.indexOf("safari") != -1) return;
-			setOpts();
+			setOpts(opt);
 			bindEvent.wheel();
 			bindEvent.scroll();
 			
@@ -468,10 +478,12 @@ var ANIUTIL = (function(){
 			}
 		}
 
-		var setOpts = function(){
-			speed = !!!opt.speed ? 120 : opt.speed;
+		var setOpts = function(opt){
+			speed = !!!opt.speed ? defaultSpeed : macOs ? opt.speed / 2 : opt.speed;
 			duration = !!!opt.duration ? 0.6 : opt.duration;
 			scrollSize = targetElement.scrollTop;
+
+			opt = opt;
 		}
 
 		var bindEvent = {
@@ -514,6 +526,7 @@ var ANIUTIL = (function(){
 				eventList.update();
 			},
 			normalizeWheelDelta : function (e) {
+				
 				if (e.detail) {
 					if (e.wheelDelta) {
 						return e.wheelDelta / e.detail / 40 * (e.detail > 0 ? 1 : -1) // Opera

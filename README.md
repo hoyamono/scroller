@@ -240,7 +240,10 @@ progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함�
 
 - ANIUTIL.mediaLoader : Lazy-load 및 responsive 이미지/비디오 제어 함수
 	``` javascript
-	// image & video
+	// image & video & mp4Video
+	/*
+		* mp4video는 스크롤 제어 형태의 비디오 제어시 사용함
+	*/
 	ANIUTIL.mediaLoader({
 		type: 'image'
 		lazyClass: '.img-box img',
@@ -280,7 +283,7 @@ progress의 진행상황에 맞춰 value 값 계산 및 분기별 callback 함�
 	```
 	|Option|Type|Description|
 	|------|---|-----|
-	|type|string|lazy-load를 적용할 대상 미디어 타입 (image, bgImage, video)|
+	|type|string|lazy-load를 적용할 대상 미디어 타입 (image, bgImage, video, mp4Video)|
 	|lazyClass|string|lazy-load를 적용할 대상 class|
 	|responsiveClass|string|responsive image적용할 대상 class|
 	|loadOption|array(object)|resolution : responsive image 분기점,높은해상도(lazy-load만 사용시 resolution 표기 제외) => 낮은해상도 순으로 표기 / attribute : 해당 분기점에서 치환할 이미지 경로를 담고있는 attribute 표기|
