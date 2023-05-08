@@ -4,7 +4,7 @@
 * Copyright 2021. Yoon jae-ho
 * Released under the MIT license
 *
-* Date: 2021-02-09
+* Date: 2023-04-15
 */
 
 var ANIUTIL = (function(){
@@ -113,21 +113,28 @@ var ANIUTIL = (function(){
 		return new init(opts);
 	}
 	
-	var imageLoader = function (opts) {
+	var mediaLoader = function (opts) {
 		var init = function () {
 			this.opts = opts;
-			this.lazyCompleteClass = 'load-complete';
+			this.mediaType = !!!opts.type ? 'image' : opts.type ;
+			this.lazyCompleteClass = this.mediaType === 'image' ? 'img-load-complete' : 'video-load-compaete';
 			this.lazyClass = opts.lazyClass;
 			this.responsiveClass = opts.responsiveClass;
 			this.loadOption = opts.loadOption;
 			this.targetAttr = opts.loadOption[0].attribute;
 			this.visiblePoint = !!!opts.visiblePoint ? 0 : opts.visiblePoint;
 			this.useDefaultImg = opts.useDefaultImg;
-			this.getLazyImage();
-			this.getResponsiveImage();
+
+			this.getLazyMedia();
+			this.getResponsiveMedia();
+
 			this.bindEvent();
-			
-			return window.imageLoader = this;
+
+			if (this.mediaType === 'image') {
+				return window.imageLoader = this;	
+			} else {
+				return window.videoLoader = this;					
+			};			
 		};
 		
 		var fn = init.prototype;
@@ -138,7 +145,7 @@ var ANIUTIL = (function(){
 			responsiveCheck = this.loadOption;
 			
 			var lazyEvent = function () {
-				self.setLazyImage();
+				self.setLazyMedia();
 				
 				if (self.lazyLength == self.lazyCompleteLength) {
 					window.removeEventListener('scroll', lazyEvent);
@@ -149,11 +156,9 @@ var ANIUTIL = (function(){
 				this.setDefaultImage();
 			}
 			
-			window.addEventListener('DOMContentLoaded', function () {
-				self.responsiveHandler();
-				lazyEvent();
-				window.addEventListener('scroll', lazyEvent);
-			});
+			self.responsiveHandler();
+			lazyEvent();
+			window.addEventListener('scroll', lazyEvent);
 			
 			if (responsiveCheck) {
 				window.addEventListener('resize', function () {
@@ -185,28 +190,30 @@ var ANIUTIL = (function(){
 			}
 		};
 		
-		fn.getLazyImage = function () {
-			var lazyImageList = document.querySelectorAll(this.lazyClass);
+		fn.getLazyMedia = function () {
+			var lazyMediaList = document.querySelectorAll(this.lazyClass);
 			
-			this.lazyImages = lazyImageList;
-			this.lazyLength = lazyImageList.length;
+			this.lazyMedias = lazyMediaList;
+			this.lazyLength = lazyMediaList.length;
 		};
-		
-		fn.checkCompleteImage = function () {
+
+		fn.checkCompleteMedia = function () {
 			var lazyCompleteList = document.querySelectorAll('.' + this.lazyCompleteClass);
 			
 			this.lazyCompleteLength = lazyCompleteList.length;
 		};
 		
-		fn.getResponsiveImage = function () {
-			var responsiveImageList = document.querySelectorAll(this.responsiveClass);
-			this.responsiveImages = responsiveImageList;
-			this.responsiveLength = responsiveImageList.length;
+		fn.getResponsiveMedia = function () {
+			var responsiveMediaList = document.querySelectorAll(this.responsiveClass);
+			this.responsiveMedias = responsiveMediaList;
+			this.responsiveLength = responsiveMediaList.length;
 		};
 		
 		fn.setDefaultImage = function () {
+			if (this.mediaType === 'video') return;
+
 			for (var i = 0; i < this.lazyLength; i++) {
-				this.lazyImages[i].setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH/C1hNUCBEYXRhWE1QAz94cAAh+QQFAAAAACwAAAAAAQABAAACAkQBADs=');
+				this.lazyMedias[i].setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH/C1hNUCBEYXRhWE1QAz94cAAh+QQFAAAAACwAAAAAAQABAAACAkQBADs=');
 			}
 		};
 		
@@ -230,45 +237,59 @@ var ANIUTIL = (function(){
 						this.targetAttr = this.loadOption[i].attribute;
 						this.oldAttr = this.targetAttr;
 						this.attrIndex = i;
-						this.setResponsiveImage();
+						this.setResponsiveMedia();
 					}
 				}
 			}
 		};
 		
-		fn.setResponsiveImage = function (imageTarget) {
-			if (imageTarget) {
-				for (var i = 0; i < imageTarget.length; i++) {
-					var targetImage = imageTarget[i],
-					imgSrc = imageTarget[i].getAttribute(this.targetAttr);
+		fn.setResponsiveMedia = function (targetMedia) {
+			if (targetMedia) {
+				for (var i = 0; i < targetMedia.length; i++) {
+					var targetMedia = targetMedia[i],
+					mediaSrc = targetMedia[i].getAttribute(this.targetAttr);
 					
-					if (!!!imgSrc) {
-						imgSrc = this.findImageHandler(targetImage);
+					if (!!!mediaSrc) {
+						mediaSrc = this.findMediaHandler(targetMedia);
 					}
 					
 					
-					if (!imageTarget[i].classList.contains(this.lazyCompleteClass)) {
-						imageTarget[i].setAttribute('src', imgSrc);
-						imageTarget[i].classList.add(this.lazyCompleteClass);
+					if (!targetMedia[i].classList.contains(this.lazyCompleteClass)) {
+						targetMedia[i].setAttribute('src', mediaSrc);
+						targetMedia[i].classList.add(this.lazyCompleteClass);
 					}
 				}
 			} else {
 				for (var i = 0; i < this.responsiveLength; i++) {
-					var targetImage = this.responsiveImages[i],
-					imgSrc = targetImage.getAttribute(this.targetAttr);
-					
-					if (!!!imgSrc) {
-						imgSrc = this.findImageHandler(targetImage);
+					var targetMedia = this.responsiveMedias[i],
+					mediaSrc = targetMedia.getAttribute(this.targetAttr);
+			
+					if (!!!mediaSrc) {
+						mediaSrc = this.findMediaHandler(targetMedia);
 					}
 					
-					if (targetImage.classList.contains(this.lazyCompleteClass)) {
-						targetImage.setAttribute('src', imgSrc);
+					if (targetMedia.classList.contains(this.lazyCompleteClass)) {
+						if (this.mediaType === 'image') {
+							targetMedia.setAttribute('src', mediaSrc);
+						} else {
+							var isSource = targetMedia.querySelectorAll('source');
+
+							for (var j = 0; j < isSource.length; j++) {
+								if (isSource[j].type === 'video/webm') {
+									isSource[j].src = mediaSrc + '.webm';
+									targetMedia.load();
+								} else if (isSource[j].type === 'video/mp4') {
+									isSource[j].src = mediaSrc + '.mp4';
+									targetMedia.load();
+								}
+							}
+						}
 					}
 				}
 			}
 		};
 		
-		fn.findRemainingImageAttr = function (element) {
+		fn.findRemainingMediaAttr = function (element) {
 			var attrLength = this.loadOption.length;
 			
 			for (var i = 0; i < attrLength; i++) {
@@ -281,7 +302,7 @@ var ANIUTIL = (function(){
 			}
 		};
 		
-		fn.findNextImageAttr = function (element) {
+		fn.findNextMediaAttr = function (element) {
 			var isIndex = this.attrIndex;
 			
 			for (var i = isIndex; i >= 0; i--) {
@@ -293,53 +314,91 @@ var ANIUTIL = (function(){
 				}
 				
 				if (i == 0 && getAttr == undefined) {
-					return this.findRemainingImageAttr(element);
+					return this.findRemainingMediaAttr(element);
 				}
 			}
 		};
 		
-		fn.findImageHandler = function (element) {
+		fn.findMediaHandler = function (element) {
 			if (this.attrIndex !== 0) {
-				return this.findNextImageAttr(element);
+				return this.findNextMediaAttr(element);
 			} else {
-				return this.findRemainingImageAttr(element);
+				return this.findRemainingMediaAttr(element);
 			}
 		};
 		
-		fn.setLazyImage = function () {
+		fn.setLazyMedia = function () {
 			var self = this;
 			this.windowHeight = window.innerHeight;
 			
-			for (var i = 0; i < this.lazyLength; i++) {
-				var targetElement = this.lazyImages[i],
-				corrHeight = this.windowHeight * ((window.pageYOffset != 0) ? this.visiblePoint : 0),
-				scrollTop = this.utilList.getScroll.call(this).top - corrHeight,
-				scrollBottom = this.utilList.getScroll.call(this).bottom + corrHeight,
-				targetOffsetTop = this.utilList.getOffset.call(this, targetElement).top,
-				targetOffsetBottom = this.utilList.getOffset.call(this, targetElement).bottom,
-				lazyClass = this.lazyClass.split('.'),
-				removeClass = lazyClass[lazyClass.length - 1];
+			var _createSourceElement = function (src){
+				var sourceEl = [];
 				
-				if ((scrollBottom > targetOffsetTop && scrollTop <= targetOffsetTop || scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom || scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom || scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) && targetElement.offsetParent != null) {
-					var imgSrc = targetElement.getAttribute(this.targetAttr);
+				sourceEl.push(document.createElement('source'));
+				sourceEl.push(document.createElement('source'));
+	
+				sourceEl[0].type = 'video/webm';
+				sourceEl[0].src = src + '.webm';
+
+				sourceEl[1].type = 'video/mp4';			
+				sourceEl[1].src = src + '.mp4';
+
+				return sourceEl;
+
+			}
+
+			for (var i = 0; i < this.lazyLength; i++) {
+				var targetElement = this.lazyMedias[i],
+					corrHeight = this.windowHeight * ((window.pageYOffset != 0) ? this.visiblePoint : 0),
+					scrollTop = this.utilList.getScroll.call(this).top - corrHeight,
+					scrollBottom = this.utilList.getScroll.call(this).bottom + corrHeight,
+					targetOffsetTop = this.utilList.getOffset.call(this, targetElement).top,
+					targetOffsetBottom = this.utilList.getOffset.call(this, targetElement).bottom,
+					lazyClass = this.lazyClass.split('.'),
+					removeClass = lazyClass[lazyClass.length - 1];
+				
+				if ((scrollBottom > targetOffsetTop && scrollTop <= targetOffsetTop || 
+					scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom || 
+					scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom || 
+					scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) && targetElement.offsetParent != null) {
+					var mediaSrc = targetElement.getAttribute(this.targetAttr);
 					
-					if (!!!imgSrc) {
-						imgSrc = this.findImageHandler(targetElement);
+					if (!!!mediaSrc) {
+						mediaSrc = this.findMediaHandler(targetElement);
 					}
-					
 					if (!targetElement.classList.contains(this.lazyCompleteClass)) {
-						targetElement.setAttribute('src', imgSrc);
+						if (this.mediaType === 'image') {
+							targetElement.src = mediaSrc;
+						} else {
+							var isSource = _createSourceElement(mediaSrc);
+							targetElement.append(isSource[0]);
+							targetElement.append(isSource[1]);
+				
+							if (!targetElement.muted) {
+								targetElement.muted = true;
+							}
+						}						
 						
-						(function (imgElement) {
+						(function (mediaElement) {
 							var imageLoadEvent = function () {
-								if (self.opts.lazyClass.split(' ').length == 1) imgElement.classList.remove(removeClass);
-								// imgElement.classList.add(self.lazyCompleteClass);
-								self.checkCompleteImage();
-								imgElement.removeEventListener('load', imageLoadEvent);
+								if (self.opts.lazyClass.split(' ').length == 1) mediaElement.classList.remove(removeClass);
+
+								self.checkCompleteMedia();
+								if (self.mediaType === 'image') {
+									mediaElement.removeEventListener('load', imageLoadEvent);
+								} else {
+									mediaElement.removeEventListener('loadedmetadata', imageLoadEvent);
+								}		
 							};
 							
-							imgElement.addEventListener('load', imageLoadEvent);
-							imgElement.classList.add(self.lazyCompleteClass);
+							if (self.mediaType === 'image') {
+								mediaElement.addEventListener('load', imageLoadEvent);
+								mediaElement.classList.add(self.lazyCompleteClass);
+							} else {
+								mediaElement.addEventListener('loadedmetadata', imageLoadEvent);
+								mediaElement.classList.add(self.lazyCompleteClass);
+								// mediaElement.parentNode.classList.add('loaded');//TO-DO
+							}		
 						})(targetElement);
 					}
 				}
@@ -365,45 +424,58 @@ var ANIUTIL = (function(){
 		};
 	};
 	
-	var scrollController = function (opt) {
+	var scrollController = function () {
 		var opt = opt ? opt : {},
-		agent = navigator.userAgent.toLowerCase(),
-		targetElement = document.scrollingElement || document.documentElement || document.body.parentNode || document.body,
-		speed = !!!opt.speed ? 120 : opt.speed ,
-		duration = opt.duration >= 0 ? opt.duration : 1,
-		scrollSize = targetElement.scrollTop,
-		maxScrollSize,
-		frameElement = targetElement === document.body && document.documentElement ? document.documentElement : targetElement, // safari is the new IE
-		moveState = false,
-		scrollTiming = null;
+			agent = navigator.userAgent.toLowerCase(),
+			targetElement = document.scrollingElement || document.documentElement || document.body.parentNode || document.body,
+			speed,
+			duration,
+			scrollSize,
+			maxScrollSize,
+			frameElement = targetElement === document.body && document.documentElement ? document.documentElement : targetElement, // safari is the new IE
+			moveState = false,
+			scrollTiming = null,
+			tweenObject = null;
 		
-		var init = function(){
-			if (agent.indexOf("chrome") == -1 && agent.indexOf("safari") != -1) return;
-			
+		var init = function(opt){
+			// if (agent.indexOf("chrome") == -1 && agent.indexOf("safari") != -1) return;
+			setOpts();
 			bindEvent.wheel();
 			bindEvent.scroll();
+			
+			return this.opt = opt;
 		};
 		
+		var destroy = function(remove){
+			document.removeEventListener('mousewheel', eventList.scrollEvent);
+			document.removeEventListener('wheel', eventList.scrollEvent);
+
+			if(remove) {
+				opt = {};
+			}
+		}
+
+		var setOpts = function(){
+			speed = !!!opt.speed ? 120 : opt.speed;
+			duration = !!!opt.duration ? 0.6 : opt.duration;
+			scrollSize = targetElement.scrollTop;
+		}
+
 		var bindEvent = {
 			wheel: function(){
 				if ((navigator.appName == 'Netscape' && navigator.userAgent.search('Trident') != -1) || (agent.indexOf("msie") != -1) ) {
-					document.addEventListener('mousewheel', function (e) {
-						if (document.documentElement.style.overflow == 'hidden') return;
-						eventList.scrollEvent(e);
-					}, {
+					document.documentElement.addEventListener('mousewheel', eventList.scrollEvent, {
 						passive: false
 					});
 				} else {
-					document.addEventListener('wheel', function (e) {
-						eventList.scrollEvent(e);
-					}, {
+					document.documentElement.addEventListener('wheel', eventList.scrollEvent, {
 						passive: false
 					});
 				};
 			},
 			scroll: function(){
 				window.addEventListener('scroll', function () {
-					if (document.documentElement.style.overflow == 'hidden') return;
+					if (document.documentElement.style.overflow == 'hidden' || document.body.style.overflow == 'hidden') return;
 					
 					if (!moveState) {
 						scrollSize = targetElement.scrollTop;
@@ -415,17 +487,18 @@ var ANIUTIL = (function(){
 		
 		var eventList = {
 			scrollEvent : function (e) {
+				if (document.documentElement.style.overflow == 'hidden' || document.body.style.overflow == 'hidden') return;
 				e.preventDefault();
 				
 				var fixedMoveSpeed = document.body.getAttribute('data-scroll-speed');
 				
-				var delta = this.normalizeWheelDelta(e),
+				var delta = eventList.normalizeWheelDelta(e),
 				moveSpeed = opt.currDelta && fixedMoveSpeed ? fixedMoveSpeed : !!!fixedMoveSpeed && !!!speed ? 120 : speed;
-				
+
 				scrollSize = scrollSize + (-delta * moveSpeed); //현재까지 스크롤한 사이즈
 				maxScrollSize = Math.max(0, Math.min(scrollSize, targetElement.scrollHeight - frameElement.clientHeight)); //최대 스크롤 사이즈
 				
-				this.update();
+				eventList.update();
 			},
 			normalizeWheelDelta : function (e) {
 				if (e.detail) {
@@ -444,38 +517,41 @@ var ANIUTIL = (function(){
 				
 				moveState = true;
 				
-				TweenMax.to(targetElement, duration, { ease: "power1.out", scrollTop: moveSize, onComplete: function(){
+				TweenMax.to(targetElement, duration, { ease: "circ.out", scrollTop: moveSize, onComplete: function(){
 					clearTimeout(scrollTiming);
 					scrollTiming = null;
 					scrollTiming = setTimeout(function(){
 						moveState = false;
 						scrollSize = targetElement.scrollTop;
 					}, 500)
-				} 
-			});
-			
+				}
+			});	
+
+				// if (tweenObject === null) {
+				// 	tweenObject = new TweenMax.to(targetElement, duration, { ease: "circ.out", scrollTop: moveSize, onComplete: function(){
+				// 			clearTimeout(scrollTiming);
+				// 			scrollTiming = null;
+				// 			scrollTiming = setTimeout(function(){
+				// 				moveState = false;
+				// 				scrollSize = targetElement.scrollTop;
+				// 			}, 500)
+				// 		}
+				// 	});	
+				// };
+
+				// tweenObject.updateTo({scrollTop: moveSize}, true);
 			if (scrollSize <= 0) {
 				scrollSize = 0;
 			} else if (scrollSize >= maxScrollSize) {
 				scrollSize = maxScrollSize;
 			}
-		}
-	}
-	
-	var requestAnimationFrame = (function () { // requestAnimationFrame cross browser
-		return (
-			window.requestAnimationFrame ||
-			window.webkitRequestAnimationFrame ||
-			window.mozRequestAnimationFrame ||
-			window.oRequestAnimationFrame ||
-			window.msRequestAnimationFrame ||
-			function (func) {
-				window.setTimeout(func, 1000 / 50);
 			}
-			);
-		})();
+		}
 		
-		return init();
+		return {
+			init: init,
+			destroy: destroy
+		} 
 	};
 	
 	var resizeScrollOffset = function(opt){
@@ -525,20 +601,6 @@ var ANIUTIL = (function(){
 		} else if ('ontouchstart' in window || (window.DocumentTouch && document instanceof window.DocumentTouch)) {
 			return true;
 		}
-	};
-	
-	var checkFold = function() {
-		var foldState;
-		var screenRatio = screen.width / screen.height;
-		var isFold = checkTouchDevice() && screenRatio > 0.7137 && screenRatio < 0.80 && document.getElementsByName('viewport')[0].content == 'width=768';
-		var isFoldLatest = checkTouchDevice() && screenRatio > 0.80 && screenRatio < 0.95 && document.getElementsByName('viewport')[0].content == 'width=768';
-		if (isFold) {
-			foldState = 'isFold';
-		} else if (isFoldLatest) {
-			foldState = 'isFoldLatest';
-		}
-		
-		return foldState;
 	};
 	
 	var deviceConsole = function(value, visible){
@@ -599,80 +661,224 @@ var ANIUTIL = (function(){
 				
 				if (windowWidth <= currentSize && windowWidth > nextSize && isResolution != opts.statusName[i] ||
 					windowWidth <= currentSize && windowWidth > nextSize && isActiveIndex != i) {
-						document.documentElement.classList.remove(isResolution);
-						isResolution = opts.statusName[i] || i;
-						isActiveIndex = i;
-						document.documentElement.classList.add(isResolution);
-					} else if (windowWidth >= opts.resolution[0] && isResolution != opts.statusName[0] || 
-						windowWidth >= opts.resolution[0] && !!!isActiveIndex) {
-							document.documentElement.classList.remove(isResolution);
-							isResolution = opts.statusName[0] || i;
-							isActiveIndex = i;
-							document.documentElement.classList.add(isResolution);
-						}
-					}
-				};
-				
-				var activeCallbacks = function(){
-					clearTimeout(callbackTiming);
-					console.log(opts.activeTiming)
-					if (oldActiveIndex == isActiveIndex) return;
-					if (!!!opts.callback[isActiveIndex]) return;
-					callbackTiming = setTimeout(function(){
-						opts.callback[isActiveIndex]();
-						callbackTiming = null;
-						oldActiveIndex = isActiveIndex;
-					}, opts.activeTiming);
-				};
-				
-				var bindEvent = function(){
-					window.addEventListener('DOMContentLoaded', function(){
-						checkResolution();
-						oldActiveIndex = isActiveIndex;
-						
-					});
-					
-					window.addEventListener('resize', function(){
-						checkResolution();
-						activeCallbacks();
-					});
-				};
-				
-				var init = function(){
-					bindEvent();
-					
-					return this;
-				};
-				
-				return init(opts);
-			};
-			
-			return {
-				calRange: function(values){
-					return calRange(values);
-				},
-				videoObjectFit: function(opts){
-					videoObjectFit(opts);
-				},
-				imageLoader: function(opts){
-					imageLoader(opts);
-				},
-				addClass: function(opts) {
-					addClass(opts);
-				},
-				removeClass: function(opts) {
-					removeClass(opts);
-				},
-				scrollController: function(opt) {
-					scrollController(opt);
-				},
-				resizeScrollOffset: function(opt){
-					resizeScrollOffset(opt);
-				},
-				checkTouchDevice: checkTouchDevice,
-				checkFold: checkFold,
-				deviceConsole: deviceConsole,
-				percentToPixel: percentToPixel,
-				responsiveHandler: responsiveHandler,
+					document.documentElement.classList.remove(isResolution);
+					isResolution = opts.statusName[i] || i;
+					isActiveIndex = i;
+					document.documentElement.classList.add(isResolution);
+				} else if (windowWidth >= opts.resolution[0] && isResolution != opts.statusName[0] || 
+					windowWidth >= opts.resolution[0] && !!!isActiveIndex) {
+					document.documentElement.classList.remove(isResolution);
+					isResolution = opts.statusName[0] || i;
+					isActiveIndex = i;
+					document.documentElement.classList.add(isResolution);
+				}
 			}
-		})();
+		};
+		
+		var activeCallbacks = function(){
+			clearTimeout(callbackTiming);
+			if (oldActiveIndex == isActiveIndex) return;
+			if (!!!opts.callback[isActiveIndex]) return;
+			callbackTiming = setTimeout(function(){
+				opts.callback[isActiveIndex]();
+				callbackTiming = null;
+				oldActiveIndex = isActiveIndex;
+			}, opts.activeTiming);
+		};
+		
+		var bindEvent = function(){
+			window.addEventListener('DOMContentLoaded', function(){
+				checkResolution();
+				oldActiveIndex = isActiveIndex;
+				
+			});
+			
+			window.addEventListener('resize', function(){
+				checkResolution();
+				activeCallbacks();
+			});
+		};
+		
+		var init = function(){
+			bindEvent();
+			
+			return this;
+		};
+		
+		return init(opts);
+	};
+	
+	var videoHandler = function(opts){
+		var init = function(opts){
+			this.video = opts.video;
+			this.wrap = !!!opts.wrap ? video : opts.wrap,
+			this.playType = !!!opts.playType ? 'scrollPlay' : opts.playType;
+			this.playClass = !!!opts.playClass ? 'is-playing' : opts.playClass;
+			this.pauseClass = !!!opts.pauseClass ? 'is-paused' :opts.pauseClass;
+			this.endedClass = !!!opts.endedClass ? 'is-ended' : opts.endedClass;
+			this.resetCallback = opts.resetCallback;
+			this.playCallback = opts.playCallback;
+			this.pauseCallback = opts.pauseCallback;
+			this.endCallback = opts.endCallback;
+			this.tweenObject = null;
+			this.agent = navigator.userAgent;
+			this.isMacintosh = this.agent.indexOf('Macintosh');
+			this.isChrome = this.agent.indexOf('Chrome');
+
+			this.bindEvents();
+
+			this.video.videoHandler = this;
+
+			return this;
+		};
+		
+		var fn = init.prototype;
+
+
+		fn.eventList = {
+			play: function(){
+				if (!!this.playCallback) this.playCallback()
+				this.wrap.classList.remove(this.endedClass);
+				this.wrap.classList.remove(this.pauseClass);
+				this.wrap.classList.add(this.playClass);
+			},
+			ended: function(){
+				if (!!this.endCallback) this.endCallback();
+				this.wrap.classList.remove(this.playClass);
+				this.wrap.classList.add(this.pauseClass)
+				this.wrap.classList.add(this.endedClass)
+			},
+			pause: function(){
+				if (!!this.pauseCallback) this.pauseCallback();
+				this.wrap.classList.remove(this.playClass);
+				this.wrap.classList.add(this.pauseClass);
+			},
+			reset: function(){
+				if (!!this.resetCallback) this.resetCallback();
+	
+				this.video.pause();
+				this.video.currentTime = 0;
+	
+				var self = this;
+				
+				var _removeClass = function(){
+					self.wrap.classList.remove(self.playClass);
+					self.wrap.classList.remove(self.pauseClass);
+					self.wrap.classList.remove(self.endedClass);
+				}
+	
+				clearTimeout(_removeClass);
+				setTimeout(_removeClass, 50);
+				
+			}
+		};
+
+		fn.activeList = {
+			scrollPlay: function(progress){
+				if (progress > 0 && 
+					progress < 100 && 
+					this.video.paused && 
+					!this.wrap.classList.contains(this.endedClass) && 
+					!this.wrap.classList.contains(this.pauseClass)) {
+					if (this.video.readyState == 4 && this.video.paused) {
+						this.video.play();
+					} else {
+						this.video.addEventListener('loadeddata', this.video.play);
+					};
+				};
+				
+				if (this.video.readyState == 4 && progress === 100 || this.video.readyState == 4 && progress === 0) {
+					this.eventList.reset.call(this);
+				};
+			},
+			sequencePlay: function(progress, corrProgress, scrollDuration){
+				this.corrProgress = !!!corrProgress ? 100 : corrProgress;
+				this.scrollDuration = !!!scrollDuration ? 0.6 : scrollDuration;
+
+				if (this.video.readyState == 4 && this.video.paused) {
+					this.videoDuration = this.video.duration;
+					this.playCurrentTime = this.videoDuration * (progress/this.corrProgress);
+					this.playRange = this.playCurrentTime < this.videoDuration ? this.playCurrentTime : this.videoDuration;
+					// if (this.isMacintosh > 0 && this.isChrome > 0) {
+					// 	this.video.currentTime = this.playRange;
+					// } else {
+					// 	if (this.tweenObject === null) {
+					// 		this.tweenObject = new TweenMax.to(this.video, this.scrollDuration, {
+					// 			currentTime: this.playRange, 
+					// 			ease: 'Circ.out'
+					// 		});
+					// 	};
+					// 	this.tweenObject.updateTo({currentTime: this.playRange}, true);
+					// }
+					if (this.playCurrentTime < this.videoDuration) {
+						this.video.currentTime = this.playRange;
+						console.log(this.video.currentTime);
+					};
+
+				};
+			}
+		}
+
+		fn.bindEvents = function(){
+			var self = this;
+
+			this.video.addEventListener('play', function(){
+				self.eventList.play.call(self);
+			});
+
+			this.video.addEventListener('pause', function(){
+				self.eventList.pause.call(self)
+			});
+			
+			this.video.addEventListener('ended', function(){
+				self.eventList.ended.call(self);
+			});
+		};
+
+		fn.scrollActive = function(progress, corrProgress, scrollDuration){
+			switch (this.playType) {
+				case 'scrollPlay':
+					this.activeList.scrollPlay.call(this, progress);
+					break;
+			
+				case 'sequencePlay':
+					this.activeList.sequencePlay.call(this, progress, corrProgress, scrollDuration);
+					break;
+			}
+		};
+
+		return new init(opts);
+	};
+
+	return {
+		calRange: function(values){
+			return calRange(values);
+		},
+		videoObjectFit: function(opts){
+			videoObjectFit(opts);
+		},
+		videoHandler: function(opts){
+			return videoHandler(opts)
+		},
+		imageLoader: function(opts){
+			mediaLoader(opts);
+		},
+		mediaLoader: function(opts){
+			mediaLoader(opts);
+		},
+		addClass: function(opts) {
+			addClass(opts);
+		},
+		removeClass: function(opts) {
+			removeClass(opts);
+		},
+		scrollController: scrollController,
+		resizeScrollOffset: function(opt){
+			resizeScrollOffset(opt);
+		},
+		checkTouchDevice: checkTouchDevice,
+		deviceConsole: deviceConsole,
+		percentToPixel: percentToPixel,
+		responsiveHandler: responsiveHandler,
+	}
+})();
