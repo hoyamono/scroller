@@ -117,7 +117,12 @@ var ANIUTIL = (function(){
 		var init = function () {
 			this.opts = opts;
 			this.mediaType = !!!opts.type ? 'image' : opts.type ;
-			this.lazyCompleteClass = this.mediaType === 'image' ? 'img-load-complete' : this.mediaType === 'bgImage' ? 'bg-load-compaete' : 'video-load-compaete';
+			this.lazyCompleteClass = 
+				this.mediaType === 'image' ? 'img-load-complete' : 
+				this.mediaType === 'bgImage' ? 'bg-load-compaete' :
+				this.mediaType === 'video' ? 'video-load-compaete' :
+				this.mediaType === 'mp4Video' ? 'mp4video-load-compaete':
+				this.mediaType === 'svgImage' ? 'svg-load-compaete': opts.complatClass;
 			this.lazyClass = opts.lazyClass;
 			this.responsiveClass = opts.responsiveClass;
 			this.loadOption = opts.loadOption;
@@ -126,18 +131,14 @@ var ANIUTIL = (function(){
 			this.visiblePoint = !!!opts.visiblePoint ? 0 : opts.visiblePoint;
 			this.useDefaultImg = opts.useDefaultImg;
 
+			this.property = this.mediaType === 'image' ? 'src' : 'href';
+
 			this.getLazyMedia();
 			this.getResponsiveMedia();
 
 			this.bindEvent();
 
-			if (this.mediaType === 'image') {
-				return window.imageLoader = this;	
-			} else if (this.mediaType === 'bgImage'){
-				return window.bgImageLoader = this;
-			} else {
-				return window.videoLoader = this;					
-			};	
+			return window[this.mediaType] = this;	
 		};
 		
 		var fn = init.prototype;
@@ -195,14 +196,14 @@ var ANIUTIL = (function(){
 		
 		fn.getLazyMedia = function () {
 			var lazyMediaList = document.querySelectorAll(this.lazyClass);
-			
+			console.log(lazyMediaList, lazyMediaList.length)
 			this.lazyMedias = lazyMediaList;
 			this.lazyLength = lazyMediaList.length;
 		};
 
 		fn.checkCompleteMedia = function () {
 			var lazyCompleteList = document.querySelectorAll('.' + this.lazyCompleteClass);
-			
+	
 			this.lazyCompleteLength = lazyCompleteList.length;
 		};
 		
@@ -213,7 +214,7 @@ var ANIUTIL = (function(){
 		};
 		
 		fn.setDefaultImage = function () {
-			if (this.mediaType === 'video') return;
+			if (this.mediaType === 'video' || this.mediaType === 'mp4Video') return;
 
 			for (var i = 0; i < this.lazyLength; i++) {
 				this.lazyMedias[i].setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH/C1hNUCBEYXRhWE1QAz94cAAh+QQFAAAAACwAAAAAAQABAAACAkQBADs=');
@@ -253,7 +254,7 @@ var ANIUTIL = (function(){
 				for (var i = 0; i < targetMedia.length; i++) {
 					var targetMedia = targetMedia[i],
 						mediaSrc = targetMedia[i].getAttribute(this.targetAttr),
-						bgOpts = targetMedia[i].getAttribute(this.bgOpts);;
+						bgOpts = targetMedia[i].getAttribute(this.bgOpts);
 					
 					if (!!!mediaSrc) {
 						mediaSrc = this.findMediaHandler(targetMedia);
@@ -261,7 +262,7 @@ var ANIUTIL = (function(){
 					
 					
 					if (!targetMedia[i].classList.contains(this.lazyCompleteClass)) {
-						targetMedia[i].setAttribute('src', mediaSrc);
+						targetMedia[i].setAttribute(this.property, mediaSrc);
 						targetMedia[i].classList.add(this.lazyCompleteClass);
 					}
 				}
@@ -275,8 +276,8 @@ var ANIUTIL = (function(){
 					}
 					
 					if (targetMedia.classList.contains(this.lazyCompleteClass)) {
-						if (this.mediaType === 'image') {
-							targetMedia.setAttribute('src', mediaSrc);
+						if (this.mediaType === 'image' || this.mediaType === 'svgImage') {
+							targetMedia.setAttribute(this.property, mediaSrc);
 						} else if (this.mediaType === 'video' || this.mediaType === 'mp4Video') {
 							var isSource = targetMedia.querySelectorAll('source');
 
@@ -362,6 +363,83 @@ var ANIUTIL = (function(){
 				return sourceEl;
 			}
 
+			var _setLazySrc = function(targetElement){
+				switch (self.mediaType) {
+					case 'image':
+						targetElement.setAttribute(self.property, mediaSrc);
+						break;
+
+					case 'svgImage':
+						targetElement.setAttribute(self.property, mediaSrc);
+						break;
+
+					case 'bgImage':
+						targetElement.classList.add(self.lazyCompleteClass)
+						if (!!mediaSrc) {
+							
+							targetElement.style.background = this.bgOpts + ' url(' + mediaSrc + ')';
+						}
+						break;
+
+					case 'video':
+						var isSource = _createSourceElement(mediaSrc);
+						targetElement.append(isSource[0]);
+						targetElement.append(isSource[1]);
+			
+						if (!targetElement.muted) {
+							targetElement.muted = true;
+						}
+						break;
+
+					case 'mp4Video':
+						var isSource = _createSourceElement(mediaSrc);
+						targetElement.append(isSource[0]);
+			
+						if (!targetElement.muted) {
+							targetElement.muted = true;
+						}
+						break;
+				};
+			};
+
+			var _setComplateStatus = function(targetElement){
+				(function (mediaElement) {
+					var imageLoadEvent = function () {
+						if (self.opts.lazyClass.split(' ').length == 1) mediaElement.classList.remove(removeClass);
+
+						self.checkCompleteMedia();
+						if (self.mediaType === 'image') {
+							mediaElement.removeEventListener('load', imageLoadEvent);
+						} else if(self.mediaType === 'video') {
+							mediaElement.removeEventListener('loadedmetadata', imageLoadEvent);
+						}	
+					};
+					
+					switch (self.mediaType) {
+						case 'image':
+							mediaElement.addEventListener('load', imageLoadEvent);
+							mediaElement.classList.add(self.lazyCompleteClass);
+							break;
+						
+						case 'video':
+							mediaElement.addEventListener('loadedmetadata', imageLoadEvent);
+							mediaElement.classList.add(self.lazyCompleteClass);
+							// mediaElement.parentNode.classList.add('loaded');//TO-DO
+							break;
+
+						case 'mp4Video':
+							mediaElement.addEventListener('loadedmetadata', imageLoadEvent);
+							mediaElement.classList.add(self.lazyCompleteClass);
+							break;
+
+						default:
+							mediaElement.classList.add(self.lazyCompleteClass);
+							self.checkCompleteMedia();
+							break;
+					};
+				})(targetElement);
+			};
+
 			for (var i = 0; i < this.lazyLength; i++) {
 				var targetElement = this.lazyMedias[i],
 					corrHeight = this.windowHeight * ((window.pageYOffset != 0) ? this.visiblePoint : 0),
@@ -371,57 +449,24 @@ var ANIUTIL = (function(){
 					targetOffsetBottom = this.utilList.getOffset.call(this, targetElement).bottom,
 					lazyClass = this.lazyClass.split('.'),
 					removeClass = lazyClass[lazyClass.length - 1];
+
+				if (!this.mediaType === 'svgImage' && targetElement.offsetParent == null) return;
 				
 				if ((scrollBottom > targetOffsetTop && scrollTop <= targetOffsetTop || 
 					scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom || 
 					scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom || 
-					scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) && targetElement.offsetParent != null) {
-					var mediaSrc = targetElement.getAttribute(this.targetAttr),
-						bgOpts = targetElement.getAttribute(this.targetAttr);
-					
+					scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom)) {
+
+					var mediaSrc = targetElement.getAttribute(this.targetAttr);
+
 					if (!!!mediaSrc) {
 						mediaSrc = this.findMediaHandler(targetElement);
 					}
-					if (!targetElement.classList.contains(this.lazyCompleteClass)) {
-						if (this.mediaType === 'image') {
-							targetElement.src = mediaSrc;
-						} else if (this.mediaType === 'bgImage'){
-							targetElement.classList.add(this.lazyCompleteClass)
-							if (!!mediaSrc) {
-								console.log(this.bgOpts)
-								targetElement.style.background = this.bgOpts + ' url(' + mediaSrc + ')';
-							}
-						} else {
-							var isSource = _createSourceElement(mediaSrc);
-							targetElement.append(isSource[0]);
-							targetElement.append(isSource[1]);
-				
-							if (!targetElement.muted) {
-								targetElement.muted = true;
-							}
-						}
-						
-						(function (mediaElement) {
-							var imageLoadEvent = function () {
-								if (self.opts.lazyClass.split(' ').length == 1) mediaElement.classList.remove(removeClass);
 
-								self.checkCompleteMedia();
-								if (self.mediaType === 'image') {
-									mediaElement.removeEventListener('load', imageLoadEvent);
-								} else if(self.mediaType === 'video') {
-									mediaElement.removeEventListener('loadedmetadata', imageLoadEvent);
-								}		
-							};
-							
-							if (self.mediaType === 'image') {
-								mediaElement.addEventListener('load', imageLoadEvent);
-								mediaElement.classList.add(self.lazyCompleteClass);
-							} else if (self.mediaType === 'video' || self.mediaType === 'mp4Video') {
-								mediaElement.addEventListener('loadedmetadata', imageLoadEvent);
-								mediaElement.classList.add(self.lazyCompleteClass);
-								// mediaElement.parentNode.classList.add('loaded');//TO-DO
-							}	
-						})(targetElement);
+					if (!targetElement.classList.contains(this.lazyCompleteClass)) {
+						_setLazySrc(targetElement);
+						_setComplateStatus(targetElement);
+
 					}
 				}
 			}
