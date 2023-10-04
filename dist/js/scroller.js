@@ -441,9 +441,9 @@ class RangeHandler {
   }
   calValue = progress => {
     if (this.startPoint >= 0) {
-      var endPoint = this.endPoint - this.startPoint > 0 ? this.endPoint - this.startPoint : this.endPoint;
+      let endPoint = this.endPoint - this.startPoint > 0 ? this.endPoint - this.startPoint : this.endPoint;
     }
-    var returnValue = this.targetValue * (progress - this.startPoint) / endPoint;
+    let returnValue = this.targetValue * (progress - this.startPoint) / endPoint;
     if (returnValue > this.targetValue) {
       returnValue = this.targetValue;
     }
@@ -546,7 +546,7 @@ class RangeHandler {
     }
   };
 }
-var RANGEHANDLER = function (opts) {
+const RANGEHANDLER = function (opts) {
   return new RangeHandler(opts);
 };
 /*!
