@@ -512,6 +512,9 @@ var ANIUTIL = function () {
       this.bgOpts = opts.loadOption[0].bgOpts;
       this.visiblePoint = !!!opts.visiblePoint ? 0 : opts.visiblePoint;
       this.useDefaultImg = opts.useDefaultImg;
+      this.endCallback = opts.endCallback;
+      this.preset = !!!opts.preset ? '' : opts.preset;
+      this.lazyCompleteLength = 0;
       this.property = this.mediaType === 'image' ? 'src' : 'href';
       this.getLazyMedia();
       this.getResponsiveMedia();
@@ -564,13 +567,26 @@ var ANIUTIL = function () {
       }
     };
     fn.getLazyMedia = function () {
-      var lazyMediaList = document.querySelectorAll(this.lazyClass);
-      this.lazyMedias = lazyMediaList;
-      this.lazyLength = lazyMediaList.length;
+      var lazyMediaList = document.querySelectorAll(this.lazyClass),
+        showLazyMediaList = [];
+      for (var i = 0; i < lazyMediaList.length; i++) {
+        if (lazyMediaList[i].offsetParent != null) {
+          showLazyMediaList.push(lazyMediaList[i]);
+        }
+        if (i == lazyMediaList.length - 1) {
+          this.lazyMedias = showLazyMediaList;
+          this.lazyLength = showLazyMediaList.length;
+        }
+      }
     };
     fn.checkCompleteMedia = function () {
-      var lazyCompleteList = document.querySelectorAll('.' + this.lazyCompleteClass);
-      this.lazyCompleteLength = lazyCompleteList.length;
+      var completeList = [];
+      for (let i = 0; i < this.lazyMedias.length; i++) {
+        if (this.lazyMedias[i].classList.contains(this.lazyCompleteClass)) {
+          completeList.push(this.lazyMedias[i]);
+          this.lazyCompleteLength = completeList.length;
+        }
+      }
     };
     fn.getResponsiveMedia = function () {
       var responsiveMediaList = document.querySelectorAll(this.responsiveClass);
@@ -607,19 +623,10 @@ var ANIUTIL = function () {
         }
       }
     };
-    fn.setResponsiveMedia = function (targetMedia) {
-      if (targetMedia) {
-        for (var i = 0; i < targetMedia.length; i++) {
-          var mediaSrc = targetMedia[i].getAttribute(this.targetAttr),
-            bgOpts = targetMedia[i].getAttribute(this.bgOpts);
-          if (!!!mediaSrc) {
-            mediaSrc = this.findMediaHandler(targetMedia);
-          }
-          if (!targetMedia[i].classList.contains(this.lazyCompleteClass)) {
-            targetMedia[i].setAttribute(this.property, mediaSrc);
-            targetMedia[i].classList.add(this.lazyCompleteClass);
-          }
-        }
+    fn.setResponsiveMedia = function (otherMedia, endCallback) {
+      if (!!otherMedia) {
+        this.setLazyMedia(otherMedia, endCallback);
+        this.getResponsiveMedia();
       } else {
         for (var i = 0; i < this.responsiveLength; i++) {
           var targetMedia = this.responsiveMedias[i],
@@ -629,18 +636,22 @@ var ANIUTIL = function () {
           }
           if (targetMedia.classList.contains(this.lazyCompleteClass)) {
             if (this.mediaType === 'image' || this.mediaType === 'svgImage') {
-              targetMedia.setAttribute(this.property, mediaSrc);
+              if (this.mediaType === 'image') {
+                targetMedia.setAttribute(this.property, mediaSrc + this.preset);
+              } else {
+                targetMedia.setAttribute(this.property, mediaSrc);
+              }
             } else if (this.mediaType === 'video' || this.mediaType === 'mp4Video') {
               var isSource = targetMedia.querySelectorAll('source');
               for (var j = 0; j < isSource.length; j++) {
                 if (isSource[j].type === 'video/webm') {
-                  isSource[j].src = mediaSrc + '.webm';
+                  isSource[j].src = mediaSrc + '.webm' + this.preset;
                   targetMedia.load();
                 } else if (isSource[j].type === 'video/mp4') {
                   if (this.mediaType === 'mp4Video') {
                     isSource[j].src = mediaSrc + '.mp4?imbypass=true';
                   } else {
-                    isSource[j].src = mediaSrc + '.mp4';
+                    isSource[j].src = mediaSrc + '.mp4' + this.preset;
                   }
                   targetMedia.load();
                 }
@@ -680,7 +691,7 @@ var ANIUTIL = function () {
         return this.findRemainingMediaAttr(element);
       }
     };
-    fn.setLazyMedia = function () {
+    fn.setLazyMedia = function (targetMedia, endCallback) {
       var self = this;
       this.windowHeight = window.innerHeight;
       var _createSourceElement = function (src) {
@@ -692,16 +703,16 @@ var ANIUTIL = function () {
           sourceEl[0].src = src + '.mp4?imbypass=true';
         } else {
           sourceEl[0].type = 'video/webm';
-          sourceEl[0].src = src + '.webm';
+          sourceEl[0].src = src + '.webm' + self.preset;
           sourceEl[1].type = 'video/mp4';
-          sourceEl[1].src = src + '.mp4';
+          sourceEl[1].src = src + '.mp4' + self.preset;
         }
         return sourceEl;
       };
       var _setLazySrc = function (targetElement) {
         switch (self.mediaType) {
           case 'image':
-            targetElement.setAttribute(self.property, mediaSrc);
+            targetElement.setAttribute(self.property, mediaSrc + self.preset);
             break;
           case 'svgImage':
             targetElement.setAttribute(self.property, mediaSrc);
@@ -741,11 +752,15 @@ var ANIUTIL = function () {
       var _setComplateStatus = function (targetElement) {
         (function (mediaElement) {
           var mediaLoadEvent = function () {
-            if (self.opts.lazyClass.split(' ').length == 1) mediaElement.classList.remove(removeClass);
-            self.checkCompleteMedia();
             if (self.mediaType === 'image') {
               mediaElement.removeEventListener('load', mediaLoadEvent);
             } else if (self.mediaType === 'video') {
+              if (!!endCallback) {
+                endCallback(targetElement);
+              }
+              if (!!self.endCallback) {
+                self.endCallback(targetElement);
+              }
               mediaElement.removeEventListener('loadedmetadata', mediaLoadEvent);
             }
           };
@@ -753,42 +768,77 @@ var ANIUTIL = function () {
             case 'image':
               mediaElement.addEventListener('load', mediaLoadEvent);
               mediaElement.classList.add(self.lazyCompleteClass);
+              if (self.opts.lazyClass.split(' ').length == 1) mediaElement.classList.remove(removeClass);
+              clearTimeout(self.checkCompleteTiming);
+              self.checkCompleteTiming = setTimeout(function () {
+                self.checkCompleteMedia();
+              }, 1000);
               break;
             case 'video':
               mediaElement.addEventListener('loadedmetadata', mediaLoadEvent);
               mediaElement.classList.add(self.lazyCompleteClass);
               mediaElement.parentNode.classList.add('loaded'); //TO-DO
+              if (self.opts.lazyClass.split(' ').length == 1) mediaElement.classList.remove(removeClass);
+              clearTimeout(self.checkCompleteTiming);
+              self.checkCompleteTiming = setTimeout(function () {
+                self.checkCompleteMedia();
+              }, 1000);
               break;
             case 'mp4Video':
               mediaElement.addEventListener('loadedmetadata', mediaLoadEvent);
               mediaElement.classList.add(self.lazyCompleteClass);
+              if (self.opts.lazyClass.split(' ').length == 1) mediaElement.classList.remove(removeClass);
+              clearTimeout(self.checkCompleteTiming);
+              self.checkCompleteTiming = setTimeout(function () {
+                self.checkCompleteMedia();
+              }, 1000);
               break;
             default:
               mediaElement.classList.add(self.lazyCompleteClass);
-              self.checkCompleteMedia();
+              if (self.opts.lazyClass.split(' ').length == 1) mediaElement.classList.remove(removeClass);
+              clearTimeout(self.checkCompleteTiming);
+              self.checkCompleteTiming = setTimeout(function () {
+                self.checkCompleteMedia();
+              }, 1000);
               break;
           }
           ;
         })(targetElement);
       };
-      for (var i = 0; i < this.lazyLength; i++) {
-        var targetElement = this.lazyMedias[i],
-          corrHeight = this.windowHeight * (window.pageYOffset != 0 ? this.visiblePoint : 0),
-          scrollTop = this.utilList.getScroll.call(this).top - corrHeight,
-          scrollBottom = this.utilList.getScroll.call(this).bottom + corrHeight,
-          targetOffsetTop = this.utilList.getOffset.call(this, targetElement).top,
-          targetOffsetBottom = this.utilList.getOffset.call(this, targetElement).bottom,
-          lazyClass = this.lazyClass.split('.'),
-          removeClass = lazyClass[lazyClass.length - 1];
-        if (!this.mediaType === 'svgImage' && targetElement.offsetParent == null) return;
-        if (scrollBottom > targetOffsetTop && scrollTop <= targetOffsetTop || scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom || scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom || scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) {
-          var mediaSrc = targetElement.getAttribute(this.targetAttr);
-          if (!!!mediaSrc) {
-            mediaSrc = this.findMediaHandler(targetElement);
+      if (!!!targetMedia) {
+        for (var i = 0; i < this.lazyLength; i++) {
+          var targetElement = this.lazyMedias[i],
+            corrHeight = this.windowHeight * (window.pageYOffset != 0 ? this.visiblePoint : 0),
+            scrollTop = this.utilList.getScroll.call(this).top - corrHeight,
+            scrollBottom = this.utilList.getScroll.call(this).bottom + corrHeight,
+            targetOffsetTop = this.utilList.getOffset.call(this, targetElement).top,
+            targetOffsetBottom = this.utilList.getOffset.call(this, targetElement).bottom,
+            lazyClass = this.lazyClass.split('.'),
+            removeClass = lazyClass[lazyClass.length - 1];
+
+          // if (!this.mediaType === 'svgImage' && targetElement.offsetParent == null) return;
+          if (targetElement.offsetParent != null) {
+            if (scrollBottom > targetOffsetTop && scrollTop <= targetOffsetTop || scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom || scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom || scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) {
+              var mediaSrc = targetElement.getAttribute(this.targetAttr);
+              if (!!!mediaSrc) {
+                mediaSrc = this.findMediaHandler(targetElement);
+              }
+              if (!targetElement.classList.contains(this.lazyCompleteClass)) {
+                _setLazySrc(targetElement);
+                _setComplateStatus(targetElement);
+              }
+            }
           }
-          if (!targetElement.classList.contains(this.lazyCompleteClass)) {
-            _setLazySrc(targetElement);
-            _setComplateStatus(targetElement);
+        }
+      } else {
+        for (var i = 0; i < targetMedia.length; i++) {
+          var mediaSrc = targetMedia[i].getAttribute(this.targetAttr);
+          if (!!!mediaSrc) {
+            mediaSrc = this.findMediaHandler(targetMedia[i]);
+          }
+          if (!targetMedia[i].classList.contains(this.lazyCompleteClass)) {
+            _setLazySrc(targetMedia[i]);
+            _setComplateStatus(targetMedia[i]);
           }
         }
       }
@@ -832,8 +882,8 @@ var ANIUTIL = function () {
       return this.opt = opt;
     };
     var destroy = function (remove) {
-      document.removeEventListener('mousewheel', eventList.scrollEvent);
-      document.removeEventListener('wheel', eventList.scrollEvent);
+      document.documentElement.removeEventListener('mousewheel', eventList.scrollEvent);
+      document.documentElement.removeEventListener('wheel', eventList.scrollEvent);
       if (remove) {
         opt = {};
       }
@@ -1061,7 +1111,10 @@ var ANIUTIL = function () {
   var videoHandler = function (opts) {
     var init = function (opts) {
       this.video = opts.video;
-      this.wrap = !!!opts.wrap ? video : opts.wrap, this.playType = !!!opts.playType ? 'scrollPlay' : opts.playType;
+      this.wrap = !!!opts.wrap ? video : opts.wrap;
+      this.playType = opts.playType;
+      this.startPoint = !!!opts.startPoint ? 0 : opts.startPoint;
+      this.reversePoint = !!!opts.reversePoint ? 100 : opts.reversePoint;
       this.playClass = !!!opts.playClass ? 'is-playing' : opts.playClass;
       this.pauseClass = !!!opts.pauseClass ? 'is-paused' : opts.pauseClass;
       this.endedClass = !!!opts.endedClass ? 'is-ended' : opts.endedClass;
@@ -1081,20 +1134,43 @@ var ANIUTIL = function () {
     fn.eventList = {
       play: function () {
         if (!!this.playCallback) this.playCallback();
-        this.wrap.classList.remove(this.endedClass);
-        this.wrap.classList.remove(this.pauseClass);
-        this.wrap.classList.add(this.playClass);
+        if (!this.wrap.length) {
+          this.wrap.classList.remove(this.endedClass);
+          this.wrap.classList.remove(this.pauseClass);
+          this.wrap.classList.add(this.playClass);
+        } else {
+          for (var i = 0; i < this.wrap.length; i++) {
+            this.wrap[i].classList.remove(this.endedClass);
+            this.wrap[i].classList.remove(this.pauseClass);
+            this.wrap[i].classList.add(this.playClass);
+          }
+        }
       },
       ended: function () {
         if (!!this.endCallback) this.endCallback();
-        this.wrap.classList.remove(this.playClass);
-        this.wrap.classList.add(this.pauseClass);
-        this.wrap.classList.add(this.endedClass);
+        if (!this.wrap.length) {
+          this.wrap.classList.remove(this.playClass);
+          this.wrap.classList.add(this.pauseClass);
+          this.wrap.classList.add(this.endedClass);
+        } else {
+          for (var i = 0; i < this.wrap.length; i++) {
+            this.wrap[i].classList.remove(this.playClass);
+            this.wrap[i].classList.add(this.pauseClass);
+            this.wrap[i].classList.add(this.endedClass);
+          }
+        }
       },
       pause: function () {
         if (!!this.pauseCallback) this.pauseCallback();
-        this.wrap.classList.remove(this.playClass);
-        this.wrap.classList.add(this.pauseClass);
+        if (!this.wrap.length) {
+          this.wrap.classList.remove(this.playClass);
+          this.wrap.classList.add(this.pauseClass);
+        } else {
+          for (var i = 0; i < this.wrap.length; i++) {
+            this.wrap[i].classList.remove(this.playClass);
+            this.wrap[i].classList.add(this.pauseClass);
+          }
+        }
       },
       reset: function () {
         if (!!this.resetCallback) this.resetCallback();
@@ -1102,9 +1178,17 @@ var ANIUTIL = function () {
         this.video.currentTime = 0;
         var self = this;
         var _removeClass = function () {
-          self.wrap.classList.remove(self.playClass);
-          self.wrap.classList.remove(self.pauseClass);
-          self.wrap.classList.remove(self.endedClass);
+          if (!self.wrap.length) {
+            self.wrap.classList.remove(self.playClass);
+            self.wrap.classList.remove(self.pauseClass);
+            self.wrap.classList.remove(self.endedClass);
+          } else {
+            for (var i = 0; i < self.wrap.length; i++) {
+              self.wrap[i].classList.remove(self.playClass);
+              self.wrap[i].classList.remove(self.pauseClass);
+              self.wrap[i].classList.remove(self.endedClass);
+            }
+          }
         };
         clearTimeout(_removeClass);
         setTimeout(_removeClass, 50);
@@ -1112,7 +1196,7 @@ var ANIUTIL = function () {
     };
     fn.activeList = {
       scrollPlay: function (progress) {
-        if (progress > 0 && progress < 100 && this.video.paused && !this.wrap.classList.contains(this.endedClass) && !this.wrap.classList.contains(this.pauseClass)) {
+        if (!document.documentElement.classList.contains('low_network') && progress > this.startPoint && progress < this.reversePoint && this.video.paused && !this.wrap.classList.contains(this.endedClass) && !this.wrap.classList.contains(this.pauseClass)) {
           if (this.video.readyState == 4 && this.video.paused) {
             this.video.play();
           } else {
@@ -1121,10 +1205,11 @@ var ANIUTIL = function () {
           ;
         }
         ;
-        if (this.video.readyState == 4 && progress === 100 || this.video.readyState == 4 && progress === 0) {
-          this.eventList.reset.call(this);
+        if (this.video.readyState == 4) {
+          if (progress === 100 || progress === 0) {
+            this.eventList.reset.call(this);
+          }
         }
-        ;
       },
       sequencePlay: function (progress, corrProgress, scrollDuration) {
         this.corrProgress = !!!corrProgress ? 100 : corrProgress;
@@ -1154,15 +1239,18 @@ var ANIUTIL = function () {
     };
     fn.bindEvents = function () {
       var self = this;
-      this.video.addEventListener('play', function () {
+      this.playEvent = function () {
         self.eventList.play.call(self);
-      });
-      this.video.addEventListener('pause', function () {
+      };
+      this.pauseEvent = function () {
         self.eventList.pause.call(self);
-      });
-      this.video.addEventListener('ended', function () {
+      };
+      this.endedEvent = function () {
         self.eventList.ended.call(self);
-      });
+      };
+      this.video.addEventListener('play', this.playEvent);
+      this.video.addEventListener('pause', this.pauseEvent);
+      this.video.addEventListener('ended', this.endedEvent);
     };
     fn.scrollActive = function (progress, corrProgress, scrollDuration) {
       switch (this.playType) {
@@ -1173,6 +1261,12 @@ var ANIUTIL = function () {
           this.activeList.sequencePlay.call(this, progress, corrProgress, scrollDuration);
           break;
       }
+    };
+    fn.destroy = function () {
+      this.video.removeEventListener('play', this.playEvent);
+      this.video.removeEventListener('pause', this.pauseEvent);
+      this.video.removeEventListener('ended', this.endedEvent);
+      this.video.videoHandler = null;
     };
     return new init(opts);
   };
