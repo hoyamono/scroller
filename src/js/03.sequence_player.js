@@ -1,14 +1,14 @@
 /*!
- * Sequence Player JavaScript Library v1.0
+ * Sequence Player JavaScript Library v1.1
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
  *
- * Date: 2021-02-24
+ * Date: 2023-10-04
  */
 
-var SEQUENCEPLAYER = (function () {
-    var init = function (opts) {
+class SequencePlayer {
+    constructor(opts) {
         this.opts = opts;
         this.targetElement = opts.targetElement;
         this.imageList = [];
@@ -22,14 +22,10 @@ var SEQUENCEPLAYER = (function () {
         this.setCanvas();
         this.loadImages();
         return this;
-    };
+    }
 
-    var fn = init.prototype;
-
-    fn.setCanvas = function () {
-        var self = this;
-
-        var _checkElement = function (element) {
+    setCanvas() {
+        const _checkElement = (element)=>{
             if (element.tagName == 'CANVAS') {
                 this.canvas = element;
             } else {
@@ -38,7 +34,7 @@ var SEQUENCEPLAYER = (function () {
                 if (this.opts.addType == 'append') {
                     this.targetElement.appendChild(this.canvas);
                 } else {
-                    var firstChild = this.targetElement.firstElementChild;
+                    let firstChild = this.targetElement.firstElementChild;
 
                     if (!!!firstChild) {
                         this.targetElement.appendChild(this.canvas);
@@ -50,45 +46,44 @@ var SEQUENCEPLAYER = (function () {
         };
 
         if (this.targetElement.jquery) {
-            _checkElement.call(this, this.targetElement[0]);
+            _checkElement(this.targetElement[0]);
         } else {
-            _checkElement.call(this, this.targetElement);
+            _checkElement(this.targetElement);
         }
 
         this.context = this.canvas.getContext('2d');
 
-        var firstImage = new Image();
+        let firstImage = new Image();
             
         firstImage.src = this.opts.path + this.opts.name + 0 + '.' + this.opts.extension;
-        if (!!!self.opts.width || !!!self.opts.height) {
-            firstImage.addEventListener('load', function(){
-                self.canvas.width = firstImage.naturalWidth;
-                self.canvas.height = firstImage.naturalHeight;
-                self.opts.width = self.canvas.width;
-                self.opts.height = self.canvas.height;
+        if (!!!this.opts.width || !!!this.opts.height) {
+            firstImage.addEventListener('load', ()=>{
+                this.canvas.width = firstImage.naturalWidth;
+                this.canvas.height = firstImage.naturalHeight;
+                this.opts.width = this.canvas.width;
+                this.opts.height = this.canvas.height;
             });    
         } else {
-            self.canvas.width = self.opts.width;
-            self.canvas.height = self.opts.height;
+            this.canvas.width = this.opts.width;
+            this.canvas.height = this.opts.height;
         }
     };
 
-    fn.loadImages = function () {
-        var self = this,
-            isImage,
+    loadImages() {
+        let isImage,
             windowTopOffset,
             windowBottomOffset,
             targetTopOffset,
             targetBottomOffset;
 
-        var bindEvent = function(){
+        const bindEvent = ()=>{
             scrollHandler();
             window.addEventListener('scroll', scrollHandler);
         };
 
-        var scrollHandler = function(){
-            windowTopOffset = window.pageYOffset - (window.innerHeight*self.imageLoadOffset);
-            windowBottomOffset = window.pageYOffset + window.innerHeight + (window.innerHeight*self.imageLoadOffset);
+        const scrollHandler = ()=>{
+            windowTopOffset = window.pageYOffset - (window.innerHeight*this.imageLoadOffset);
+            windowBottomOffset = window.pageYOffset + window.innerHeight + (window.innerHeight*this.imageLoadOffset);
             getCanvasOffset();
 
             if (windowBottomOffset > targetTopOffset && windowTopOffset < targetTopOffset ||
@@ -101,30 +96,30 @@ var SEQUENCEPLAYER = (function () {
             }
         };
 
-        var getCanvasOffset = function(){
-            targetTopOffset = self.targetElement.getBoundingClientRect().top + window.pageYOffset;
-            targetBottomOffset = self.targetElement.getBoundingClientRect().bottom + window.pageYOffset;
+        const getCanvasOffset = ()=>{
+            targetTopOffset = this.targetElement.getBoundingClientRect().top + window.pageYOffset;
+            targetBottomOffset = this.targetElement.getBoundingClientRect().bottom + window.pageYOffset;
         };
 
-        var startLoadImages = function(){
-            if (!self.opts.autoPlay && !self.defaultImage) {
-                self.setDefaultImage(0);
+        const startLoadImages = ()=>{
+            let self = this;
+            if (!this.opts.autoPlay && !this.defaultImage) {
+                this.setDefaultImage(0);
             }
 
-            for (var i = self.opts.startNum; i <= self.opts.endNum; i++) {
+            for (let i = this.opts.startNum; i <= this.opts.endNum; i++) {
                 isImage = new Image();
-                isImage.src = self.opts.path + self.opts.name + i + '.' + self.opts.extension;
+                isImage.src = this.opts.path + this.opts.name + i + '.' + this.opts.extension;
    
-                (function (idx, imgElement) {
-                    var imageLoadEvent = function () {
+                ((idx, imgElement)=>{
+                    let imageLoadEvent = function (){
                         self.imageList[idx] = this;
 
                         if (self.loadCount < self.opts.endNum) {
                             self.loadCount++;
-
-                            this.removeEventListener('load', imageLoadEvent);
+                            self.imageList[idx].removeEventListener('load', imageLoadEvent);
                         } else if (self.opts.autoPlay && self.loadCount == self.opts.endNum) {
-                            setTimeout(function() {
+                            setTimeout(()=>{
                                 self.play();
                             }, 100);
                             return;
@@ -141,40 +136,37 @@ var SEQUENCEPLAYER = (function () {
         return bindEvent();
     };
 
-    fn.sequenceLoadCheck = function (type) {
-        var self = this,
-            intervalTimer = null;
-        intervalTimer = setInterval(function () {
-            if (self.loadCount == self.opts.endNum) {
-                self.activeSequence(type);
+    sequenceLoadCheck(type) {
+        let intervalTimer = null;
+        intervalTimer = setInterval(()=>{
+            if (this.loadCount == this.opts.endNum) {
+                this.activeSequence(type);
                 clearInterval(intervalTimer);
                 intervalTimer = null;
             }
         }, 100);
     };
 
-    fn.setDefaultImage = function(idx) {
-        var self = this;
-
+    setDefaultImage(idx) {
         this.defaultImage = new Image();
         this.defaultImage.src = this.opts.path + this.opts.name + idx + '.' + this.opts.extension;
 
-        this.defaultImageEvent = function(){
-            self.context.drawImage(self.defaultImage, 0, 0, self.opts.width, self.opts.height);
+        this.defaultImageEvent = ()=>{
+            this.context.drawImage(this.defaultImage, 0, 0, this.opts.width, this.opts.height);
         };
 
         this.defaultImage.addEventListener('load', this.defaultImageEvent);
     };
 
-    fn.play = function (opts) {
+    play (opts) {
         opts = opts || {};
 
         if (this.isPlay) return;
 
-        var idx = opts.index > this.opts.endNum ? this.opts.endNum : opts.index;
+        let idx = opts.index > this.opts.endNum ? this.opts.endNum : opts.index;
 
-        this.activeCallback = opts.activeCallback || function () { };
-        this.endCallback = opts.endCallback || function () { };
+        this.activeCallback = opts.activeCallback || function () {};
+        this.endCallback = opts.endCallback || function () {};
         this.beforeTime = opts.beforeTime || 0;
 
         if (typeof opts.index == 'number') {
@@ -200,7 +192,7 @@ var SEQUENCEPLAYER = (function () {
         }
     };
 
-    fn.reverse = function () {
+    reverse() {
         if (this.isPlay) return;
 
         if (this.loadCount !== this.opts.endNum) {
@@ -210,7 +202,7 @@ var SEQUENCEPLAYER = (function () {
         }
     };
 
-    fn.pause = function () {
+    pause() {
         if (!this.isPlay) return;
 
         if (this.useReverse && this.usePlayIng) {
@@ -222,7 +214,7 @@ var SEQUENCEPLAYER = (function () {
         this.pausePlayingTime = this.playingTime;
     };
 
-    fn.stop = function () {
+    stop() {
         this.pause();
         this.playIndex = null;
         this.playingTime = 0;
@@ -234,9 +226,10 @@ var SEQUENCEPLAYER = (function () {
         this.drawCanvas(this.opts.startNum);
     };
 
-    fn.drawCanvas = function (index) {
-        if (this.playIndex != null && this.oldPlayIndex == index) return;
+    drawCanvas(index) {
+        if (this.playIndex == null && this.oldPlayIndex == index) return;
         this.context.clearRect(0, 0, this.opts.width, this.opts.height);
+
         if (this.imageList[index >= 0 ? index : this.playIndex] && this.imageList[index >= 0 ? index : this.playIndex].complete) {
             this.context.drawImage(this.imageList[index >= 0 ? index : this.playIndex], 0, 0, this.opts.width, this.opts.height);
         }
@@ -247,91 +240,91 @@ var SEQUENCEPLAYER = (function () {
         }
     };
 
-    fn.activeSequence = function (type) {
-        var self = this,
-            playInterval = this.opts.endNum / this.opts.playTime,
+    activeSequence(type) {
+        let playInterval = this.opts.endNum / this.opts.playTime,
             startTime = null,
             progress;
 
         this.activeCallback();
         this.isPlay = true;
 
-        var _setIndex = function (timestemp) {
+        const _setIndex = (timestemp)=>{
             if (timestemp && startTime == null) {
                 startTime = Math.ceil(timestemp);
             }
 
-            if (self.playIndex == null && type !== 'reverse') {
-                self.playIndex = self.opts.startNum;
-            } else if (self.playIndex == null && type == 'reverse') {
-                self.playIndex = self.opts.endNum;
+            if (this.playIndex == null && type !== 'reverse') {
+                this.playIndex = this.opts.startNum;
+            } else if (this.playIndex == null && type == 'reverse') {
+                console.log(2222)
+                this.playIndex = this.opts.endNum;
             }
         };
 
-        var _resetStatus = function () {
-            self.playingTime = 0;
-            self.pausePlayingTime = 0;
-            self.playIndex = null;
-            self.pause();
-            self.isPlay = false;
-            self.usePlay = false;
-            self.usePlayIng = false;
-            self.useReverse = false;
-            self.useReverseIng = false;
-            if (self.opts.loop) {
-                self.play();
+        const _resetStatus = ()=>{
+            this.playingTime = 0;
+            this.pausePlayingTime = 0;
+            this.playIndex = null;
+            this.pause();
+            this.isPlay = false;
+            this.usePlay = false;
+            this.usePlayIng = false;
+            this.useReverse = false;
+            this.useReverseIng = false;
+            if (this.opts.loop) {
+                this.play();
             }
         };
 
-        var _animation = {
-            default: function () {
+        let _animation = {
+            default: ()=>{
                 _setIndex();
 
-                if (type == 'reverse' && self.playIndex >= self.opts.startNum || !!!type && self.playIndex <= self.opts.endNum) {
-                    self.drawCanvas();
+                if (type == 'reverse' && this.playIndex >= this.opts.startNum || !!!type && this.playIndex <= this.opts.endNum) {
+                    this.drawCanvas();
 
                     if (!!!type) {
-                        self.playIndex++;
+                        this.playIndex++;
                     } else {
-                        self.playIndex--;
+                        this.playIndex--;
                     }
 
-                    self.playAnimation = window.requestAnimationFrame(_animation.default);
+                    this.playAnimation = window.requestAnimationFrame(_animation.default);
                 } else {
-                    self.playIndex = null;
-                    self.isPlay = false;
-                    self.pause();
+                    this.playIndex = null;
+                    this.isPlay = false;
+                    this.pause();
                 }
             },
-            timeControll: function (timestemp) {
+            timeControll: (timestemp)=>{
                 _setIndex(timestemp);
 
                 progress = Math.ceil(timestemp) - startTime;
 
-                if (!!!type && self.playIndex <= self.opts.endNum || type == 'reverse' && self.playIndex >= self.opts.startNum) {
-                    self.drawCanvas();
+                if (!!!type && this.playIndex <= this.opts.endNum || type == 'reverse' && this.playIndex >= this.opts.startNum) {
+                    this.drawCanvas();
                 }
 
-                switch (type) {
+                 switch (type) {
                     case undefined:
-                        if (self.useReverse && !self.useReverseIng) {
-                            self.usePlayIng = true;
-                            var corrTime = self.opts.playTime - self.pausePlayingTime;
-                            self.playIndex = Math.ceil((progress + corrTime) * playInterval);
-                            self.playingTime = progress + corrTime;
+                        if (this.useReverse && !this.useReverseIng) {
+                            this.usePlayIng = true;
+                            let corrTime = this.opts.playTime - this.pausePlayingTime;
+                            this.playIndex = Math.ceil((progress + corrTime) * playInterval);
+                            this.playingTime = progress + corrTime;
 
-                            if (self.playingTime > self.opts.playTime - self.beforeTime) self.endCallback();
-                            if (self.playingTime > self.opts.playTime) {
+                            if (this.playingTime > this.opts.playTime - this.beforeTime) this.endCallback();
+                            if (this.playingTime > this.opts.playTime) {
                                 _resetStatus();
                                 return;
                             }
                         } else {
-                            self.usePlay = true;
-                            self.playIndex = Math.ceil((progress + self.pausePlayingTime) * playInterval);
-                            self.playingTime = progress + self.pausePlayingTime;
+                            this.usePlay = true;
+                            this.playIndex = Math.ceil((progress + this.pausePlayingTime) * playInterval);
+                            this.playingTime = progress + this.pausePlayingTime;
 
-                            if (self.playingTime > self.opts.playTime - self.beforeTime) self.endCallback();
-                            if (self.playingTime > self.opts.playTime) {
+                            if (this.playingTime > this.opts.playTime - this.beforeTime) this.endCallback();
+                            if (this.playingTime > this.opts.playTime) {
                                 _resetStatus();
                                 return;
                             }
@@ -340,24 +333,24 @@ var SEQUENCEPLAYER = (function () {
                         break;
 
                     case 'reverse':
-                        if (self.usePlay || self.usePlayIng && self.useReverse) {
-                            self.useReverseIng = true;
-                            var corrTime = self.pausePlayingTime - self.opts.playTime;
-                            self.playIndex = Math.floor((self.opts.playTime + corrTime - progress) * playInterval);
-                            self.playingTime = self.opts.playTime + corrTime - progress;
+                        if (this.usePlay || this.usePlayIng && this.useReverse) {
+                            this.useReverseIng = true;
+                            let corrTime = this.pausePlayingTime - this.opts.playTime;
+                            this.playIndex = Math.floor((this.opts.playTime + corrTime - progress) * playInterval);
+                            this.playingTime = this.opts.playTime + corrTime - progress;
 
-                            if (self.playingTime < self.beforeTime) self.endCallback();
-                            if (self.playingTime > self.opts.playTime || self.playIndex <= 0) {
+                            if (this.playingTime < this.beforeTime) this.endCallback();
+                            if (this.playingTime > this.opts.playTime || this.playIndex <= 0) {
                                 _resetStatus();
                                 return;
                             }
                         } else {
-                            self.useReverse = true;
-                            self.playIndex = Math.floor((self.opts.playTime - (progress + self.pausePlayingTime)) * playInterval);
-                            self.playingTime = progress + self.pausePlayingTime;
+                            this.useReverse = true;
+                            this.playIndex = Math.floor((this.opts.playTime - (progress + this.pausePlayingTime)) * playInterval);
+                            this.playingTime = progress + this.pausePlayingTime;
 
-                            if (self.playingTime > self.opts.playTime - self.beforeTime) self.endCallback();
-                            if (self.playingTime > self.opts.playTime) {
+                            if (this.playingTime > this.opts.playTime - this.beforeTime) this.endCallback();
+                            if (this.playingTime > this.opts.playTime) {
                                 _resetStatus();
                                 return;
                             }
@@ -365,13 +358,13 @@ var SEQUENCEPLAYER = (function () {
 
                         break;
                 }
-                self.playAnimation = window.requestAnimationFrame(_animation.timeControll);
+                this.playAnimation = window.requestAnimationFrame(_animation.timeControll);
             }
         };
         this.playAnimation = window.requestAnimationFrame(this.opts.playTime ? _animation.timeControll : _animation.default);
     };
+}
 
-    return function (opts) {
-        return new init(opts);
-    };
-})();
+const SEQUENCEPLAYER = function(opts){
+	return new SequencePlayer(opts)
+};

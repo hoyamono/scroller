@@ -1,14 +1,14 @@
 /*!
- * Range-Handler JavaScript Library v1.0
+ * Range-Handler JavaScript Library v1.1
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
  *
- * Date: 2021-02-10
+ * Date: 2022-10-04
  */
 
-var RANGEHANDLER = (function(){
-	var init = function(opts){
+class RangeHandler {
+	constructor(opts) {
 		this.opts = opts;
 		this.targetValue = opts.targetValue;
 		this.startPoint = !!!opts.startPoint ? 0 : opts.startPoint;
@@ -33,14 +33,13 @@ var RANGEHANDLER = (function(){
 		return this;
 	}
 
-	var fn = init.prototype;
 
-	fn.calValue = function(progress){
+	calValue = (progress)=>{
 		if (this.startPoint >= 0) {
-			var endPoint = this.endPoint - this.startPoint > 0 ? this.endPoint - this.startPoint : this.endPoint;
+			let endPoint = this.endPoint - this.startPoint > 0 ? this.endPoint - this.startPoint : this.endPoint;
 		}
 	
-		var returnValue = this.targetValue * (progress - this.startPoint) / endPoint;
+		let returnValue = this.targetValue * (progress - this.startPoint) / endPoint;
 	
 		if (returnValue > this.targetValue) {
 			returnValue = this.targetValue;
@@ -53,7 +52,7 @@ var RANGEHANDLER = (function(){
 		return returnValue;
 	};
 
-	fn.checkWheelDirection = function(){
+	checkWheelDirection = ()=>{
 		this.windowScroll = window.pageYOffset;
 		if (this.oldScroll < this.windowScroll) {
 			this.oldScroll = this.windowScroll;
@@ -64,15 +63,15 @@ var RANGEHANDLER = (function(){
 		}
 	}
 
-	fn.callBackList = {
-		onStart: function(){
+	callBackList = {
+		onStart: ()=>{
 			if (this.onStart) {
 				this.onStart();
 			}
 
 			this.activeOnStart = true;
 		},
-		onComplete: function(){
+		onComplete: ()=>{
 			if (this.onComplete){
 				this.onComplete();
 			}
@@ -84,14 +83,14 @@ var RANGEHANDLER = (function(){
 			this.activeonReverseComplete = false;
 			this.completeReverseCallback = false;
 		},
-		onReverseStart: function(){
+		onReverseStart: ()=>{
 			if (this.onReverseStart) {
 				this.onReverseStart();
 			}
 
 			this.activeonReverseStart = true;
 		},
-		onReverseComplete: function(){
+		onReverseComplete: ()=>{
 			if (this.onReverseComplete) {
 				this.onReverseComplete();
 			}
@@ -103,14 +102,14 @@ var RANGEHANDLER = (function(){
 			this.activeonComplete = false;
 			this.completeOnCallback = false;
 		},
-		onUpdate: function(){
+		onUpdate: ()=>{
 			if (this.onUpdate) {
 				this.onUpdate();
 			}
 		}
 	}
 
-	fn.checkScrollType = function(progress){
+	checkScrollType = (progress)=>{
 		if (progress > this.activeStartPoint && progress < this.activeEndPoint && !this.completeOnCallback && !this.activeOnStart && this.isDirection == 'down') {
 			return 'onStart';
 		} else if (progress > this.activeEndPoint && !this.completeOnCallback && !this.activeonComplete && this.isDirection == 'down') {
@@ -127,7 +126,7 @@ var RANGEHANDLER = (function(){
 		}
 	};
 
-	fn.activeAnimation = function(progress) {
+	activeAnimation = (progress) =>{
 		this.isValue = this.calValue(progress);
 		this.isDirection = this.checkWheelDirection();
 
@@ -169,8 +168,8 @@ var RANGEHANDLER = (function(){
 			break;
 		}
 	};
+}
 
-	return function(opts){
-		return new init(opts);
-	}
-})();
+const RANGEHANDLER = function(opts){
+	return new RangeHandler(opts)
+};

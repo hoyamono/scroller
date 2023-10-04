@@ -1,15 +1,16 @@
 /*!
- * Scrolle JavaScript Library v1.0.4
+ * Scrolle JavaScript Library v1.1.0
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
  *
- * Date: 2021-02-09
+ * Date: 2023-09-27
  */
+
 'use strict';
 
-var SCROLLER = function () {
-  var init = function (opts) {
+class Scroller {
+  constructor(opts) {
     this.initialize = true;
     this.opts = opts;
     this.correction = !!!opts.correction ? 0 : opts.correction;
@@ -33,358 +34,297 @@ var SCROLLER = function () {
     this.elementInformation = {};
     this.isFixedArea = false;
     this.checkTouchDevice = false;
-    this.elementEventList.setElement.call(this);
+    this.setElement();
     this.bindEvent();
-  };
-
-  var fn = init.prototype;
-
-  fn.bindEvent = function () {
-    var self = this;
-    var setTimeing = null;
+  }
+  static getScroll(windowHeight) {
+    let top = window.pageYOffset,
+      bottom = top + windowHeight;
+    return {
+      top: top,
+      bottom: bottom
+    };
+  }
+  static getOffset(element) {
+    let top = element.getBoundingClientRect().top + window.pageYOffset,
+      bottom = element.getBoundingClientRect().bottom + window.pageYOffset;
+    return {
+      top: top,
+      bottom: bottom
+    };
+  }
+  static IEScrollHandler() {
+    if (navigator.userAgent.match(/Trident\/7\./)) {
+      this.body.addEventListener('mousewheel', e => {
+        e.preventDefault();
+        let wheelDelta = e.wheelDelta,
+          currentScrollPosition = window.pageYOffset;
+        window.scrollTo(0, currentScrollPosition - wheelDelta);
+      });
+      this.body.addEventListener('keydown', e => {
+        let currentScrollPosition = window.pageYOffset;
+        switch (e.which) {
+          case 38:
+            e.preventDefault();
+            window.scrollTo(0, currentScrollPosition - 40);
+            break;
+          case 40:
+            e.preventDefault();
+            window.scrollTo(0, currentScrollPosition + 40);
+            break;
+          default:
+            return;
+        }
+      });
+    }
+  }
+  bindEvent() {
+    let setTimeing = null;
     this.elementHandler();
-
     if (this.resize) {
-      this.addEventList = function () {
-        if (!self.resizeTiming) {
-          self.windowHeight = window.innerHeight;
-          self.elementHandler();
+      this.addEventList = () => {
+        if (!this.resizeTiming) {
+          this.windowHeight = window.innerHeight;
+          this.elementHandler();
         } else {
           clearTimeout(setTimeing);
-          setTimeing = setTimeout(function () {
-            self.windowHeight = window.innerHeight;
-            self.elementHandler();
-          }, self.resizeTiming);
+          setTimeing = setTimeout(() => {
+            this.windowHeight = window.innerHeight;
+            this.elementHandler();
+          }, this.resizeTiming);
         }
       };
-
       window.addEventListener('resize', this.addEventList);
     }
-
     if (this.opts.IEScroll) {
-      this.utilList.IEScrollHandler.call(this);
+      Scroller.IEScrollHandler();
     }
-  };
-
-  fn.elementHandler = function () {
-    this.elementEventList.setTrackStyle.call(this);
+    if (this.opts.trackElement !== undefined) {
+      this.trackElement.scroller = this;
+    }
+  }
+  elementHandler() {
+    this.setTrackStyle.call(this);
     this.getFixedState();
-
     if (this.trackHeight > 1) {
-      this.elementEventList.setTrackHeigh.call(this);
+      this.setTrackHeigh.call(this);
     }
-
     if (this.useFixed && this.useFixedStyle) {
-      this.elementEventList.setFixedStyle.call(this);
+      this.setFixedStyle.call(this);
     }
-
     return this;
-  };
-
-  fn.utilList = {
-    checkTouchDevice: function () {
-      if (navigator.userAgent.indexOf('Windows') > -1 || navigator.userAgent.indexOf('Macintosh') > -1) {
-        return this.checkTouchDevice = false;
-      } else if ('ontouchstart' in window || window.DocumentTouch && document instanceof window.DocumentTouch) {
-        return this.checkTouchDevice = true;
-      }
-    },
-    IEScrollHandler: function () {
-      if (navigator.userAgent.match(/Trident\/7\./)) {
-        this.body.addEventListener('mousewheel', function (e) {
-          e.preventDefault();
-          var wheelDelta = e.wheelDelta,
-              currentScrollPosition = window.pageYOffset;
-          window.scrollTo(0, currentScrollPosition - wheelDelta);
-        });
-        this.body.addEventListener('keydown', function (e) {
-          var currentScrollPosition = window.pageYOffset;
-
-          switch (e.which) {
-            case 38:
-              e.preventDefault();
-              window.scrollTo(0, currentScrollPosition - 40);
-              break;
-
-            case 40:
-              e.preventDefault();
-              window.scrollTo(0, currentScrollPosition + 40);
-              break;
-
-            default:
-              return;
-          }
-        });
-      }
-    },
-    getScroll: function () {
-      var top = window.pageYOffset,
-          bottom = top + this.windowHeight;
-      return {
-        top: top,
-        bottom: bottom
-      };
-    },
-    getOffset: function (element) {
-      var top = element.getBoundingClientRect().top + window.pageYOffset,
-          bottom = element.getBoundingClientRect().bottom + window.pageYOffset;
-      return {
-        top: top,
-        bottom: bottom
-      };
-    },
-    getUserAgent: function () {
-      return navigator.userAgent;
+  }
+  checkTouchDevice() {
+    if (navigator.userAgent.indexOf('Windows') > -1 || navigator.userAgent.indexOf('Macintosh') > -1) {
+      return this.checkTouchDevice = false;
+    } else if ('ontouchstart' in window || window.DocumentTouch && document instanceof window.DocumentTouch) {
+      return this.checkTouchDevice = true;
     }
-  };
-  fn.elementEventList = {
-    setElement: function () {
-      this.body = document.querySelector('body');
-
-      if (this.opts.trackElement !== undefined) {
-        this.trackElement = this.opts.trackElement.jquery ? this.opts.trackElement[0] : this.opts.trackElement;
-      }
-
-      if (this.opts.fixedElement !== undefined) {
-        this.fixedElement = this.opts.fixedElement.jquery ? this.opts.fixedElement[0] : this.opts.fixedElement;
-      }
-
-      if (this.opts.activeElement !== undefined) {
-        this.activeElement = this.opts.activeElement.jquery ? this.opts.activeElement[0] : this.opts.activeElement;
-      }
-    },
-    setTrackHeigh: function () {
-      if (this.trackHeight <= 1) return;
-      this.trackElement.style.height = '';
-      var checkTrackHeight = this.trackElement.clientHeight == 0;
-      var isTrackHeight = this.windowHeight;
-      var calTrackHeight = isTrackHeight * this.trackHeight;
-
-      if (checkTrackHeight) {
-        this.trackElement.style.height = this.windowHeight + 'px';
-      }
-
-      this.trackElement.style.height = calTrackHeight + 'px';
-    },
-    setTrackStyle: function () {
-      if (!!!this.trackElement) return;
-
-      if (this.useFixed && window.getComputedStyle(this.trackElement).position == 'static') {
-        this.trackElement.style.position = 'relative';
-      }
-    },
-    setFixedStyle: function () {
-      if (!this.isFixedArea) {
-        this.fixedElement.style.height = '';
-        this.fixedElement.style.top = '';
-        this.fixedElement.style.position = 'absolute';
-      }
-
-      if (this.fixedElement.clientWidth == 0) {
-        this.fixedElement.style.width = '100%';
-      }
-
-      if (this.autoHeight) {
-        if (typeof this.offsetY == 'string') {
-          this.fixedElement.style.height = 'calc(' + this.windowHeight + 'px - ' + this.offsetY + ')';
-          this.fixedElement.style.top = this.offsetY;
-        } else {
-          this.fixedElement.style.height = this.windowHeight - this.offsetY + 'px';
-          this.fixedElement.style.top = this.offsetY + 'px';
-        }
-      }
-    },
-    setFixedElement: function () {
-      this.diffHeight = this.windowHeight - this.fixedElement.clientHeight;
-      this.trackTopOffset = this.utilList.getOffset.call(this, this.trackElement).top;
-      this.trackBottomOffset = this.utilList.getOffset.call(this, this.trackElement).bottom;
-
-      if (this.winScrollTop <= this.trackTopOffset) {
-        this.fixedElement.style.position = 'absolute';
-
-        if (typeof this.offsetY == 'string') {
-          this.fixedElement.style.top = this.offsetY;
-        } else {
-          this.fixedElement.style.top = this.offsetY + 'px';
-        }
-
-        this.fixedElement.style.bottom = '';
-      } else if (this.winScrollBottom >= this.trackBottomOffset) {
-        this.fixedElement.style.position = 'absolute';
-        this.fixedElement.style.top = this.trackElement.clientHeight - this.fixedElement.clientHeight + 'px';
+  }
+  setElement() {
+    this.body = document.querySelector('body');
+    if (this.opts.trackElement !== undefined) {
+      this.trackElement = this.opts.trackElement.jquery ? this.opts.trackElement[0] : this.opts.trackElement;
+    }
+    if (this.opts.fixedElement !== undefined) {
+      this.fixedElement = this.opts.fixedElement.jquery ? this.opts.fixedElement[0] : this.opts.fixedElement;
+    }
+    if (this.opts.activeElement !== undefined) {
+      this.activeElement = this.opts.activeElement.jquery ? this.opts.activeElement[0] : this.opts.activeElement;
+    }
+  }
+  setTrackHeigh() {
+    if (this.trackHeight <= 1) return;
+    this.trackElement.style.height = '';
+    let checkTrackHeight = this.trackElement.clientHeight == 0;
+    let isTrackHeight = this.windowHeight;
+    let calTrackHeight = isTrackHeight * this.trackHeight;
+    if (checkTrackHeight) {
+      this.trackElement.style.height = this.windowHeight + 'px';
+    }
+    this.trackElement.style.height = calTrackHeight + 'px';
+  }
+  setTrackStyle() {
+    if (!!!this.trackElement) return;
+    if (this.useFixed && window.getComputedStyle(this.trackElement).position == 'static') {
+      this.trackElement.style.position = 'relative';
+    }
+  }
+  setFixedStyle() {
+    if (!this.isFixedArea) {
+      this.fixedElement.style.height = '';
+      this.fixedElement.style.top = '';
+      this.fixedElement.style.position = 'absolute';
+    }
+    if (this.fixedElement.clientWidth == 0) {
+      this.fixedElement.style.width = '100%';
+    }
+    if (this.autoHeight) {
+      if (typeof this.offsetY == 'string') {
+        this.fixedElement.style.height = 'calc(' + this.windowHeight + 'px - ' + this.offsetY + ')';
+        this.fixedElement.style.top = this.offsetY;
       } else {
-        if (!this.isFixedArea) {
-          this.fixedElement.style.position = 'fixed';
-          this.fixedElement.style.top = '0';
-        }
+        this.fixedElement.style.height = this.windowHeight - this.offsetY + 'px';
+        this.fixedElement.style.top = this.offsetY + 'px';
       }
-
-      ;
     }
-  };
-
-  fn.getWheelDirection = function () {
+  }
+  setFixedElement() {
+    this.diffHeight = this.windowHeight - this.fixedElement.clientHeight;
+    this.trackTopOffset = Scroller.getOffset(this.trackElement).top;
+    this.trackBottomOffset = Scroller.getOffset(this.trackElement).bottom;
+    if (this.winScrollTop <= this.trackTopOffset) {
+      this.fixedElement.style.position = 'absolute';
+      if (typeof this.offsetY == 'string') {
+        this.fixedElement.style.top = this.offsetY;
+      } else {
+        this.fixedElement.style.top = this.offsetY + 'px';
+      }
+      this.fixedElement.style.bottom = '';
+    } else if (this.winScrollBottom >= this.trackBottomOffset) {
+      this.fixedElement.style.position = 'absolute';
+      this.fixedElement.style.top = this.trackElement.clientHeight - this.fixedElement.clientHeight + 'px';
+    } else {
+      if (!this.isFixedArea) {
+        this.fixedElement.style.position = 'fixed';
+        this.fixedElement.style.top = '0';
+      }
+    }
+    ;
+  }
+  getWheelDirection() {
     if (this.winScrollTop >= this.oldWinScrollTop) {
       this.wheelDirection = 'down';
     } else {
       this.wheelDirection = 'up';
     }
-
     this.oldWinScrollTop = this.winScrollTop;
-  };
-
-  fn.getProgress = function () {
-    var trackTopOffset = this.utilList.getOffset.call(this, this.trackElement).top - this.windowHeight * this.correction,
-        trackHeight = this.useFixed ? Math.abs(this.trackElement.clientHeight - this.windowHeight) : this.useViewportOver ? this.trackElement.clientHeight + this.windowHeight : this.trackElement.clientHeight,
-        scrollTop = this.winScrollTop - trackTopOffset,
-        scrollBottom = this.winScrollBottom - trackTopOffset,
-        calProgress = this.useFixed ? scrollTop / trackHeight * 100 : scrollBottom / trackHeight * 100;
-
+  }
+  getProgress() {
+    let trackTopOffset = Scroller.getOffset(this.trackElement).top - this.windowHeight * this.correction,
+      trackHeight = this.useFixed ? Math.abs(this.trackElement.clientHeight - this.windowHeight) : this.useViewportOver ? this.trackElement.clientHeight + this.windowHeight : this.trackElement.clientHeight,
+      scrollTop = this.winScrollTop - trackTopOffset,
+      scrollBottom = this.winScrollBottom - trackTopOffset,
+      calProgress = this.useFixed ? scrollTop / trackHeight * 100 : scrollBottom / trackHeight * 100;
     if (this.useStrictMode) {
       this.progress = Math.floor(calProgress) < 0 ? 0 : Math.floor(calProgress) > 100 ? 100 : Math.floor(calProgress);
     } else {
       this.progress = calProgress;
     }
-
     ;
     this.getWheelDirection();
     return this.progress;
-  };
-
-  fn.getFixedState = function () {
+  }
+  getFixedState() {
     if (this.progress > 0 && this.progress < 100) {
       this.isFixedArea = true;
     } else {
       this.isFixedArea = false;
     }
-  };
-
-  fn.trackAnimation = function (callback) {
+  }
+  trackAnimation(callback) {
     if (!this.initialize) return;
-    this.winScrollTop = this.utilList.getScroll.call(this).top;
-    this.winScrollBottom = this.utilList.getScroll.call(this).bottom;
-
+    this.winScrollTop = Scroller.getScroll(this.windowHeight).top;
+    this.winScrollBottom = Scroller.getScroll(this.windowHeight).bottom;
     if (this.useFixed) {
-      this.elementEventList.setFixedElement.call(this);
+      this.setFixedElement.call(this);
     }
-
     ;
     this.getProgress();
     this.getFixedState();
-
     if (callback) {
       if (this.oldPregress !== this.progress) {
         callback.call(this);
       }
-
       ;
       this.oldPregress = this.progress;
     }
-
     ;
-  };
-
-  fn.activeAnimation = function () {
+  }
+  activeAnimation() {
     if (!this.initialize) return;
-    this.winScrollTop = this.utilList.getScroll.call(this).top;
-    this.winScrollBottom = this.utilList.getScroll.call(this).bottom;
+    this.winScrollTop = Scroller.getScroll(this.windowHeight).top;
+    this.winScrollBottom = Scroller.getScroll(this.windowHeight).bottom;
     this.trackElementHeight = this.trackElement.clientHeight;
     this.correctionValue = this.trackElementHeight * this.correction;
     this.removeCorrectionValue = this.trackElementHeight * this.removeCorrection;
-    this.elementOffsetTop = this.utilList.getOffset.call(this, this.trackElement).top;
-    this.elementOffsetBottom = this.utilList.getOffset.call(this, this.trackElement).bottom;
+    this.elementOffsetTop = Scroller.getOffset(this.trackElement).top;
+    this.elementOffsetBottom = Scroller.getOffset(this.trackElement).bottom;
     this.downScrollTop = this.winScrollTop - this.correctionValue;
     this.downScrollBottom = this.winScrollBottom - this.correctionValue;
     this.upScrollTop = this.winScrollTop + this.correctionValue;
     this.upScrollBottom = this.winScrollBottom + this.correctionValue;
-    var self = this;
-    var visibleType = this.activeVisibility,
-        removeType = this.activeType,
-        corrHeight = this.windowHeight / 2;
-
-    var addActiveClass = function () {
-      if (!!!self.activeClass) return;
-
-      if (typeof self.activeClass == 'object') {
-        var classLength = self.activeClass.length;
-
-        for (var i = 0; i < classLength; i++) {
-          if (!self.activeElement.classList.contains(self.activeClass[i])) {
-            self.activeElement.classList.add(self.activeClass[i]);
+    let visibleType = this.activeVisibility,
+      removeType = this.activeType,
+      corrHeight = this.windowHeight / 2;
+    const addActiveClass = () => {
+      if (!!!this.activeClass) return;
+      if (typeof this.activeClass == 'object') {
+        let classLength = this.activeClass.length;
+        for (let i = 0; i < classLength; i++) {
+          if (!this.activeElement.classList.contains(this.activeClass[i])) {
+            this.activeElement.classList.add(this.activeClass[i]);
           }
         }
       } else {
-        if (!self.activeElement.classList.contains(self.activeClass)) {
-          self.activeElement.classList.add(self.activeClass);
+        if (!this.activeElement.classList.contains(this.activeClass)) {
+          this.activeElement.classList.add(this.activeClass);
         }
       }
     };
-
-    var removeActiveClass = function () {
-      if (typeof self.activeClass == 'object') {
-        var classLength = self.activeClass.length;
-
-        for (var i = 0; i < classLength; i++) {
-          if (self.activeElement.classList.contains(self.activeClass[i])) {
-            self.activeElement.classList.remove(self.activeClass[i]);
+    const removeActiveClass = () => {
+      if (typeof this.activeClass == 'object') {
+        let classLength = this.activeClass.length;
+        for (let i = 0; i < classLength; i++) {
+          if (this.activeElement.classList.contains(this.activeClass[i])) {
+            this.activeElement.classList.remove(this.activeClass[i]);
           }
         }
       } else {
-        if (self.activeElement.classList.contains(self.activeClass)) {
-          self.activeElement.classList.remove(self.activeClass);
+        if (this.activeElement.classList.contains(this.activeClass)) {
+          this.activeElement.classList.remove(this.activeClass);
         }
       }
-
-      if (self.activeElement.classList.contains(self.activeCallbackClass)) {
-        self.activeElement.classList.remove(self.activeCallbackClass);
+      if (this.activeElement.classList.contains(this.activeCallbackClass)) {
+        this.activeElement.classList.remove(this.activeCallbackClass);
       }
     };
-
-    var activeCallback = function () {
-      if (!self.activeElement.classList.contains(self.activeCallbackClass)) {
-        if (!!!self.opts.activeCallback) return;
-        self.opts.activeCallback.call(self);
-        self.activeElement.classList.add(self.activeCallbackClass);
+    const activeCallback = () => {
+      if (!this.activeElement.classList.contains(this.activeCallbackClass)) {
+        if (!!!this.opts.activeCallback) return;
+        this.opts.activeCallback.call(self);
+        this.activeElement.classList.add(this.activeCallbackClass);
       }
     };
-
-    var endCallback = function () {
-      if (self.activeElement.classList.contains(self.activeCallbackClass)) {
-        if (!!!self.opts.endCallback) return;
-        self.opts.endCallback.call(self);
+    const endCallback = () => {
+      if (this.activeElement.classList.contains(this.activeCallbackClass)) {
+        if (!!!this.opts.endCallback) return;
+        this.opts.endCallback.call(self);
       }
     };
-
-    var activeHandler = function () {
+    const activeHandler = () => {
       activeCallback();
       addActiveClass();
     };
-
-    var removeHandler = function () {
+    const removeHandler = () => {
       endCallback();
       removeActiveClass();
     };
-
     this.getWheelDirection();
-
     switch (visibleType) {
       case 'before':
         if (this.wheelDirection == 'down' && this.downScrollBottom >= this.elementOffsetTop && this.downScrollTop <= this.elementOffsetTop || this.wheelDirection == 'up' && this.upScrollTop <= this.elementOffsetBottom && this.upScrollBottom >= this.elementOffsetBottom || this.activeType == 'oneWay' && this.downScrollBottom >= this.elementOffsetTop) {
           activeHandler();
           this.activeStatus = true;
         }
-
         break;
-
       case 'visible':
         if (this.wheelDirection == 'down' && this.downScrollBottom >= this.elementOffsetTop + corrHeight && this.downScrollTop <= this.elementOffsetTop || this.wheelDirection == 'up' && this.upScrollTop <= this.elementOffsetBottom - corrHeight && this.upScrollBottom >= this.elementOffsetBottom || this.activeType == 'oneWay' && this.downScrollBottom >= this.elementOffsetTop + corrHeight) {
           activeHandler();
           this.activeStatus = true;
         }
-
         break;
     }
-
     switch (removeType) {
       case 'reverse':
         if (visibleType == 'visible') {
@@ -398,9 +338,7 @@ var SCROLLER = function () {
             this.activeStatus = false;
           }
         }
-
         break;
-
       case 'oneWay':
         if (visibleType == 'visible') {
           if (this.activeStatus && this.winScrollBottom < this.elementOffsetTop) {
@@ -413,51 +351,42 @@ var SCROLLER = function () {
             this.activeStatus = false;
           }
         }
-
         break;
     }
-  }; //TO-DO: 네이밍 변경
-
-
-  fn.getElementInformation = function () {
+  }
+  getElementInformation() {
     if (this.trackElement) {
       this.elementInformation.trackElement = {
         element: this.trackElement,
         width: this.trackElement.clientWidth,
         height: this.trackElement.clientHeight,
-        topOffset: this.utilList.getOffset.call(this, this.trackElement).top,
-        bottomOffset: this.utilList.getOffset.call(this, this.trackElement).bottom
+        topOffset: Scroller.getOffset(this.trackElement).top,
+        bottomOffset: Scroller.getOffset(this.trackElement).bottom
       };
     }
-
     ;
-
     if (this.activeElement) {
       this.elementInformation.activeElement = {
         element: this.activeElement,
         width: this.activeElement.clientWidth,
         height: this.activeElement.clientHeight,
-        topOffset: this.utilList.getOffset.call(this, this.activeElement).top,
-        bottomOffset: this.utilList.getOffset.call(this, this.activeElement).bottom
+        topOffset: Scroller.getOffset(this.activeElement).top,
+        bottomOffset: Scroller.getOffset(this.activeElement).bottom
       };
     }
-
     ;
     return this.elementInformation;
-  };
-
-  fn.destroy = function (e) {
+  }
+  destroy() {
     if (!!this.trackElement) {
       this.trackElement.style.position = '';
       this.trackElement.style.height = '';
     }
-
     if (!!this.fixedElement) {
       this.fixedElement.style.position = '';
       this.fixedElement.style.top = '';
       this.fixedElement.style.height = '';
     }
-
     this.trackElement = '';
     this.fixedElement = '';
     this.activeElement = '';
@@ -474,22 +403,22 @@ var SCROLLER = function () {
     window.removeEventListener('load', this.addEventList);
     window.removeEventListener('resize', this.addEventList);
     this.initialize = false;
-  };
-
-  return function (opts) {
-    return new init(opts);
-  };
-}();
+  }
+}
+const SCROLLER = function (opts) {
+  return new Scroller(opts);
+};
 /*!
- * Range-Handler JavaScript Library v1.0
+ * Range-Handler JavaScript Library v1.1
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
  *
- * Date: 2021-02-10
+ * Date: 2022-10-04
  */
-var RANGEHANDLER = function () {
-  var init = function (opts) {
+
+class RangeHandler {
+  constructor(opts) {
     this.opts = opts;
     this.targetValue = opts.targetValue;
     this.startPoint = !!!opts.startPoint ? 0 : opts.startPoint;
@@ -509,31 +438,22 @@ var RANGEHANDLER = function () {
     this.activeonReverseComplete = false;
     this.completeReverseCallback = false;
     return this;
-  };
-
-  var fn = init.prototype;
-
-  fn.calValue = function (progress) {
+  }
+  calValue = progress => {
     if (this.startPoint >= 0) {
       var endPoint = this.endPoint - this.startPoint > 0 ? this.endPoint - this.startPoint : this.endPoint;
     }
-
     var returnValue = this.targetValue * (progress - this.startPoint) / endPoint;
-
     if (returnValue > this.targetValue) {
       returnValue = this.targetValue;
     }
-
     if (returnValue < 0) {
       returnValue = 0;
     }
-
     return returnValue;
   };
-
-  fn.checkWheelDirection = function () {
+  checkWheelDirection = () => {
     this.windowScroll = window.pageYOffset;
-
     if (this.oldScroll < this.windowScroll) {
       this.oldScroll = this.windowScroll;
       return 'down';
@@ -542,52 +462,46 @@ var RANGEHANDLER = function () {
       return 'up';
     }
   };
-
-  fn.callBackList = {
-    onStart: function () {
+  callBackList = {
+    onStart: () => {
       if (this.onStart) {
         this.onStart();
       }
-
       this.activeOnStart = true;
     },
-    onComplete: function () {
+    onComplete: () => {
       if (this.onComplete) {
         this.onComplete();
       }
-
       this.activeonComplete = true;
       this.completeOnCallback = true;
       this.activeonReverseStart = false;
       this.activeonReverseComplete = false;
       this.completeReverseCallback = false;
     },
-    onReverseStart: function () {
+    onReverseStart: () => {
       if (this.onReverseStart) {
         this.onReverseStart();
       }
-
       this.activeonReverseStart = true;
     },
-    onReverseComplete: function () {
+    onReverseComplete: () => {
       if (this.onReverseComplete) {
         this.onReverseComplete();
       }
-
       this.activeonReverseComplete = true;
       this.completeReverseCallback = true;
       this.activeOnStart = false;
       this.activeonComplete = false;
       this.completeOnCallback = false;
     },
-    onUpdate: function () {
+    onUpdate: () => {
       if (this.onUpdate) {
         this.onUpdate();
       }
     }
   };
-
-  fn.checkScrollType = function (progress) {
+  checkScrollType = progress => {
     if (progress > this.activeStartPoint && progress < this.activeEndPoint && !this.completeOnCallback && !this.activeOnStart && this.isDirection == 'down') {
       return 'onStart';
     } else if (progress > this.activeEndPoint && !this.completeOnCallback && !this.activeonComplete && this.isDirection == 'down') {
@@ -600,11 +514,9 @@ var RANGEHANDLER = function () {
       return 'onUpdate';
     }
   };
-
-  fn.activeAnimation = function (progress) {
+  activeAnimation = progress => {
     this.isValue = this.calValue(progress);
     this.isDirection = this.checkWheelDirection();
-
     switch (this.checkScrollType(progress)) {
       case 'onUpdate':
         if (this.activeonReverseStart && progress > this.activeEndPoint && this.isDirection == 'down') {
@@ -614,46 +526,40 @@ var RANGEHANDLER = function () {
         } else {
           this.callBackList.onUpdate.call(this);
         }
-
         break;
-
       case 'onStart':
         this.callBackList.onStart.call(this);
         break;
-
       case 'onComplete':
         if (progress > this.activeStartPoint && !this.activeonReverseStart && !this.activeonReverseComplete && !this.completeReverseCallback && !this.activeOnStart && !this.activeonComplete && !this.completeOnCallback) {
           this.callBackList.onStart.call(this);
           this.callBackList.onUpdate.call(this);
         }
-
         this.callBackList.onComplete.call(this);
         break;
-
       case 'onReverseStart':
         this.callBackList.onReverseStart.call(this);
         break;
-
       case 'onReverseComplete':
         this.callBackList.onReverseComplete.call(this);
         break;
     }
   };
-
-  return function (opts) {
-    return new init(opts);
-  };
-}();
+}
+var RANGEHANDLER = function (opts) {
+  return new RangeHandler(opts);
+};
 /*!
- * Sequence Player JavaScript Library v1.0
+ * Sequence Player JavaScript Library v1.1
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
  *
- * Date: 2021-02-24
+ * Date: 2023-10-04
  */
-var SEQUENCEPLAYER = function () {
-  var init = function (opts) {
+
+class SequencePlayer {
+  constructor(opts) {
     this.opts = opts;
     this.targetElement = opts.targetElement;
     this.imageList = [];
@@ -667,22 +573,17 @@ var SEQUENCEPLAYER = function () {
     this.setCanvas();
     this.loadImages();
     return this;
-  };
-
-  var fn = init.prototype;
-
-  fn.setCanvas = function () {
-    var _checkElement = function (element) {
+  }
+  setCanvas() {
+    const _checkElement = element => {
       if (element.tagName == 'CANVAS') {
         this.canvas = element;
       } else {
         this.canvas = document.createElement('CANVAS');
-
         if (this.opts.addType == 'append') {
           this.targetElement.appendChild(this.canvas);
         } else {
-          var firstChild = this.targetElement.firstElementChild;
-
+          let firstChild = this.targetElement.firstElementChild;
           if (!!!firstChild) {
             this.targetElement.appendChild(this.canvas);
           } else {
@@ -691,103 +592,109 @@ var SEQUENCEPLAYER = function () {
         }
       }
     };
-
     if (this.targetElement.jquery) {
-      _checkElement.call(this, this.targetElement[0]);
+      _checkElement(this.targetElement[0]);
     } else {
-      _checkElement.call(this, this.targetElement);
+      _checkElement(this.targetElement);
     }
-
     this.context = this.canvas.getContext('2d');
-    this.canvas.width = this.opts.width;
-    this.canvas.height = this.opts.height;
-  };
-
-  fn.loadImages = function () {
-    var self = this,
-        isImage,
-        windowTopOffset,
-        windowBottomOffset,
-        targetTopOffset,
-        targetBottomOffset;
-
-    var bindEvent = function () {
+    let firstImage = new Image();
+    firstImage.src = this.opts.path + this.opts.name + 0 + '.' + this.opts.extension;
+    if (!!!this.opts.width || !!!this.opts.height) {
+      firstImage.addEventListener('load', () => {
+        this.canvas.width = firstImage.naturalWidth;
+        this.canvas.height = firstImage.naturalHeight;
+        this.opts.width = this.canvas.width;
+        this.opts.height = this.canvas.height;
+      });
+    } else {
+      this.canvas.width = this.opts.width;
+      this.canvas.height = this.opts.height;
+    }
+  }
+  loadImages() {
+    let isImage, windowTopOffset, windowBottomOffset, targetTopOffset, targetBottomOffset;
+    const bindEvent = () => {
       scrollHandler();
       window.addEventListener('scroll', scrollHandler);
     };
-
-    var scrollHandler = function () {
-      windowTopOffset = window.pageYOffset - window.innerHeight * self.imageLoadOffset;
-      windowBottomOffset = window.pageYOffset + window.innerHeight + window.innerHeight * self.imageLoadOffset;
+    const scrollHandler = () => {
+      windowTopOffset = window.pageYOffset - window.innerHeight * this.imageLoadOffset;
+      windowBottomOffset = window.pageYOffset + window.innerHeight + window.innerHeight * this.imageLoadOffset;
       getCanvasOffset();
-
       if (windowBottomOffset > targetTopOffset && windowTopOffset < targetTopOffset || windowTopOffset < targetBottomOffset && windowBottomOffset > targetBottomOffset || windowTopOffset < targetTopOffset && windowBottomOffset > targetBottomOffset || windowTopOffset > targetTopOffset && windowBottomOffset < targetBottomOffset) {
         startLoadImages();
         window.removeEventListener('scroll', scrollHandler);
       }
     };
-
-    var getCanvasOffset = function () {
-      targetTopOffset = self.targetElement.getBoundingClientRect().top + window.pageYOffset;
-      targetBottomOffset = self.targetElement.getBoundingClientRect().bottom + window.pageYOffset;
+    const getCanvasOffset = () => {
+      targetTopOffset = this.targetElement.getBoundingClientRect().top + window.pageYOffset;
+      targetBottomOffset = this.targetElement.getBoundingClientRect().bottom + window.pageYOffset;
     };
-
-    var startLoadImages = function () {
-      for (var i = self.opts.startNum; i <= self.opts.endNum; i++) {
+    const startLoadImages = () => {
+      let self = this;
+      if (!this.opts.autoPlay && !this.defaultImage) {
+        this.setDefaultImage(0);
+      }
+      for (let i = this.opts.startNum; i <= this.opts.endNum; i++) {
         isImage = new Image();
-        isImage.src = self.opts.path + self.opts.name + i + '.' + self.opts.extension;
-
-        (function (idx, imgElement) {
-          var imageLoadEvent = function () {
+        isImage.src = this.opts.path + this.opts.name + i + '.' + this.opts.extension;
+        ((idx, imgElement) => {
+          let imageLoadEvent = function () {
             self.imageList[idx] = this;
-
             if (self.loadCount < self.opts.endNum) {
               self.loadCount++;
-              this.removeEventListener('load', imageLoadEvent);
+              self.imageList[idx].removeEventListener('load', imageLoadEvent);
             } else if (self.opts.autoPlay && self.loadCount == self.opts.endNum) {
-              setTimeout(function () {
+              setTimeout(() => {
                 self.play();
               }, 100);
               return;
             }
           };
-
           imgElement.addEventListener('load', imageLoadEvent);
         })(i, isImage);
-
         isImage = null;
       }
     };
-
     return bindEvent();
-  };
-
-  fn.sequenceLoadCheck = function (type) {
-    var self = this,
-        intervalTimer = null;
-    intervalTimer = setInterval(function () {
-      if (self.loadCount == self.opts.endNum) {
-        self.activeSequence(type);
+  }
+  sequenceLoadCheck(type) {
+    let intervalTimer = null;
+    intervalTimer = setInterval(() => {
+      if (this.loadCount == this.opts.endNum) {
+        this.activeSequence(type);
         clearInterval(intervalTimer);
         intervalTimer = null;
       }
     }, 100);
-  };
-
-  fn.play = function (opts) {
+  }
+  setDefaultImage(idx) {
+    this.defaultImage = new Image();
+    this.defaultImage.src = this.opts.path + this.opts.name + idx + '.' + this.opts.extension;
+    this.defaultImageEvent = () => {
+      this.context.drawImage(this.defaultImage, 0, 0, this.opts.width, this.opts.height);
+    };
+    this.defaultImage.addEventListener('load', this.defaultImageEvent);
+  }
+  play(opts) {
     opts = opts || {};
     if (this.isPlay) return;
-    var idx = opts.index > this.opts.endNum ? this.opts.endNum : opts.index;
-
+    let idx = opts.index > this.opts.endNum ? this.opts.endNum : opts.index;
     this.activeCallback = opts.activeCallback || function () {};
-
     this.endCallback = opts.endCallback || function () {};
-
     this.beforeTime = opts.beforeTime || 0;
-
     if (typeof opts.index == 'number') {
       if (this.loadCount == this.opts.endNum) {
+        if (this.defaultImage) {
+          this.defaultImage.removeEventListener('load', this.defaultImageEvent);
+        }
         this.drawCanvas(idx);
+      } else {
+        if (this.defaultImage) {
+          this.defaultImage.removeEventListener('load', this.defaultImageEvent);
+        }
+        this.setDefaultImage(idx);
       }
     } else {
       if (this.loadCount !== this.opts.endNum) {
@@ -796,31 +703,25 @@ var SEQUENCEPLAYER = function () {
         this.activeSequence();
       }
     }
-  };
-
-  fn.reverse = function () {
+  }
+  reverse() {
     if (this.isPlay) return;
-
     if (this.loadCount !== this.opts.endNum) {
       this.sequenceLoadCheck('reverse');
     } else {
       this.activeSequence('reverse');
     }
-  };
-
-  fn.pause = function () {
+  }
+  pause() {
     if (!this.isPlay) return;
-
     if (this.useReverse && this.usePlayIng) {
       this.useReverse = false;
     }
-
     window.cancelAnimationFrame(this.playAnimation);
     this.isPlay = false;
     this.pausePlayingTime = this.playingTime;
-  };
-
-  fn.stop = function () {
+  }
+  stop() {
     this.pause();
     this.playIndex = null;
     this.playingTime = 0;
@@ -830,164 +731,136 @@ var SEQUENCEPLAYER = function () {
     this.useReverse = false;
     this.useReverseIng = false;
     this.drawCanvas(this.opts.startNum);
-  };
-
-  fn.drawCanvas = function (index) {
-    if (!!!index && this.oldPlayIndex == this.playIndex) return;
+  }
+  drawCanvas(index) {
+    if (this.playIndex == null && this.oldPlayIndex == index) return;
     this.context.clearRect(0, 0, this.opts.width, this.opts.height);
-
     if (this.imageList[index >= 0 ? index : this.playIndex] && this.imageList[index >= 0 ? index : this.playIndex].complete) {
       this.context.drawImage(this.imageList[index >= 0 ? index : this.playIndex], 0, 0, this.opts.width, this.opts.height);
     }
-
     this.oldPlayIndex = this.playIndex;
-
     if (index) {
       this.playIndex = index;
     }
-  };
-
-  fn.activeSequence = function (type) {
-    var self = this,
-        playInterval = this.opts.endNum / this.opts.playTime,
-        startTime = null,
-        progress;
+  }
+  activeSequence(type) {
+    let playInterval = this.opts.endNum / this.opts.playTime,
+      startTime = null,
+      progress;
     this.activeCallback();
     this.isPlay = true;
-
-    var _setIndex = function (timestemp) {
+    const _setIndex = timestemp => {
       if (timestemp && startTime == null) {
         startTime = Math.ceil(timestemp);
       }
-
-      if (self.playIndex == null && type !== 'reverse') {
-        self.playIndex = self.opts.startNum;
-      } else if (self.playIndex == null && type == 'reverse') {
-        self.playIndex = self.opts.endNum;
+      if (this.playIndex == null && type !== 'reverse') {
+        this.playIndex = this.opts.startNum;
+      } else if (this.playIndex == null && type == 'reverse') {
+        console.log(2222);
+        this.playIndex = this.opts.endNum;
       }
     };
-
-    var _resetStatus = function () {
-      self.playingTime = 0;
-      self.pausePlayingTime = 0;
-      self.playIndex = null;
-      self.pause();
-      self.isPlay = false;
-      self.usePlay = false;
-      self.usePlayIng = false;
-      self.useReverse = false;
-      self.useReverseIng = false;
-
-      if (self.opts.loop) {
-        self.play();
+    const _resetStatus = () => {
+      this.playingTime = 0;
+      this.pausePlayingTime = 0;
+      this.playIndex = null;
+      this.pause();
+      this.isPlay = false;
+      this.usePlay = false;
+      this.usePlayIng = false;
+      this.useReverse = false;
+      this.useReverseIng = false;
+      if (this.opts.loop) {
+        this.play();
       }
     };
-
-    var _animation = {
-      default: function () {
+    let _animation = {
+      default: () => {
         _setIndex();
-
-        if (type == 'reverse' && self.playIndex >= self.opts.startNum || !!!type && self.playIndex <= self.opts.endNum) {
-          self.drawCanvas();
-
+        if (type == 'reverse' && this.playIndex >= this.opts.startNum || !!!type && this.playIndex <= this.opts.endNum) {
+          this.drawCanvas();
           if (!!!type) {
-            self.playIndex++;
+            this.playIndex++;
           } else {
-            self.playIndex--;
+            this.playIndex--;
           }
-
-          self.playAnimation = window.requestAnimationFrame(_animation.default);
+          this.playAnimation = window.requestAnimationFrame(_animation.default);
         } else {
-          self.playIndex = null;
-          self.isPlay = false;
-          self.pause();
+          this.playIndex = null;
+          this.isPlay = false;
+          this.pause();
         }
       },
-      timeControll: function (timestemp) {
+      timeControll: timestemp => {
         _setIndex(timestemp);
-
         progress = Math.ceil(timestemp) - startTime;
-
-        if (!!!type && self.playIndex <= self.opts.endNum || type == 'reverse' && self.playIndex >= self.opts.startNum) {
-          self.drawCanvas();
+        if (!!!type && this.playIndex <= this.opts.endNum || type == 'reverse' && this.playIndex >= this.opts.startNum) {
+          this.drawCanvas();
         }
-
         switch (type) {
           case undefined:
-            if (self.useReverse && !self.useReverseIng) {
-              self.usePlayIng = true;
-              var corrTime = self.opts.playTime - self.pausePlayingTime;
-              self.playIndex = Math.ceil((progress + corrTime) * playInterval);
-              self.playingTime = progress + corrTime;
-              if (self.playingTime > self.opts.playTime - self.beforeTime) self.endCallback();
-
-              if (self.playingTime > self.opts.playTime) {
+            if (this.useReverse && !this.useReverseIng) {
+              this.usePlayIng = true;
+              let corrTime = this.opts.playTime - this.pausePlayingTime;
+              this.playIndex = Math.ceil((progress + corrTime) * playInterval);
+              this.playingTime = progress + corrTime;
+              if (this.playingTime > this.opts.playTime - this.beforeTime) this.endCallback();
+              if (this.playingTime > this.opts.playTime) {
                 _resetStatus();
-
                 return;
               }
             } else {
-              self.usePlay = true;
-              self.playIndex = Math.ceil((progress + self.pausePlayingTime) * playInterval);
-              self.playingTime = progress + self.pausePlayingTime;
-              if (self.playingTime > self.opts.playTime - self.beforeTime) self.endCallback();
-
-              if (self.playingTime > self.opts.playTime) {
+              this.usePlay = true;
+              this.playIndex = Math.ceil((progress + this.pausePlayingTime) * playInterval);
+              this.playingTime = progress + this.pausePlayingTime;
+              if (this.playingTime > this.opts.playTime - this.beforeTime) this.endCallback();
+              if (this.playingTime > this.opts.playTime) {
                 _resetStatus();
-
                 return;
               }
             }
-
             break;
-
           case 'reverse':
-            if (self.usePlay || self.usePlayIng && self.useReverse) {
-              self.useReverseIng = true;
-              var corrTime = self.pausePlayingTime - self.opts.playTime;
-              self.playIndex = Math.floor((self.opts.playTime + corrTime - progress) * playInterval);
-              self.playingTime = self.opts.playTime + corrTime - progress;
-              if (self.playingTime < self.beforeTime) self.endCallback();
-
-              if (self.playingTime > self.opts.playTime || self.playIndex <= 0) {
+            if (this.usePlay || this.usePlayIng && this.useReverse) {
+              this.useReverseIng = true;
+              let corrTime = this.pausePlayingTime - this.opts.playTime;
+              this.playIndex = Math.floor((this.opts.playTime + corrTime - progress) * playInterval);
+              this.playingTime = this.opts.playTime + corrTime - progress;
+              if (this.playingTime < this.beforeTime) this.endCallback();
+              if (this.playingTime > this.opts.playTime || this.playIndex <= 0) {
                 _resetStatus();
-
                 return;
               }
             } else {
-              self.useReverse = true;
-              self.playIndex = Math.floor((self.opts.playTime - (progress + self.pausePlayingTime)) * playInterval);
-              self.playingTime = progress + self.pausePlayingTime;
-              if (self.playingTime > self.opts.playTime - self.beforeTime) self.endCallback();
-
-              if (self.playingTime > self.opts.playTime) {
+              this.useReverse = true;
+              this.playIndex = Math.floor((this.opts.playTime - (progress + this.pausePlayingTime)) * playInterval);
+              this.playingTime = progress + this.pausePlayingTime;
+              if (this.playingTime > this.opts.playTime - this.beforeTime) this.endCallback();
+              if (this.playingTime > this.opts.playTime) {
                 _resetStatus();
-
                 return;
               }
             }
-
             break;
         }
-
-        self.playAnimation = window.requestAnimationFrame(_animation.timeControll);
+        this.playAnimation = window.requestAnimationFrame(_animation.timeControll);
       }
     };
     this.playAnimation = window.requestAnimationFrame(this.opts.playTime ? _animation.timeControll : _animation.default);
-  };
-
-  return function (opts) {
-    return new init(opts);
-  };
-}();
+  }
+}
+const SEQUENCEPLAYER = function (opts) {
+  return new SequencePlayer(opts);
+};
 /*!
- * ANI-Util JavaScript Library v1.0
- *
- * Copyright 2021. Yoon jae-ho
- * Released under the MIT license
- *
- * Date: 2021-02-09
- */
+* ANI-Util JavaScript Library v1.0
+*
+* Copyright 2021. Yoon jae-ho
+* Released under the MIT license
+*
+* Date: 2023-04-15
+*/
+
 var ANIUTIL = function () {
   var calRange = function (values) {
     var values = {
@@ -996,30 +869,23 @@ var ANIUTIL = function () {
       startPoint: !!!values.startPoint ? 0 : values.startPoint,
       endPoint: !!!values.endPoint ? 100 : values.endPoint
     };
-
     if (values.startPoint > 0) {
       values.endPoint = values.endPoint - values.startPoint > 0 ? values.endPoint - values.startPoint : values.endPoint;
     }
-
     var returnValue = values.targetValue * (values.progress - values.startPoint) / values.endPoint;
-
     if (returnValue > values.targetValue) {
       returnValue = values.targetValue;
     }
-
     if (returnValue < 0) {
       returnValue = 0;
     }
-
     return returnValue;
   };
-
   var percentToPixel = function (opts) {
     var targetValue = opts.targetValue,
-        progress = opts.progress;
+      progress = opts.progress;
     return targetValue * (progress / 100);
   };
-
   var videoObjectFit = function (opts) {
     var init = function (opts) {
       this.opts = opts;
@@ -1028,19 +894,15 @@ var ANIUTIL = function () {
       this.setVideoStyle();
       this.bindEvent();
     };
-
     var fn = init.prototype;
-
     fn.setElement = function () {
       if (this.opts.wrapElement !== undefined) {
         this.wrapElement = this.opts.wrapElement.jquery ? this.opts.wrapElement[0] : this.opts.wrapElement;
       }
-
       if (this.opts.targetVideo !== undefined) {
         this.targetVideo = this.opts.targetVideo.jquery ? this.opts.targetVideo[0] : this.opts.targetVideo;
       }
     };
-
     fn.setVideoStyle = function () {
       this.wrapElement.style.overflow = 'hidden';
       this.targetVideo.style.position = 'absolute';
@@ -1048,7 +910,6 @@ var ANIUTIL = function () {
       this.targetVideo.style.left = '50%';
       this.targetVideo.style.transform = 'translate(-50%, -50%)';
     };
-
     fn.bindEvent = function () {
       var self = this;
       window.addEventListener('load', function () {
@@ -1058,7 +919,6 @@ var ANIUTIL = function () {
         self.setVideoSize();
       });
     };
-
     fn.getVideoInfo = function () {
       this.wrapWidth = this.wrapElement.clientWidth;
       this.wrapHeight = this.wrapElement.clientHeight;
@@ -1067,14 +927,12 @@ var ANIUTIL = function () {
       this.wrapRatio = this.wrapHeight / this.wrapWidth;
       this.videoRatio = this.videoHeight / this.videoWidth;
     };
-
     fn.setVideoSize = function () {
       var self = this,
-          timer = null;
+        timer = null;
       clearTimeout(timer);
       timer = setTimeout(function () {
         self.getVideoInfo();
-
         if (self.wrapRatio < self.videoRatio) {
           self.targetVideo.style.width = '100%';
           self.targetVideo.style.height = 'auto';
@@ -1084,51 +942,43 @@ var ANIUTIL = function () {
         }
       }, this.resizeTiming);
     };
-
     return new init(opts);
   };
-
-  var imageLoader = function (opts) {
+  var mediaLoader = function (opts) {
     var init = function () {
       this.opts = opts;
-      this.lazyCompleteClass = 'load-complete';
+      this.mediaType = !!!opts.type ? 'image' : opts.type;
+      this.lazyCompleteClass = this.mediaType === 'image' ? 'is-img-load-complete' : this.mediaType === 'bgImage' ? 'is-bg-load-complete' : this.mediaType === 'video' ? 'is-video-load-complete' : this.mediaType === 'mp4Video' ? 'is-mp4video-load-complete' : this.mediaType === 'svgImage' ? 'is-svg-load-complete' : opts.complatClass;
       this.lazyClass = opts.lazyClass;
       this.responsiveClass = opts.responsiveClass;
       this.loadOption = opts.loadOption;
       this.targetAttr = opts.loadOption[0].attribute;
+      this.bgOpts = opts.loadOption[0].bgOpts;
       this.visiblePoint = !!!opts.visiblePoint ? 0 : opts.visiblePoint;
       this.useDefaultImg = opts.useDefaultImg;
-      this.getLazyImage();
-      this.getResponsiveImage();
+      this.property = this.mediaType === 'image' ? 'src' : 'href';
+      this.getLazyMedia();
+      this.getResponsiveMedia();
       this.bindEvent();
-      return window.imageLoader = this;
+      return window[this.mediaType] = this;
     };
-
     var fn = init.prototype;
-
     fn.bindEvent = function () {
       var self = this,
-          resizeTiming = null,
-          responsiveCheck = this.loadOption;
-
+        resizeTiming = null,
+        responsiveCheck = this.loadOption;
       var lazyEvent = function () {
-        self.setLazyImage();
-
+        self.setLazyMedia();
         if (self.lazyLength == self.lazyCompleteLength) {
           window.removeEventListener('scroll', lazyEvent);
         }
       };
-
       if (this.useDefaultImg) {
         this.setDefaultImage();
       }
-
-      window.addEventListener('load', function () {
-        self.responsiveHandler();
-        lazyEvent();
-      });
+      self.responsiveHandler();
+      lazyEvent();
       window.addEventListener('scroll', lazyEvent);
-
       if (responsiveCheck) {
         window.addEventListener('resize', function () {
           clearTimeout(resizeTiming);
@@ -1139,11 +989,10 @@ var ANIUTIL = function () {
         });
       }
     };
-
     fn.utilList = {
       getOffset: function (element) {
         var top = element.getBoundingClientRect().top + window.pageYOffset,
-            bottom = element.getBoundingClientRect().bottom + window.pageYOffset;
+          bottom = element.getBoundingClientRect().bottom + window.pageYOffset;
         return {
           top: top,
           bottom: bottom
@@ -1151,236 +1000,310 @@ var ANIUTIL = function () {
       },
       getScroll: function () {
         var top = window.pageYOffset,
-            bottom = top + this.windowHeight;
+          bottom = top + this.windowHeight;
         return {
           top: top,
           bottom: bottom
         };
       }
     };
-
-    fn.getLazyImage = function () {
-      var lazyImageList = document.querySelectorAll(this.lazyClass);
-      this.lazyImages = lazyImageList;
-      this.lazyLength = lazyImageList.length;
+    fn.getLazyMedia = function () {
+      var lazyMediaList = document.querySelectorAll(this.lazyClass);
+      this.lazyMedias = lazyMediaList;
+      this.lazyLength = lazyMediaList.length;
     };
-
-    fn.checkCompleteImage = function () {
+    fn.checkCompleteMedia = function () {
       var lazyCompleteList = document.querySelectorAll('.' + this.lazyCompleteClass);
       this.lazyCompleteLength = lazyCompleteList.length;
     };
-
-    fn.getResponsiveImage = function () {
-      var responsiveImageList = document.querySelectorAll(this.responsiveClass);
-      this.responsiveImages = responsiveImageList;
-      this.responsiveLength = responsiveImageList.length;
+    fn.getResponsiveMedia = function () {
+      var responsiveMediaList = document.querySelectorAll(this.responsiveClass);
+      this.responsiveMedias = responsiveMediaList;
+      this.responsiveLength = responsiveMediaList.length;
     };
-
     fn.setDefaultImage = function () {
+      if (this.mediaType === 'video' || this.mediaType === 'mp4Video') return;
       for (var i = 0; i < this.lazyLength; i++) {
-        this.lazyImages[i].setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH/C1hNUCBEYXRhWE1QAz94cAAh+QQFAAAAACwAAAAAAQABAAACAkQBADs=');
+        this.lazyMedias[i].setAttribute('src', 'data:image/gif;base64,R0lGODlhAQABAPAAAP///wAAACH/C1hNUCBEYXRhWE1QAz94cAAh+QQFAAAAACwAAAAAAQABAAACAkQBADs=');
       }
     };
-
     fn.responsiveHandler = function () {
       this.windowWidth = window.innerWidth;
       var resolutionLength = this.loadOption.length;
-
       for (var i = 0; i < resolutionLength; i++) {
         var nextIndex = i + 1,
-            nextPoint = nextIndex == resolutionLength ? 0 : this.loadOption[nextIndex].resolution,
-            checkPoint = false;
-
+          nextPoint = nextIndex == resolutionLength ? 0 : this.loadOption[nextIndex].resolution,
+          checkPoint = false;
         if (i == 0) {
           checkPoint = this.windowWidth > nextPoint;
         } else {
           checkPoint = this.windowWidth <= this.loadOption[i].resolution && this.windowWidth > nextPoint;
         }
-
         if (checkPoint) {
           if (this.loadOption[i].attribute !== this.oldAttr) {
             this.targetAttr = this.loadOption[i].attribute;
             this.oldAttr = this.targetAttr;
+            this.bgOpts = this.loadOption[i].bgOpts;
+            this.oldOpts = this.bgOpts;
             this.attrIndex = i;
-            this.setResponsiveImage();
+            this.setResponsiveMedia();
           }
         }
       }
     };
-
-    fn.setResponsiveImage = function (imageTarget) {
-      if (imageTarget) {
-        for (var i = 0; i < imageTarget.length; i++) {
-          var targetImage = imageTarget[i],
-              imgSrc = imageTarget[i].getAttribute(this.targetAttr);
-
-          if (!!!imgSrc) {
-            imgSrc = this.findImageHandler(targetImage);
+    fn.setResponsiveMedia = function (targetMedia) {
+      if (targetMedia) {
+        for (var i = 0; i < targetMedia.length; i++) {
+          var mediaSrc = targetMedia[i].getAttribute(this.targetAttr),
+            bgOpts = targetMedia[i].getAttribute(this.bgOpts);
+          if (!!!mediaSrc) {
+            mediaSrc = this.findMediaHandler(targetMedia);
           }
-
-          if (!imageTarget[i].classList.contains(this.lazyCompleteClass)) {
-            imageTarget[i].setAttribute('src', imgSrc);
-            imageTarget[i].classList.add(this.lazyCompleteClass);
+          if (!targetMedia[i].classList.contains(this.lazyCompleteClass)) {
+            targetMedia[i].setAttribute(this.property, mediaSrc);
+            targetMedia[i].classList.add(this.lazyCompleteClass);
           }
         }
       } else {
         for (var i = 0; i < this.responsiveLength; i++) {
-          var targetImage = this.responsiveImages[i],
-              imgSrc = targetImage.getAttribute(this.targetAttr);
-
-          if (!!!imgSrc) {
-            imgSrc = this.findImageHandler(targetImage);
+          var targetMedia = this.responsiveMedias[i],
+            mediaSrc = targetMedia.getAttribute(this.targetAttr);
+          if (!!!mediaSrc) {
+            mediaSrc = this.findMediaHandler(targetMedia);
           }
-
-          if (targetImage.classList.contains(this.lazyCompleteClass)) {
-            targetImage.setAttribute('src', imgSrc);
+          if (targetMedia.classList.contains(this.lazyCompleteClass)) {
+            if (this.mediaType === 'image' || this.mediaType === 'svgImage') {
+              targetMedia.setAttribute(this.property, mediaSrc);
+            } else if (this.mediaType === 'video' || this.mediaType === 'mp4Video') {
+              var isSource = targetMedia.querySelectorAll('source');
+              for (var j = 0; j < isSource.length; j++) {
+                if (isSource[j].type === 'video/webm') {
+                  isSource[j].src = mediaSrc + '.webm';
+                  targetMedia.load();
+                } else if (isSource[j].type === 'video/mp4') {
+                  if (this.mediaType === 'mp4Video') {
+                    isSource[j].src = mediaSrc + '.mp4?imbypass=true';
+                  } else {
+                    isSource[j].src = mediaSrc + '.mp4';
+                  }
+                  targetMedia.load();
+                }
+              }
+            }
           }
         }
       }
     };
-
-    fn.findRemainingImageAttr = function (element) {
+    fn.findRemainingMediaAttr = function (element) {
       var attrLength = this.loadOption.length;
-
       for (var i = 0; i < attrLength; i++) {
         var getAttr = element.getAttribute(this.loadOption[i].attribute);
-
         if (getAttr) {
           return getAttr;
           break;
         }
       }
     };
-
-    fn.findNextImageAttr = function (element) {
+    fn.findNextMediaAttr = function (element) {
       var isIndex = this.attrIndex;
-
       for (var i = isIndex; i >= 0; i--) {
         var getAttr = element.getAttribute(this.loadOption[i].attribute);
-
         if (getAttr) {
           return getAttr;
           break;
         }
-
         if (i == 0 && getAttr == undefined) {
-          return this.findRemainingImageAttr(element);
+          return this.findRemainingMediaAttr(element);
         }
       }
     };
-
-    fn.findImageHandler = function (element) {
+    fn.findMediaHandler = function (element) {
       if (this.attrIndex !== 0) {
-        return this.findNextImageAttr(element);
+        return this.findNextMediaAttr(element);
       } else {
-        return this.findRemainingImageAttr(element);
+        return this.findRemainingMediaAttr(element);
       }
     };
-
-    fn.setLazyImage = function () {
+    fn.setLazyMedia = function () {
       var self = this;
       this.windowHeight = window.innerHeight;
-
-      for (var i = 0; i < this.lazyLength; i++) {
-        var targetElement = this.lazyImages[i],
-            corrHeight = this.windowHeight * this.visiblePoint,
-            scrollTop = this.utilList.getScroll.call(this).top - corrHeight,
-            scrollBottom = this.utilList.getScroll.call(this).bottom + corrHeight,
-            targetOffsetTop = this.utilList.getOffset.call(this, targetElement).top,
-            targetOffsetBottom = this.utilList.getOffset.call(this, targetElement).bottom,
-            lazyClass = this.lazyClass.split('.'),
-            removeClass = lazyClass[lazyClass.length - 1];
-
-        if ((scrollBottom > targetOffsetTop && scrollTop <= targetOffsetTop || scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom || scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom || scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) && targetElement.offsetParent != null) {
-          var imgSrc = targetElement.getAttribute(this.targetAttr);
-
-          if (!!!imgSrc) {
-            imgSrc = this.findImageHandler(targetElement);
+      var _createSourceElement = function (src) {
+        var sourceEl = [];
+        sourceEl.push(document.createElement('source'));
+        sourceEl.push(document.createElement('source'));
+        if (self.mediaType === 'mp4Video') {
+          sourceEl[0].type = 'video/mp4';
+          sourceEl[0].src = src + '.mp4?imbypass=true';
+        } else {
+          sourceEl[0].type = 'video/webm';
+          sourceEl[0].src = src + '.webm';
+          sourceEl[1].type = 'video/mp4';
+          sourceEl[1].src = src + '.mp4';
+        }
+        return sourceEl;
+      };
+      var _setLazySrc = function (targetElement) {
+        switch (self.mediaType) {
+          case 'image':
+            targetElement.setAttribute(self.property, mediaSrc);
+            break;
+          case 'svgImage':
+            targetElement.setAttribute(self.property, mediaSrc);
+            break;
+          case 'bgImage':
+            targetElement.classList.add(self.lazyCompleteClass);
+            if (!!mediaSrc) {
+              targetElement.style.background = this.bgOpts + ' url(' + mediaSrc + ')';
+            }
+            break;
+          case 'video':
+            var isSource = _createSourceElement(mediaSrc);
+            targetElement.append(isSource[0]);
+            targetElement.append(isSource[1]);
+            if (!targetElement.muted) {
+              targetElement.muted = true;
+            }
+            if (!targetElement.playsInline) {
+              targetElement.playsInline = true;
+            }
+            targetElement.load();
+            break;
+          case 'mp4Video':
+            var isSource = _createSourceElement(mediaSrc);
+            targetElement.append(isSource[0]);
+            if (!targetElement.muted) {
+              targetElement.muted = true;
+            }
+            if (!targetElement.playsInline) {
+              targetElement.playsInline = true;
+            }
+            targetElement.load();
+            break;
+        }
+        ;
+      };
+      var _setComplateStatus = function (targetElement) {
+        (function (mediaElement) {
+          var mediaLoadEvent = function () {
+            if (self.opts.lazyClass.split(' ').length == 1) mediaElement.classList.remove(removeClass);
+            self.checkCompleteMedia();
+            if (self.mediaType === 'image') {
+              mediaElement.removeEventListener('load', mediaLoadEvent);
+            } else if (self.mediaType === 'video') {
+              mediaElement.removeEventListener('loadedmetadata', mediaLoadEvent);
+            }
+          };
+          switch (self.mediaType) {
+            case 'image':
+              mediaElement.addEventListener('load', mediaLoadEvent);
+              mediaElement.classList.add(self.lazyCompleteClass);
+              break;
+            case 'video':
+              mediaElement.addEventListener('loadedmetadata', mediaLoadEvent);
+              mediaElement.classList.add(self.lazyCompleteClass);
+              mediaElement.parentNode.classList.add('loaded'); //TO-DO
+              break;
+            case 'mp4Video':
+              mediaElement.addEventListener('loadedmetadata', mediaLoadEvent);
+              mediaElement.classList.add(self.lazyCompleteClass);
+              break;
+            default:
+              mediaElement.classList.add(self.lazyCompleteClass);
+              self.checkCompleteMedia();
+              break;
           }
-
+          ;
+        })(targetElement);
+      };
+      for (var i = 0; i < this.lazyLength; i++) {
+        var targetElement = this.lazyMedias[i],
+          corrHeight = this.windowHeight * (window.pageYOffset != 0 ? this.visiblePoint : 0),
+          scrollTop = this.utilList.getScroll.call(this).top - corrHeight,
+          scrollBottom = this.utilList.getScroll.call(this).bottom + corrHeight,
+          targetOffsetTop = this.utilList.getOffset.call(this, targetElement).top,
+          targetOffsetBottom = this.utilList.getOffset.call(this, targetElement).bottom,
+          lazyClass = this.lazyClass.split('.'),
+          removeClass = lazyClass[lazyClass.length - 1];
+        if (!this.mediaType === 'svgImage' && targetElement.offsetParent == null) return;
+        if (scrollBottom > targetOffsetTop && scrollTop <= targetOffsetTop || scrollTop < targetOffsetBottom && scrollBottom > targetOffsetBottom || scrollTop < targetOffsetTop && scrollBottom > targetOffsetBottom || scrollTop > targetOffsetTop && scrollBottom < targetOffsetBottom) {
+          var mediaSrc = targetElement.getAttribute(this.targetAttr);
+          if (!!!mediaSrc) {
+            mediaSrc = this.findMediaHandler(targetElement);
+          }
           if (!targetElement.classList.contains(this.lazyCompleteClass)) {
-            targetElement.setAttribute('src', imgSrc);
-
-            (function (imgElement) {
-              var imageLoadEvent = function () {
-                if (self.opts.lazyClass.split(' ').length == 1) imgElement.classList.remove(removeClass);
-                imgElement.classList.add(self.lazyCompleteClass);
-                self.checkCompleteImage();
-                imgElement.removeEventListener('load', imageLoadEvent);
-              };
-
-              imgElement.addEventListener('load', imageLoadEvent);
-            })(targetElement);
+            _setLazySrc(targetElement);
+            _setComplateStatus(targetElement);
           }
         }
       }
     };
-
     return new init(opts);
   };
-
   var addClass = function (opts) {
     var classLength = opts.classList.length;
-
     for (var i = 0; i < classLength; i++) {
       opts.targetElement.classList.add(opts.classList[i]);
     }
-
     ;
   };
-
   var removeClass = function (opts) {
     var classLength = opts.classList.length;
-
     for (var i = 0; i < classLength; i++) {
       opts.targetElement.classList.remove(opts.classList[i]);
     }
-
     ;
   };
-
-  var scrollController = function (opt) {
+  var scrollController = function () {
     var opt = opt ? opt : {},
-        agent = navigator.userAgent.toLowerCase(),
-        targetElement = document.scrollingElement || document.documentElement || document.body.parentNode || document.body,
-        speed = !!!opt.speed ? 120 : opt.speed,
-        duration = opt.duration >= 0 ? opt.duration : 1,
-        scrollSize = targetElement.scrollTop,
-        maxScrollSize,
-        frameElement = targetElement === document.body && document.documentElement ? document.documentElement : targetElement,
-        // safari is the new IE
-    moveState = false,
-        scrollTiming = null;
-
-    var init = function () {
-      if (agent.indexOf("chrome") == -1 && agent.indexOf("safari") != -1) return;
+      agent = navigator.userAgent.toLowerCase(),
+      macOs = agent.indexOf("mac os") > -1,
+      targetElement = document.scrollingElement || document.documentElement || document.body.parentNode || document.body,
+      defaultSpeed = macOs ? 60 : 120,
+      speed,
+      duration,
+      scrollSize,
+      maxScrollSize,
+      frameElement = targetElement === document.body && document.documentElement ? document.documentElement : targetElement,
+      // safari is the new IE
+      moveState = false,
+      scrollTiming = null,
+      tweenObject = null;
+    var init = function (opt) {
+      // if (agent.indexOf("chrome") == -1 && agent.indexOf("safari") != -1) return;
+      setOpts(opt);
       bindEvent.wheel();
       bindEvent.scroll();
+      return this.opt = opt;
     };
-
+    var destroy = function (remove) {
+      document.removeEventListener('mousewheel', eventList.scrollEvent);
+      document.removeEventListener('wheel', eventList.scrollEvent);
+      if (remove) {
+        opt = {};
+      }
+    };
+    var setOpts = function (opt) {
+      speed = !!!opt.speed ? defaultSpeed : macOs ? opt.speed / 2 : opt.speed;
+      duration = !!!opt.duration ? 0.6 : opt.duration;
+      scrollSize = targetElement.scrollTop;
+      opt = opt;
+    };
     var bindEvent = {
       wheel: function () {
         if (navigator.appName == 'Netscape' && navigator.userAgent.search('Trident') != -1 || agent.indexOf("msie") != -1) {
-          document.addEventListener('mousewheel', function (e) {
-            if (document.documentElement.style.overflow == 'hidden') return;
-            eventList.scrollEvent(e);
-          }, {
+          document.documentElement.addEventListener('mousewheel', eventList.scrollEvent, {
             passive: false
           });
         } else {
-          document.addEventListener('wheel', function (e) {
-            eventList.scrollEvent(e);
-          }, {
+          document.documentElement.addEventListener('wheel', eventList.scrollEvent, {
             passive: false
           });
         }
-
         ;
       },
       scroll: function () {
         window.addEventListener('scroll', function () {
-          if (document.documentElement.style.overflow == 'hidden') return;
-
+          if (document.documentElement.style.overflow == 'hidden' || document.body.style.overflow == 'hidden') return;
           if (!moveState) {
             scrollSize = targetElement.scrollTop;
           }
@@ -1389,15 +1312,15 @@ var ANIUTIL = function () {
     };
     var eventList = {
       scrollEvent: function (e) {
+        if (document.documentElement.style.overflow == 'hidden' || document.body.style.overflow == 'hidden') return;
         e.preventDefault();
         var fixedMoveSpeed = document.body.getAttribute('data-scroll-speed');
-        var delta = this.normalizeWheelDelta(e),
-            moveSpeed = opt.currDelta && fixedMoveSpeed ? fixedMoveSpeed : !!!fixedMoveSpeed && !!!speed ? 120 : speed;
+        var delta = eventList.normalizeWheelDelta(e),
+          moveSpeed = opt.currDelta && fixedMoveSpeed ? fixedMoveSpeed : !!!fixedMoveSpeed && !!!speed ? 120 : speed;
         scrollSize = scrollSize + -delta * moveSpeed; //현재까지 스크롤한 사이즈
-
         maxScrollSize = Math.max(0, Math.min(scrollSize, targetElement.scrollHeight - frameElement.clientHeight)); //최대 스크롤 사이즈
 
-        this.update();
+        eventList.update();
       },
       normalizeWheelDelta: function (e) {
         if (e.detail) {
@@ -1410,13 +1333,14 @@ var ANIUTIL = function () {
           return e.wheelDelta / 120; // IE,Safari,Chrome
         }
       },
+
       update: function () {
         var moveRange = maxScrollSize - targetElement.scrollTop,
-            moveSize = 0 >= Math.ceil(targetElement.scrollTop + moveRange) ? 0 : scrollSize > maxScrollSize ? maxScrollSize : Math.ceil(targetElement.scrollTop + moveRange); //한번 스크롤시 이동할 거리
+          moveSize = 0 >= Math.ceil(targetElement.scrollTop + moveRange) ? 0 : scrollSize > maxScrollSize ? maxScrollSize : Math.ceil(targetElement.scrollTop + moveRange); //한번 스크롤시 이동할 거리
 
         moveState = true;
         TweenMax.to(targetElement, duration, {
-          ease: "power1.out",
+          ease: "circ.out",
           scrollTop: moveSize,
           onComplete: function () {
             clearTimeout(scrollTiming);
@@ -1428,6 +1352,19 @@ var ANIUTIL = function () {
           }
         });
 
+        // if (tweenObject === null) {
+        // 	tweenObject = new TweenMax.to(targetElement, duration, { ease: "circ.out", scrollTop: moveSize, onComplete: function(){
+        // 			clearTimeout(scrollTiming);
+        // 			scrollTiming = null;
+        // 			scrollTiming = setTimeout(function(){
+        // 				moveState = false;
+        // 				scrollSize = targetElement.scrollTop;
+        // 			}, 500)
+        // 		}
+        // 	});	
+        // };
+
+        // tweenObject.updateTo({scrollTop: moveSize}, true);
         if (scrollSize <= 0) {
           scrollSize = 0;
         } else if (scrollSize >= maxScrollSize) {
@@ -1435,27 +1372,19 @@ var ANIUTIL = function () {
         }
       }
     };
-
-    var requestAnimationFrame = function () {
-      // requestAnimationFrame cross browser
-      return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (func) {
-        window.setTimeout(func, 1000 / 50);
-      };
-    }();
-
-    return init();
+    return {
+      init: init,
+      destroy: destroy
+    };
   };
-
   var resizeScrollOffset = function (opt) {
     var scrollProgress = null,
-        correctionTiming = null,
-        resizeTiming = !!!opt ? 200 : opt + 200;
+      correctionTiming = null,
+      resizeTiming = !!!opt ? 200 : opt + 200;
     var scrollElement, scrollElementHeight, winScrollTop, scrollProgress;
-
     var init = function () {
       bindEvent();
     };
-
     var getScrollProgerss = function () {
       if (scrollProgress == null) {
         scrollElement = document.scrollingElement || document.documentElement || document.body.parentNode || document.body;
@@ -1465,10 +1394,8 @@ var ANIUTIL = function () {
       } else {
         scrollElementHeight = document.body.clientHeight;
       }
-
       ;
     };
-
     var setCorrScroll = function () {
       clearTimeout(correctionTiming);
       correctionTiming = setTimeout(function () {
@@ -1476,17 +1403,14 @@ var ANIUTIL = function () {
         scrollProgress = null;
       }, resizeTiming);
     };
-
     var bindEvent = function () {
       window.addEventListener('resize', function () {
         getScrollProgerss();
         setCorrScroll();
       });
     };
-
     return init();
   };
-
   var checkTouchDevice = function () {
     if (navigator.userAgent.indexOf('Windows') > -1 || navigator.userAgent.indexOf('Macintosh') > -1) {
       return false;
@@ -1494,32 +1418,14 @@ var ANIUTIL = function () {
       return true;
     }
   };
-
-  var checkFold = function () {
-    var foldState;
-    var screenRatio = screen.width / screen.height;
-    var isFold = checkTouchDevice() && screenRatio > 0.7137 && screenRatio < 0.80 && document.getElementsByName('viewport')[0].content == 'width=768';
-    var isFoldLatest = checkTouchDevice() && screenRatio > 0.80 && screenRatio < 0.95 && document.getElementsByName('viewport')[0].content == 'width=768';
-
-    if (isFold) {
-      foldState = 'isFold';
-    } else if (isFoldLatest) {
-      foldState = 'isFoldLatest';
-    }
-
-    return foldState;
-  };
-
   var deviceConsole = function (value, visible) {
     var consoleElement, consoleValueElement;
-
     if (!document.querySelector('.console-layer')) {
       consoleElement = document.createElement('div');
       consoleElement.classList.add('console-layer');
       consoleElement.setAttribute('style', 'position: fixed; left: 0; top: 0; padding: 20px; z-index:1000000000; background: #fff;');
       document.querySelector('body').append(consoleElement);
     }
-
     if (visible == 'multi') {
       consoleElement = document.querySelector('.console-layer');
       consoleValueElement = document.createElement('div');
@@ -1537,10 +1443,183 @@ var ANIUTIL = function () {
         consoleValueElement = document.querySelector('.console-value');
       }
     }
-
     consoleValueElement.innerHTML = value;
   };
-
+  var responsiveHandler = function (opts) {
+    window.resolutionStatus = null;
+    var isResolution,
+      oldActiveIndex,
+      isActiveIndex,
+      callbackTiming = null;
+    var windowWidth = window.innerWidth;
+    var opts = {
+      resolution: opts.resolution,
+      statusName: opts.statusName || [],
+      callback: opts.callback || [],
+      activeTiming: !!!opts.activeTiming ? 100 : opts.activeTiming
+    };
+    var checkResolution = function () {
+      windowWidth = window.innerWidth;
+      for (var i = 0; i < opts.resolution.length; i++) {
+        var currentSize = opts.resolution[i],
+          nextSize = !!!opts.resolution[i + 1] ? 0 : opts.resolution[i + 1];
+        if (windowWidth <= currentSize && windowWidth > nextSize && isResolution != opts.statusName[i] || windowWidth <= currentSize && windowWidth > nextSize && isActiveIndex != i) {
+          document.documentElement.classList.remove(isResolution);
+          isResolution = opts.statusName[i] || i;
+          isActiveIndex = i;
+          document.documentElement.classList.add(isResolution);
+        } else if (windowWidth >= opts.resolution[0] && isResolution != opts.statusName[0] || windowWidth >= opts.resolution[0] && !!!isActiveIndex) {
+          document.documentElement.classList.remove(isResolution);
+          isResolution = opts.statusName[0] || i;
+          isActiveIndex = i;
+          document.documentElement.classList.add(isResolution);
+        }
+      }
+    };
+    var activeCallbacks = function () {
+      clearTimeout(callbackTiming);
+      if (oldActiveIndex == isActiveIndex) return;
+      if (!!!opts.callback[isActiveIndex]) return;
+      callbackTiming = setTimeout(function () {
+        opts.callback[isActiveIndex]();
+        callbackTiming = null;
+        oldActiveIndex = isActiveIndex;
+      }, opts.activeTiming);
+    };
+    var bindEvent = function () {
+      window.addEventListener('DOMContentLoaded', function () {
+        checkResolution();
+        oldActiveIndex = isActiveIndex;
+      });
+      window.addEventListener('resize', function () {
+        checkResolution();
+        activeCallbacks();
+      });
+    };
+    var init = function () {
+      bindEvent();
+      return this;
+    };
+    return init(opts);
+  };
+  var videoHandler = function (opts) {
+    var init = function (opts) {
+      this.video = opts.video;
+      this.wrap = !!!opts.wrap ? video : opts.wrap, this.playType = !!!opts.playType ? 'scrollPlay' : opts.playType;
+      this.playClass = !!!opts.playClass ? 'is-playing' : opts.playClass;
+      this.pauseClass = !!!opts.pauseClass ? 'is-paused' : opts.pauseClass;
+      this.endedClass = !!!opts.endedClass ? 'is-ended' : opts.endedClass;
+      this.resetCallback = opts.resetCallback;
+      this.playCallback = opts.playCallback;
+      this.pauseCallback = opts.pauseCallback;
+      this.endCallback = opts.endCallback;
+      this.tweenObject = null;
+      this.agent = navigator.userAgent;
+      this.isMacintosh = this.agent.indexOf('Macintosh');
+      this.isChrome = this.agent.indexOf('Chrome');
+      this.bindEvents();
+      this.video.videoHandler = this;
+      return this;
+    };
+    var fn = init.prototype;
+    fn.eventList = {
+      play: function () {
+        if (!!this.playCallback) this.playCallback();
+        this.wrap.classList.remove(this.endedClass);
+        this.wrap.classList.remove(this.pauseClass);
+        this.wrap.classList.add(this.playClass);
+      },
+      ended: function () {
+        if (!!this.endCallback) this.endCallback();
+        this.wrap.classList.remove(this.playClass);
+        this.wrap.classList.add(this.pauseClass);
+        this.wrap.classList.add(this.endedClass);
+      },
+      pause: function () {
+        if (!!this.pauseCallback) this.pauseCallback();
+        this.wrap.classList.remove(this.playClass);
+        this.wrap.classList.add(this.pauseClass);
+      },
+      reset: function () {
+        if (!!this.resetCallback) this.resetCallback();
+        this.video.pause();
+        this.video.currentTime = 0;
+        var self = this;
+        var _removeClass = function () {
+          self.wrap.classList.remove(self.playClass);
+          self.wrap.classList.remove(self.pauseClass);
+          self.wrap.classList.remove(self.endedClass);
+        };
+        clearTimeout(_removeClass);
+        setTimeout(_removeClass, 50);
+      }
+    };
+    fn.activeList = {
+      scrollPlay: function (progress) {
+        if (progress > 0 && progress < 100 && this.video.paused && !this.wrap.classList.contains(this.endedClass) && !this.wrap.classList.contains(this.pauseClass)) {
+          if (this.video.readyState == 4 && this.video.paused) {
+            this.video.play();
+          } else {
+            this.video.addEventListener('loadeddata', this.video.play);
+          }
+          ;
+        }
+        ;
+        if (this.video.readyState == 4 && progress === 100 || this.video.readyState == 4 && progress === 0) {
+          this.eventList.reset.call(this);
+        }
+        ;
+      },
+      sequencePlay: function (progress, corrProgress, scrollDuration) {
+        this.corrProgress = !!!corrProgress ? 100 : corrProgress;
+        this.scrollDuration = !!!scrollDuration ? 0.6 : scrollDuration;
+        if (this.video.readyState == 4 && this.video.paused) {
+          this.videoDuration = this.video.duration;
+          this.playCurrentTime = this.videoDuration * (progress / this.corrProgress);
+          this.playRange = this.playCurrentTime < this.videoDuration ? this.playCurrentTime : this.videoDuration;
+          // if (this.isMacintosh > 0 && this.isChrome > 0) {
+          // 	this.video.currentTime = this.playRange;
+          // } else {
+          // 	if (this.tweenObject === null) {
+          // 		this.tweenObject = new TweenMax.to(this.video, this.scrollDuration, {
+          // 			currentTime: this.playRange, 
+          // 			ease: 'Circ.out'
+          // 		});
+          // 	};
+          // 	this.tweenObject.updateTo({currentTime: this.playRange}, true);
+          // }
+          if (this.playCurrentTime < this.videoDuration) {
+            this.video.currentTime = this.playRange;
+          }
+          ;
+        }
+        ;
+      }
+    };
+    fn.bindEvents = function () {
+      var self = this;
+      this.video.addEventListener('play', function () {
+        self.eventList.play.call(self);
+      });
+      this.video.addEventListener('pause', function () {
+        self.eventList.pause.call(self);
+      });
+      this.video.addEventListener('ended', function () {
+        self.eventList.ended.call(self);
+      });
+    };
+    fn.scrollActive = function (progress, corrProgress, scrollDuration) {
+      switch (this.playType) {
+        case 'scrollPlay':
+          this.activeList.scrollPlay.call(this, progress);
+          break;
+        case 'sequencePlay':
+          this.activeList.sequencePlay.call(this, progress, corrProgress, scrollDuration);
+          break;
+      }
+    };
+    return new init(opts);
+  };
   return {
     calRange: function (values) {
       return calRange(values);
@@ -1548,8 +1627,14 @@ var ANIUTIL = function () {
     videoObjectFit: function (opts) {
       videoObjectFit(opts);
     },
+    videoHandler: function (opts) {
+      return videoHandler(opts);
+    },
     imageLoader: function (opts) {
-      imageLoader(opts);
+      return mediaLoader(opts);
+    },
+    mediaLoader: function (opts) {
+      return mediaLoader(opts);
     },
     addClass: function (opts) {
       addClass(opts);
@@ -1557,15 +1642,13 @@ var ANIUTIL = function () {
     removeClass: function (opts) {
       removeClass(opts);
     },
-    scrollController: function (opt) {
-      scrollController(opt);
-    },
+    scrollController: scrollController,
     resizeScrollOffset: function (opt) {
       resizeScrollOffset(opt);
     },
     checkTouchDevice: checkTouchDevice,
-    checkFold: checkFold,
     deviceConsole: deviceConsole,
-    percentToPixel: percentToPixel
+    percentToPixel: percentToPixel,
+    responsiveHandler: responsiveHandler
   };
 }();

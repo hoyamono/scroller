@@ -1,16 +1,16 @@
 /*!
- * Scrolle JavaScript Library v1.0.4
+ * Scrolle JavaScript Library v1.1.0
  *
  * Copyright 2021. Yoon jae-ho
  * Released under the MIT license
  *
- * Date: 2021-02-09
+ * Date: 2023-09-27
  */
 
 'use strict'
 
-var SCROLLER = (function(){
-	var init = function(opts){
+class Scroller {
+	constructor(opts) {
 		this.initialize = true;
 		this.opts = opts;
 		this.correction = !!!opts.correction ? 0 : opts.correction;
@@ -34,198 +34,200 @@ var SCROLLER = (function(){
 		this.elementInformation = {};
 		this.isFixedArea = false;
 		this.checkTouchDevice = false;
-		this.elementEventList.setElement.call(this);
+		this.setElement();
 		this.bindEvent();
+	}
+
+	static getScroll(windowHeight) {
+		let top = window.pageYOffset,
+			bottom = top + windowHeight;
+		return {
+			top: top,
+			bottom: bottom
+		};
 	};
 
-	var fn = init.prototype;
+	static getOffset(element) {
+		let top = element.getBoundingClientRect().top + window.pageYOffset,
+			bottom = element.getBoundingClientRect().bottom + window.pageYOffset;
+		return {
+			top: top,
+			bottom: bottom
+		};
+	};
 
-	fn.bindEvent = function(){
-		var self = this;
-		var setTimeing = null;
+	static IEScrollHandler() {
+		if (navigator.userAgent.match(/Trident\/7\./)){
+			this.body.addEventListener('mousewheel', (e)=>{
+				e.preventDefault();
+				let wheelDelta = e.wheelDelta,
+					currentScrollPosition = window.pageYOffset;
+				window.scrollTo(0, currentScrollPosition - wheelDelta);
+			});
+			this.body.addEventListener('keydown', (e)=>{
+				let currentScrollPosition = window.pageYOffset;
+
+				switch (e.which){
+					case 38:
+						e.preventDefault();
+						window.scrollTo(0, currentScrollPosition - 40);
+						break;
+
+					case 40:
+						e.preventDefault();
+						window.scrollTo(0, currentScrollPosition + 40);
+						break;
+
+					default:
+						return;
+				}
+			});
+		}
+	};
+
+	bindEvent() {
+		let setTimeing = null;
 
 		this.elementHandler();
 
 		if (this.resize){
-			this.addEventList = function(){
-				if (!self.resizeTiming){
-					self.windowHeight = window.innerHeight;
-					self.elementHandler();
+			this.addEventList = ()=>{
+				if (!this.resizeTiming){
+					this.windowHeight = window.innerHeight;
+					this.elementHandler();
 				} else {
 					clearTimeout(setTimeing);
-					setTimeing = setTimeout(function(){
-						self.windowHeight = window.innerHeight;
-						self.elementHandler();
-					}, self.resizeTiming);
+					setTimeing = setTimeout(()=>{
+						this.windowHeight = window.innerHeight;
+						this.elementHandler();
+					}, this.resizeTiming);
 				}
 			};
 			window.addEventListener('resize', this.addEventList);
 		}
+		
 		if (this.opts.IEScroll){
-			this.utilList.IEScrollHandler.call(this);
+			Scroller.IEScrollHandler();
+		}
+
+		if (this.opts.trackElement !== undefined) {
+			this.trackElement.scroller = this;
 		}
 	};
 
-	fn.elementHandler = function(){
-		this.elementEventList.setTrackStyle.call(this);
+	elementHandler() {
+		this.setTrackStyle.call(this);
 		this.getFixedState();
 
 		if (this.trackHeight > 1){
-			this.elementEventList.setTrackHeigh.call(this);
+			this.setTrackHeigh.call(this);
 		}
 
 		if (this.useFixed && this.useFixedStyle){
-			this.elementEventList.setFixedStyle.call(this);
+			this.setFixedStyle.call(this);
 		}
 
 		return this;
 	};
 
-	fn.utilList = {
-		checkTouchDevice: function() {
-			if (navigator.userAgent.indexOf('Windows') > -1 || navigator.userAgent.indexOf('Macintosh') > -1) {
-				return this.checkTouchDevice = false;
-			} else if ('ontouchstart' in window || (window.DocumentTouch && document instanceof window.DocumentTouch)) {
-				return this.checkTouchDevice = true;
-			}
-		},
-		IEScrollHandler: function(){
-			if (navigator.userAgent.match(/Trident\/7\./)){
-				this.body.addEventListener('mousewheel', function(e){
-					e.preventDefault();
-					var wheelDelta = e.wheelDelta,
-						currentScrollPosition = window.pageYOffset;
-					window.scrollTo(0, currentScrollPosition - wheelDelta);
-				});
-				this.body.addEventListener('keydown', function(e){
-					var currentScrollPosition = window.pageYOffset;
-
-					switch (e.which){
-						case 38:
-							e.preventDefault();
-							window.scrollTo(0, currentScrollPosition - 40);
-							break;
-
-						case 40:
-							e.preventDefault();
-							window.scrollTo(0, currentScrollPosition + 40);
-							break;
-
-						default:
-							return;
-					}
-				});
-			}
-		},
-		getScroll: function(){
-			var top = window.pageYOffset,
-				bottom = top + this.windowHeight;
-			return {
-				top: top,
-				bottom: bottom
-			};
-		},
-		getOffset: function(element){
-			var top = element.getBoundingClientRect().top + window.pageYOffset,
-				bottom = element.getBoundingClientRect().bottom + window.pageYOffset;
-			return {
-				top: top,
-				bottom: bottom
-			};
-		},
-		getUserAgent: function(){
-			return navigator.userAgent;
+	checkTouchDevice() {
+		if (navigator.userAgent.indexOf('Windows') > -1 || navigator.userAgent.indexOf('Macintosh') > -1) {
+			return this.checkTouchDevice = false;
+		} else if ('ontouchstart' in window || (window.DocumentTouch && document instanceof window.DocumentTouch)) {
+			return this.checkTouchDevice = true;
 		}
 	};
 
-	fn.elementEventList = {
-		setElement: function(){
-			this.body = document.querySelector('body');
+	setElement() {
+		this.body = document.querySelector('body');
 
-			if (this.opts.trackElement !== undefined){
-				this.trackElement = this.opts.trackElement.jquery ? this.opts.trackElement[0] : this.opts.trackElement;
-			}
+		if (this.opts.trackElement !== undefined){
+			this.trackElement = this.opts.trackElement.jquery ? this.opts.trackElement[0] : this.opts.trackElement;
+		}
 
-			if (this.opts.fixedElement !== undefined){
-				this.fixedElement = this.opts.fixedElement.jquery ? this.opts.fixedElement[0] : this.opts.fixedElement;
-			}
+		if (this.opts.fixedElement !== undefined){
+			this.fixedElement = this.opts.fixedElement.jquery ? this.opts.fixedElement[0] : this.opts.fixedElement;
+		}
 
-			if (this.opts.activeElement !== undefined){
-				this.activeElement = this.opts.activeElement.jquery ? this.opts.activeElement[0] : this.opts.activeElement;
-			}
-		},
-		setTrackHeigh: function(){
-			if (this.trackHeight <= 1) return;
-
-			this.trackElement.style.height = '';
-
-			var checkTrackHeight = this.trackElement.clientHeight == 0;
-			var isTrackHeight = this.windowHeight;
-
-			var calTrackHeight = isTrackHeight * this.trackHeight;
-
-			if (checkTrackHeight){
-				this.trackElement.style.height = this.windowHeight + 'px';
-			}
-
-			this.trackElement.style.height = calTrackHeight + 'px';
-		},
-		setTrackStyle: function(){
-			if (!!!this.trackElement) return;
-
-			if (this.useFixed && window.getComputedStyle(this.trackElement).position == 'static'){
-				this.trackElement.style.position = 'relative';
-			}
-		},
-		setFixedStyle: function(){
-			if (!this.isFixedArea) {
-				this.fixedElement.style.height = '';
-				this.fixedElement.style.top = '';
-				this.fixedElement.style.position = 'absolute';
-			}
-
-			if (this.fixedElement.clientWidth == 0){
-				this.fixedElement.style.width = '100%';
-			}
-
-			if (this.autoHeight) {
-				if (typeof this.offsetY == 'string'){
-					this.fixedElement.style.height = 'calc(' + this.windowHeight + 'px - ' + this.offsetY + ')';
-					this.fixedElement.style.top = this.offsetY;
-				} else {
-					this.fixedElement.style.height = (this.windowHeight - this.offsetY) + 'px';
-					this.fixedElement.style.top = this.offsetY + 'px';
-				}
-			}
-		},
-		setFixedElement: function(){
-			this.diffHeight = this.windowHeight - this.fixedElement.clientHeight;
-			this.trackTopOffset = this.utilList.getOffset.call(this, this.trackElement).top;
-			this.trackBottomOffset = this.utilList.getOffset.call(this, this.trackElement).bottom;
-
-			if (this.winScrollTop <= this.trackTopOffset){
-				this.fixedElement.style.position = 'absolute';
-
-				if (typeof this.offsetY == 'string'){
-					this.fixedElement.style.top = this.offsetY;
-				} else {
-					this.fixedElement.style.top = this.offsetY + 'px';
-				}
-
-				this.fixedElement.style.bottom = '';
-			} else if (this.winScrollBottom >= this.trackBottomOffset){
-				this.fixedElement.style.position = 'absolute';
-				this.fixedElement.style.top = this.trackElement.clientHeight - this.fixedElement.clientHeight + 'px';
-			} else {
-				if (!this.isFixedArea) {
-					this.fixedElement.style.position = 'fixed';
-					this.fixedElement.style.top = '0';
-				}
-			};
-		},
+		if (this.opts.activeElement !== undefined){
+			this.activeElement = this.opts.activeElement.jquery ? this.opts.activeElement[0] : this.opts.activeElement;
+		}
 	};
 
-	fn.getWheelDirection = function(){
+	setTrackHeigh() {
+		if (this.trackHeight <= 1) return;
+
+		this.trackElement.style.height = '';
+
+		let checkTrackHeight = this.trackElement.clientHeight == 0;
+		let isTrackHeight = this.windowHeight;
+
+		let calTrackHeight = isTrackHeight * this.trackHeight;
+
+		if (checkTrackHeight){
+			this.trackElement.style.height = this.windowHeight + 'px';
+		}
+
+		this.trackElement.style.height = calTrackHeight + 'px';
+	};
+
+	setTrackStyle() {
+		if (!!!this.trackElement) return;
+
+		if (this.useFixed && window.getComputedStyle(this.trackElement).position == 'static'){
+			this.trackElement.style.position = 'relative';
+		}
+	};
+
+	setFixedStyle() {
+		if (!this.isFixedArea) {
+			this.fixedElement.style.height = '';
+			this.fixedElement.style.top = '';
+			this.fixedElement.style.position = 'absolute';
+		}
+
+		if (this.fixedElement.clientWidth == 0){
+			this.fixedElement.style.width = '100%';
+		}
+
+		if (this.autoHeight) {
+			if (typeof this.offsetY == 'string'){
+				this.fixedElement.style.height = 'calc(' + this.windowHeight + 'px - ' + this.offsetY + ')';
+				this.fixedElement.style.top = this.offsetY;
+			} else {
+				this.fixedElement.style.height = (this.windowHeight - this.offsetY) + 'px';
+				this.fixedElement.style.top = this.offsetY + 'px';
+			}
+		}
+	};
+
+	setFixedElement() {
+		this.diffHeight = this.windowHeight - this.fixedElement.clientHeight;
+		this.trackTopOffset = Scroller.getOffset(this.trackElement).top;
+		this.trackBottomOffset = Scroller.getOffset(this.trackElement).bottom;
+
+		if (this.winScrollTop <= this.trackTopOffset){
+			this.fixedElement.style.position = 'absolute';
+
+			if (typeof this.offsetY == 'string'){
+				this.fixedElement.style.top = this.offsetY;
+			} else {
+				this.fixedElement.style.top = this.offsetY + 'px';
+			}
+
+			this.fixedElement.style.bottom = '';
+		} else if (this.winScrollBottom >= this.trackBottomOffset){
+			this.fixedElement.style.position = 'absolute';
+			this.fixedElement.style.top = this.trackElement.clientHeight - this.fixedElement.clientHeight + 'px';
+		} else {
+			if (!this.isFixedArea) {
+				this.fixedElement.style.position = 'fixed';
+				this.fixedElement.style.top = '0';
+			}
+		};
+	};
+
+	getWheelDirection() {
 		if (this.winScrollTop >= this.oldWinScrollTop){
 			this.wheelDirection = 'down';
 		} else {
@@ -235,8 +237,8 @@ var SCROLLER = (function(){
 		this.oldWinScrollTop = this.winScrollTop;
 	};
 
-	fn.getProgress = function(){
-		var trackTopOffset = this.utilList.getOffset.call(this, this.trackElement).top - this.windowHeight * this.correction,
+	getProgress() {
+		let trackTopOffset = Scroller.getOffset(this.trackElement).top - this.windowHeight * this.correction,
 			trackHeight = this.useFixed ? Math.abs(this.trackElement.clientHeight - this.windowHeight) : this.useViewportOver ? this.trackElement.clientHeight + this.windowHeight : this.trackElement.clientHeight,
 			scrollTop = this.winScrollTop - trackTopOffset,
 			scrollBottom = this.winScrollBottom - trackTopOffset,
@@ -253,7 +255,7 @@ var SCROLLER = (function(){
 		return this.progress;
 	};
 
-	fn.getFixedState = function(){
+	getFixedState() {
 		if(this.progress > 0 && this.progress < 100) {
 			this.isFixedArea = true;
 		} else {
@@ -261,13 +263,13 @@ var SCROLLER = (function(){
 		}
 	};
 
-	fn.trackAnimation = function(callback){
+	trackAnimation(callback) {
 		if (!this.initialize) return;
-		this.winScrollTop = this.utilList.getScroll.call(this).top;
-		this.winScrollBottom = this.utilList.getScroll.call(this).bottom;
+		this.winScrollTop = Scroller.getScroll(this.windowHeight).top;
+		this.winScrollBottom = Scroller.getScroll(this.windowHeight).bottom;
 
 		if (this.useFixed){
-			this.elementEventList.setFixedElement.call(this);
+			this.setFixedElement.call(this);
 		};
 
 		this.getProgress();
@@ -281,83 +283,83 @@ var SCROLLER = (function(){
 		};
 	};
 
-	fn.activeAnimation = function(){
+	activeAnimation() {
 		if (!this.initialize) return;
-		this.winScrollTop = this.utilList.getScroll.call(this).top;
-		this.winScrollBottom = this.utilList.getScroll.call(this).bottom;
+		this.winScrollTop = Scroller.getScroll(this.windowHeight).top;
+		this.winScrollBottom = Scroller.getScroll(this.windowHeight).bottom;
 		this.trackElementHeight = this.trackElement.clientHeight;
 		this.correctionValue = this.trackElementHeight * this.correction;
 		this.removeCorrectionValue = this.trackElementHeight * this.removeCorrection;
-		this.elementOffsetTop = this.utilList.getOffset.call(this, this.trackElement).top;
-		this.elementOffsetBottom = this.utilList.getOffset.call(this, this.trackElement).bottom;
+		this.elementOffsetTop = Scroller.getOffset(this.trackElement).top;
+		this.elementOffsetBottom = Scroller.getOffset(this.trackElement).bottom;
 		this.downScrollTop = this.winScrollTop - this.correctionValue;
 		this.downScrollBottom = this.winScrollBottom - this.correctionValue;
 		this.upScrollTop = this.winScrollTop + this.correctionValue;
 		this.upScrollBottom = this.winScrollBottom + this.correctionValue;
-		var self = this;
-		var visibleType = this.activeVisibility,
+
+		let visibleType = this.activeVisibility,
 			removeType = this.activeType,
 			corrHeight = this.windowHeight / 2;
 
-		var addActiveClass = function(){
-			if (!!!self.activeClass) return;
+		const addActiveClass = ()=>{
+			if (!!!this.activeClass) return;
 
-			if (typeof self.activeClass == 'object'){
-				var classLength = self.activeClass.length;
+			if (typeof this.activeClass == 'object'){
+				let classLength = this.activeClass.length;
 
-				for (var i = 0; i < classLength; i++){
-					if (!self.activeElement.classList.contains(self.activeClass[i])){
-						self.activeElement.classList.add(self.activeClass[i]);
+				for (let i = 0; i < classLength; i++){
+					if (!this.activeElement.classList.contains(this.activeClass[i])){
+						this.activeElement.classList.add(this.activeClass[i]);
 					}
 				}
 			} else {
-				if (!self.activeElement.classList.contains(self.activeClass)){
-					self.activeElement.classList.add(self.activeClass);
+				if (!this.activeElement.classList.contains(this.activeClass)){
+					this.activeElement.classList.add(this.activeClass);
 				}
 			}
 		};
 
-		var removeActiveClass = function(){
-			if (typeof self.activeClass == 'object'){
-				var classLength = self.activeClass.length;
+		const removeActiveClass = ()=>{
+			if (typeof this.activeClass == 'object'){
+				let classLength = this.activeClass.length;
 
-				for (var i = 0; i < classLength; i++){
-					if (self.activeElement.classList.contains(self.activeClass[i])){
-						self.activeElement.classList.remove(self.activeClass[i]);
+				for (let i = 0; i < classLength; i++){
+					if (this.activeElement.classList.contains(this.activeClass[i])){
+						this.activeElement.classList.remove(this.activeClass[i]);
 					}
 				}
 			} else {
-				if (self.activeElement.classList.contains(self.activeClass)){
-					self.activeElement.classList.remove(self.activeClass);
+				if (this.activeElement.classList.contains(this.activeClass)){
+					this.activeElement.classList.remove(this.activeClass);
 				}
 			}
 
-			if (self.activeElement.classList.contains(self.activeCallbackClass)){
-				self.activeElement.classList.remove(self.activeCallbackClass);
+			if (this.activeElement.classList.contains(this.activeCallbackClass)){
+				this.activeElement.classList.remove(this.activeCallbackClass);
 			}
 		};
 
-		var activeCallback = function(){
-			if (!self.activeElement.classList.contains(self.activeCallbackClass)){
-				if (!!!self.opts.activeCallback) return;
-				self.opts.activeCallback.call(self);
-				self.activeElement.classList.add(self.activeCallbackClass);
+		const activeCallback = ()=>{
+			if (!this.activeElement.classList.contains(this.activeCallbackClass)){
+				if (!!!this.opts.activeCallback) return;
+				this.opts.activeCallback.call(self);
+				this.activeElement.classList.add(this.activeCallbackClass);
 			}
 		};
 
-		var endCallback = function(){
-			if (self.activeElement.classList.contains(self.activeCallbackClass)){
-				if (!!!self.opts.endCallback) return;
-				self.opts.endCallback.call(self);
+		const endCallback = ()=>{
+			if (this.activeElement.classList.contains(this.activeCallbackClass)){
+				if (!!!this.opts.endCallback) return;
+				this.opts.endCallback.call(self);
 			}
 		};
 
-		var activeHandler = function(){
+		const activeHandler = ()=>{
 			activeCallback();
 			addActiveClass();
 		};
 
-		var removeHandler = function(){
+		const removeHandler = ()=>{
 			endCallback();
 			removeActiveClass();
 		};
@@ -420,15 +422,15 @@ var SCROLLER = (function(){
 				break;
 		}
 	};
-	//TO-DO: 네이밍 변경
-	fn.getElementInformation = function(){
+
+	getElementInformation() {
 		if (this.trackElement){
 			this.elementInformation.trackElement = {
 				element: this.trackElement,
 				width: this.trackElement.clientWidth,
 				height: this.trackElement.clientHeight,
-				topOffset: this.utilList.getOffset.call(this, this.trackElement).top,
-				bottomOffset: this.utilList.getOffset.call(this, this.trackElement).bottom
+				topOffset: Scroller.getOffset(this.trackElement).top,
+				bottomOffset: Scroller.getOffset(this.trackElement).bottom
 			}
 		};
 
@@ -437,15 +439,15 @@ var SCROLLER = (function(){
 				element: this.activeElement,
 				width: this.activeElement.clientWidth,
 				height: this.activeElement.clientHeight,
-				topOffset: this.utilList.getOffset.call(this, this.activeElement).top,
-				bottomOffset: this.utilList.getOffset.call(this, this.activeElement).bottom
+				topOffset: Scroller.getOffset(this.activeElement).top,
+				bottomOffset: Scroller.getOffset(this.activeElement).bottom
 			}
 		};
 
 		return this.elementInformation;
 	}
 
-	fn.destroy = function(e){
+	destroy() {
 		if (!!this.trackElement){
 			this.trackElement.style.position = '';
 			this.trackElement.style.height = '';
@@ -472,8 +474,8 @@ var SCROLLER = (function(){
 		window.removeEventListener('resize', this.addEventList);
 		this.initialize = false;
 	};
+}
 
-	return function(opts){
-		return new init(opts);
-	};
-})();
+const SCROLLER = function(opts){
+	return new Scroller(opts)
+};
